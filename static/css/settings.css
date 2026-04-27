@@ -1,0 +1,171 @@
+/* 🌟 1. 颜色变量定义 */
+:root {
+    --primary-blue: #3498db;
+    --danger-red: #e74c3c;
+}
+
+/* 🌟 2. 布局主容器 */
+.settings-container {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 40px;
+    max-width: 600px;
+    margin: 20px auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.settings-header {
+    margin-top: 0;
+    color: var(--text-main);
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 15px;
+    margin-bottom: 30px;
+}
+
+/* 🌟 3. 头像上传区样式 */
+.avatar-upload-box {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px dashed #ddd;
+}
+
+.avatar-preview-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid white;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    background: #eee;
+}
+
+.btn-upload {
+    padding: 8px 20px;
+    font-size: 0.9rem;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+    color: var(--text-main);
+}
+
+.btn-upload:hover {
+    border-color: var(--primary-blue);
+    color: var(--primary-blue);
+}
+
+/* 🌟 4. 通用表单行样式 */
+.form-group-main { margin-bottom: 20px; }
+
+.form-group-main label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.form-group-main input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 1rem;
+}
+
+.form-group-main input:focus {
+    border-color: var(--primary-blue);
+    outline: none;
+    box-shadow: inset 0 0 0 1px var(--primary-blue);
+}
+
+.form-group-main input[disabled] {
+    background: #f5f5f5;
+    color: #888;
+    border-color: #eee;
+}
+
+/* 🌟 5. 安全验证专区样式 */
+.security-box {
+    background: #fff8f8;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #ffebeb;
+    margin: 30px 0;
+}
+
+.security-box label {
+    color: var(--danger-red);
+    font-size: 0.9rem;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.security-box input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #f5c6c6;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+/* 🌟 6. 大提交按钮样式 */
+.btn-save {
+    width: 100%;
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 15px;
+    margin-top: 20px;
+    font-size: 1.1rem;
+    transition: 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-save:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+}
+
+.btn-save:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* 🌟 7. 优雅提示框及动画 */
+.settings-msg {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 1rem;
+    text-align: center;
+    font-weight: 500;
+    display: none;
+    transition: all 0.3s ease;
+}
+
+.msg-error { background: #fce8e6; color: #d93025; border: 1px solid #ceea; }
+.msg-success { background: #e6f4ea; color: #1e8e3e; border: 1px solid #ceead6; }
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('title.asset_history', lang) }} - {{ t('title.base', lang) }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/asset_history.css">
+{% endblock %}
+
+{% block top_actions %}
+    <a href="/asset_history/export" style="text-decoration: none;">
+        <button class="btn-primary" style="border-radius: 20px; gap: 8px;">
+            <i class="material-icons" style="font-size: 1.2rem;">file_download</i> {{ t('asset_history.export_btn', lang) }}
+        </button>
+    </a>
+{% endblock %}
+
+{% block content %}
+<div class="history-container">
+    <table id="historyTable">
+        <thead>
+            <tr>
+                <th style="width: 12%; text-align: center;">{{ t('asset_history.th_time', lang) }}</th>
+                <th style="width: 15%; text-align: center;">{{ t('asset_history.th_ctrl_no', lang) }}</th>
+                <th style="width: 12%; text-align: center;">{{ t('asset_history.th_pn1', lang) }}</th>
+                <th style="width: 15%; text-align: center;">{{ t('asset_history.th_name', lang) }}</th>
+                <th style="width: 12%; text-align: center;">{{ t('asset_history.th_action_status', lang) }}</th>
+                <th style="width: 14%; text-align: center;">{{ t('asset_history.th_target_loc', lang) }}</th>
+                <th style="width: 19%;">{{ t('asset_history.th_note', lang) }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+
+            {% set action_text = t('asset_history.status_change', lang) %}
+            {% set badge_class = 'color-init' %}
+
+            {% if 'Initial' in (log.note or '') or '初始' in (log.note or '') %}
+                {% set action_text = t('asset_history.status_init', lang) %}
+                {% set badge_class = 'color-init' %}
+            {% elif 'Scrap' in (log.note or '') or '报废' in (log.note or '') %}
+                {% set action_text = t('asset_history.status_scrap', lang) %}
+                {% set badge_class = 'color-scrap' %}
+            {% elif log.status == True %}
+                {% set action_text = t('asset_history.status_return', lang) %}
+                {% set badge_class = 'color-in' %}
+            {% elif log.status == False %}
+                {% set action_text = t('asset_history.status_takeout', lang) %}
+                {% set badge_class = 'color-out' %}
+            {% endif %}
+
+            <tr data-search="{{ log.ctrl_no | lower }} {{ log.pn_1 | lower }} {{ log.name | lower }} {{ log.target_loc | lower }} {{ log.note | lower }}">
+                <td style="font-size: 0.85rem; text-align: center; color: var(--text-muted);">{{ log.date }}</td>
+                <td class="font-monospace" style="text-align: center; font-size: 1.1rem; color: var(--primary); font-weight: bold;">{{ log.ctrl_no }}</td>
+                <td class="font-monospace" style="text-align: center; font-weight: 500; font-size: 1.1rem">{{ log.pn_1 }}</td>
+                <td style="text-align: center; font-size: 0.9rem;" title="{{ log.name }}">{{ log.name or '-' }}</td>
+
+                <td style="text-align: center;">
+                    <span class="{{ badge_class }}">{{ action_text }}</span>
+                </td>
+
+                <td style="text-align: center; font-weight: 500; color: var(--text-main);">
+                    {% if log.target_loc %}
+                        <i class="material-icons" style="font-size: 0.9rem; vertical-align: middle; color: #888;">place</i> {{ log.target_loc }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+
+                <td style="font-size: 0.85rem; color: #555;" title="{{ log.note }}">
+                    {{ log.note or '-' }}
+                </td>
+            </tr>
+            {% endfor %}
+
+            {% if not logs %}
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 40px 0; color: #999;">
+                    <i class="material-icons" style="font-size: 2.5rem; color: #ddd; display: block; margin-bottom: 10px;">history_toggle_off</i>
+                    {{ t('asset_history.no_record', lang) }}
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/asset_history.js"></script>
+{% endblock %}

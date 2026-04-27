@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('title.asset_audit', lang) }} - {{ t('title.base', lang) }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/asset_audit.css">
+{% endblock %}
+
+{% block top_actions %}
+    <div style="display: flex; gap: 15px; align-items: center;">
+        <form action="/asset_audit/start" method="post" style="margin: 0;" onsubmit="return confirm('{{ t('asset_audit.confirm_reset', lang) }}');">
+            <button type="submit" class="btn-primary" style="background: transparent; color: var(--text-muted); border: 1px solid #ccc; box-shadow: none;">
+                <i class="material-icons" style="font-size: 1.2rem; margin-right: 5px;">sync</i> {{ t('asset_audit.btn_reset', lang) }}
+            </button>
+        </form>
+
+        <form action="/asset_audit/commit" method="post" style="margin: 0;" onsubmit="return confirm('{{ t('asset_audit.confirm_commit', lang) }}');">
+            <button type="submit" class="btn-primary" style="background-color: var(--status);">
+                <i class="material-icons" style="font-size: 1.2rem; margin-right: 5px;">done_all</i> {{ t('asset_audit.btn_commit', lang) }}
+            </button>
+        </form>
+
+        <a href="/asset_audit/export" style="text-decoration: none;">
+            <button type="button" class="btn-primary" style="background-color: #f39c12; border-radius: 20px; display: flex; align-items: center; gap: 5px;">
+                <i class="material-icons" style="font-size: 1.2rem;">file_download</i> {{ t('asset_audit.btn_export', lang) }}
+            </button>
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="audit-wrapper-main">
+
+    <div class="scan-console">
+        <div class="scan-input-group" style="width: 250px;">
+            <label>{{ t('asset_audit.lbl_current_loc', lang) }}</label>
+            <input type="text" id="scanLocation" class="scan-input" placeholder="{{ t('asset_audit.ph_loc', lang) }}" autocomplete="off">
+        </div>
+
+        <div class="scan-input-group" style="width: 300px;">
+            <label>{{ t('asset_audit.lbl_barcode', lang) }}</label>
+            <input type="text" id="scanBarcode" class="scan-input" placeholder="{{ t('asset_audit.ph_barcode', lang) }}" autocomplete="off">
+        </div>
+
+        <div class="scan-result-box" id="scanResult">
+            <span style="color: #999; font-size: 1rem; font-weight: normal;"><i class="material-icons" style="vertical-align: bottom;">barcode_reader</i> {{ t('asset_audit.waiting_scan', lang) }}</span>
+        </div>
+    </div>
+
+    <div id="auditContainer" class="locations-scroll-area">
+        {% for loc, items in grouped.items() %}
+        {% set is_all_done = (items | rejectattr('status', 'equalto', '未盘') | list | length) == items|length %}
+
+        <div class="location-block {% if is_all_done %}collapsed{% endif %}" data-loc="{{ (loc or t('asset_audit.unassigned', lang)) | lower }}">
+            <div class="location-header" onclick="this.parentElement.classList.toggle('collapsed')">
+                <h3>
+                    <i class="material-icons collapse-icon">expand_more</i>
+                    <i class="material-icons" style="font-size: 1.2rem;">place</i> {{ loc or t('asset_audit.unassigned_init_loc', lang) }}
+                </h3>
+                <span class="status-badge" style="background: #eee; color: #666;">{{ t('asset_audit.total_devices', lang) | replace('{count}', items|length) }}</span>
+            </div>
+
+            <table class="audit-table">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">{{ t('asset_audit.th_ctrl_no', lang) }}</th>
+                        <th style="width: 15%;">{{ t('asset_audit.th_pn1', lang) }}</th>
+                        <th style="width: 20%;">{{ t('asset_audit.th_name', lang) }}</th>
+                        <th style="width: 15%;">{{ t('asset_audit.th_expected_loc', lang) }}</th>
+                        <th style="width: 15%;">{{ t('asset_audit.th_actual_loc', lang) }}</th>
+                        <th style="width: 10%; text-align: center;">{{ t('asset_audit.th_status', lang) }}</th>
+                        <th style="width: 10%; text-align: center;">{{ t('asset_audit.th_time', lang) }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr id="row-{{ item.ctrl_no }}">
+                        <td class="font-monospace"><strong style="font-size: 1.15rem;">{{ item.ctrl_no }}</strong></td>
+                        <td>{{ item.pn_1 }}</td>
+                        <td><div style="font-weight: 500;" class="text-truncate">{{ item.name }}</div></td>
+                        <td style="color: var(--text-muted);">{{ item.expected_location or '-' }}</td>
+
+                        <td class="cell-actual-loc" style="font-weight: 600; color: var(--primary);">
+                            {{ item.actual_location if item.status == 'Completed' else '-' }}
+                        </td>
+
+                        <td style="text-align: center;">
+                            {% if item.status == 'Pending' %}
+                                <span class="status-badge status-miss cell-status">{{ t('asset_audit.status_miss', lang) }}</span>
+                            {% else %}
+                                {% if item.actual_location != item.expected_location %}
+                                    <span class="status-badge status-warn cell-status">{{ t('asset_audit.status_warn', lang) }}</span>
+                                {% else %}
+                                    <span class="status-badge status-done cell-status">{{ t('asset_audit.status_done', lang) }}</span>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+
+                        <td class="cell-time" style="text-align: center; color: var(--text-muted);">
+                            {{ item.scanned_at or '-' }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const ASSET_AUDIT_I18N = {
+        err_no_loc: "{{ t('asset_audit.err_no_loc', lang) }}",
+        scan_warn: "{{ t('asset_audit.scan_warn', lang) }}",
+        status_warn: "{{ t('asset_audit.status_warn', lang) }}",
+        status_done: "{{ t('asset_audit.status_done', lang) }}",
+        net_error: "{{ t('asset_audit.net_error', lang) }}"
+    };
+</script>
+<script src="/static/js/asset_audit.js"></script>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('title.history', lang) }} - {{ t('title.base', lang) }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/history.css">
+{% endblock %}
+
+{% block top_actions %}
+    <a href="/history/export" style="text-decoration: none;">
+        <button class="btn-primary" style="border-radius: 20px; gap: 8px;">
+            <i class="material-icons" style="font-size: 1.2rem;">file_download</i> {{ t('history.export', lang) }}
+        </button>
+    </a>
+{% endblock %}
+
+{% block content %}
+<div class="history-container">
+    <table id="historyTable">
+        <thead>
+            <tr>
+                <th style="width: 10%; text-align: center;">{{ t('history.th_time', lang) }}</th>
+                <th style="width: 10%; text-align: center;">{{ t('history.th_pn1', lang) }}</th>
+                <th style="width: 10%; text-align: center;">{{ t('history.th_pn2', lang) }}</th>
+                <th style="width: 5%; text-align: center;">{{ t('history.th_change', lang) }}</th>
+                <th style="width: 10%; text-align: center;">{{ t('history.th_applicant', lang) }}</th>
+                <th style="width: 10%; text-align: center;">{{ t('history.th_dept', lang) }}</th>
+                <th style="width: 35%;">{{ t('history.th_note', lang) }}</th>
+                <th style="width: 10%; text-align: center;">{{ t('history.th_action', lang) }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            {% set is_undone = '已撤销' in (log.note or '') %}
+            {% set is_undo_log = '撤销记录' in (log.note or '') %}
+
+            <tr class="{% if is_undone %}tr-undone{% endif %}"
+                data-search="{{ log.pn_1 | lower }} {{ log.applicant | lower }} {{ log.department | lower }} {{ log.note | lower }}">
+                <td style="font-size: 0.85rem; text-align: center;">{{ log.date }}</td>
+                <td style="text-align: center;"><strong>{{ log.pn_1 }}</strong></td>
+                <td style="font-size: 0.85rem; color: var(--text-muted); text-align: center;">{{ log.pn_2 or '-' }}</td>
+                <td class="{% if log.change_qty > 0 %}color-in{% elif log.change_qty < 0 %}color-out{% else %}color-adj{% endif %}" style="text-align: center;">
+                    {% if log.change_qty > 0 %}+{% endif %}{{ log.change_qty }}
+                </td>
+                <td style="text-align: center;">{{ log.applicant or '-' }}</td>
+                <td style="text-align: center;">{{ log.department or '-' }}</td>
+                <td class="{% if is_undone %}note-undone{% elif is_undo_log %}note-undo-action{% endif %}">
+                    {{ log.note or '-' }}
+                </td>
+                <td style="text-align: center;">
+                    {% if not is_undone and not is_undo_log and log.note != 'Imported Log' and log.note != 'Scrapped' and user.role == 'admin' %}
+                    <form action="/undo/{{ log.id }}" method="post" style="margin: 0;" onsubmit="return confirm('{{ t('history.confirm_undo', lang) }}');">
+                        <button type="submit" class="btn-undo">{{ t('history.undo', lang) }}</button>
+                    </form>
+                    {% else %}
+                    <i class="material-icons" style="color: #eee; font-size: 1.2rem;">block</i>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/history.js"></script>
+{% endblock %}

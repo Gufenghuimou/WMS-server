@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('title.admin', lang) }} - {{ t('title.base', lang) }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/admin.css">
+{% endblock %}
+
+{% block content %}
+
+<div id="globalAdminMsg" class="admin-msg-box"></div>
+
+<div class="admin-card">
+    <h3><i class="material-icons" style="color: var(--primary);">group_add</i> {{ t('admin.open_account', lang) }}</h3>
+    <form action="/add_user" method="post" class="async-form" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+        <input type="text" name="new_username" class="admin-input" placeholder="{{ t('admin.ph_username', lang) }}" required style="width: 180px;">
+        <input type="text" name="new_password" class="admin-input" placeholder="123456" readonly style="width: 180px;">
+        <input type="text" name="new_full_name" class="admin-input" placeholder="{{ t('admin.ph_fullname', lang) }}" required style="width: 180px;">
+        <select name="new_role" class="admin-input" required style="width: 180px; background: white;">
+            <option value="user">{{ t('admin.role_user', lang) }}</option>
+            <option value="admin">{{ t('admin.role_admin', lang) }}</option>
+        </select>
+        <button type="submit" class="btn-primary" style="height: 42px; background-color: var(--status)">{{ t('admin.btn_create', lang) }}</button>
+    </form>
+</div>
+
+<div class="admin-card">
+    <h3><i class="material-icons" style="color: var(--primary);">admin_panel_settings</i> {{ t('admin.user_list', lang) }}</h3>
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>{{ t('admin.th_uid', lang) }}</th>
+                <th>{{ t('admin.th_account', lang) }}</th>
+                <th>{{ t('admin.th_name', lang) }}</th>
+                <th>{{ t('admin.th_role', lang) }}</th>
+                <th style="text-align: right;">{{ t('admin.th_action', lang) }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users_list %}
+            <tr>
+                <td style="color: #999;">{{ u.id }}</td>
+                <td style="font-weight: bold;">{{ u.username }}</td>
+                <td>{{ u.full_name }}</td>
+                <td>
+                    {% if u.role == 'admin' %}
+                    <span style="background: #fff3e0; color: #e65100; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">{{ t('admin.badge_admin', lang) }}</span>
+                    {% else %}
+                    <span style="background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">{{ t('admin.badge_operator', lang) }}</span>
+                    {% endif %}
+                </td>
+                <td style="text-align: right;">
+                    {% if u.username == user.username %}
+                        <span style="color: #1db954; font-weight: bold; font-size: 0.9rem; padding-right: 15px;">{{ t('admin.status_online', lang) }}</span>
+                    {% else %}
+                        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                            <form action="/admin/reset_password" method="post" class="async-form" style="margin: 0;" data-confirm="{{ t('admin.confirm_reset_pwd', lang) | replace('{username}', u.username) }}">
+                                <input type="hidden" name="target_username" value="{{ u.username }}">
+                                <button type="submit" class="btn-primary btn-sm" style="background: #f39c12;">
+                                    <i class="material-icons" style="font-size: 1.1rem;">lock_reset</i> {{ t('admin.btn_reset_pwd', lang) }}
+                                </button>
+                            </form>
+
+                            <form action="/delete_user/{{ u.id }}" method="post" class="async-form" style="margin: 0;" data-confirm="{{ t('admin.confirm_delete_user', lang) | replace('{username}', u.username) }}">
+                                <input type="hidden" name="username" value="{{ u.username }}">
+                                <button type="submit" class="btn-primary btn-sm" style="background: var(--danger-red);">
+                                    <i class="material-icons" style="font-size: 1.1rem;">person_remove</i> {{ t('admin.btn_delete_user', lang) }}
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="admin-card danger-zone">
+    <h3><i class="material-icons">warning</i> {{ t('admin.system_init', lang) }}</h3>
+    <p style="color: #e74c3c; font-size: 0.85rem; margin-bottom: 25px; background: #fdf2f2; padding: 10px; border-radius: 6px;">
+        {{ t('admin.warning_init', lang) | safe }}
+    </p>
+
+    <div style="display: flex; gap: 30px;">
+        <div style="flex: 1; background: white; padding: 20px; border-radius: 8px; border: 1px solid #fadbd8;">
+            <h4 style="margin-top: 0; color: #333;">{{ t('admin.import_stock', lang) }}</h4>
+            <form action="/import" method="post" enctype="multipart/form-data" style="display: flex; gap: 10px; margin-top: 15px;">
+                <input type="file" name="file" accept=".xlsx, .xls" required style="flex: 1; padding: 5px;">
+                <button type="submit" class="btn-primary" style="background: var(--danger-red);">{{ t('admin.btn_overwrite_stock', lang) }}</button>
+            </form>
+        </div>
+
+        <div style="flex: 1; background: white; padding: 20px; border-radius: 8px; border: 1px solid #fadbd8;">
+            <h4 style="margin-top: 0; color: #333;">{{ t('admin.import_history', lang) }}</h4>
+            <form action="/import_history_excel" method="post" enctype="multipart/form-data" style="display: flex; gap: 10px; margin-top: 15px;">
+                <input type="file" name="file" accept=".xlsx, .xls" required style="flex: 1; padding: 5px;">
+                <button type="submit" class="btn-primary" style="background: var(--danger-red);">{{ t('admin.btn_overwrite_history', lang) }}</button>
+            </form>
+        </div>
+    </div>
+    <hr style="border: none ;background-color: #f5c6c6; height: 2px;">
+    <div style="display: flex; gap: 30px;">
+        <div style="flex: 1; background: white; padding: 20px; border-radius: 8px; border: 1px solid #fadbd8;">
+            <h4 style="margin-top: 0; color: #333;">{{ t('admin.import_asset', lang) }}</h4>
+            <form action="/import_asset" method="post" enctype="multipart/form-data" style="display: flex; gap: 10px; margin-top: 15px;">
+                <input type="file" name="file" accept=".xlsx, .xls" required style="flex: 1; padding: 5px;">
+                <button type="submit" class="btn-primary" style="background: var(--danger-red);">{{ t('admin.btn_overwrite_asset', lang) }}</button>
+            </form>
+        </div>
+
+        <div style="flex: 1; background: white; padding: 20px; border-radius: 8px; border: 1px solid #fadbd8;">
+            <h4 style="margin-top: 0; color: #333;">{{ t('admin.import_asset_history', lang) }}</h4>
+            <form action="/asset_history/import" method="post" enctype="multipart/form-data" style="display: flex; gap: 10px; margin-top: 15px;">
+                <input type="file" name="file" accept=".xlsx, .xls" required style="flex: 1; padding: 5px;">
+                <button type="submit" class="btn-primary" style="background: var(--danger-red);">{{ t('admin.btn_overwrite_record', lang) }}</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="admin-card">
+    <h3><i class="material-icons" style="color: var(--primary);">map</i> {{ t('admin.map_editor', lang) }}</h3>
+    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">
+        {{ t('admin.map_instruction', lang) | safe }}
+    </p>
+
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+
+        <div style="background: #f8f9fa; padding: 15px 20px; border-radius: 8px; border: 1px solid #e0e0e0; display: flex; align-items: flex-end; gap: 15px; flex-wrap: wrap;">
+
+            <div style="display: flex; gap: 10px; align-items: flex-end; border-right: 1px solid #ddd; padding-right: 15px;">
+                <div>
+                    <label style="color: #666; font-size: 0.8rem; display: block; margin-bottom: 5px;">{{ t('admin.map_loc_name', lang) }}</label>
+                    <input type="text" id="propName" class="admin-input" style="width: 140px; padding: 8px;" disabled>
+                </div>
+                <div>
+                    <label style="color: #666; font-size: 0.8rem; display: block; margin-bottom: 5px;">{{ t('admin.map_width', lang) }}</label>
+                    <input type="number" id="propW" class="admin-input" style="width: 70px; padding: 8px;" disabled>
+                </div>
+                <div>
+                    <label style="color: #666; font-size: 0.8rem; display: block; margin-bottom: 5px;">{{ t('admin.map_height', lang) }}</label>
+                    <input type="number" id="propH" class="admin-input" style="width: 70px; padding: 8px;" disabled>
+                </div>
+
+                <div style="position: relative;">
+                    <label style="color: #666; font-size: 0.8rem; display: block; margin-bottom: 5px;">{{ t('admin.map_bg_color', lang) }}</label>
+                    <div id="colorTrigger" style="width: 45px; height: 36px; border-radius: 4px; border: 1px solid #ccc; background: #ffffff; cursor: not-allowed; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);" onclick="togglePalette(event)"></div>
+
+                    <div id="colorPalette" style="display: none; position: absolute; top: 60px; left: 0; background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 100; width: 220px; grid-template-columns: repeat(10, 1fr); gap: 2px;">
+                    </div>
+                </div>
+
+                <button id="btnUpdate" class="btn-primary" style="height: 36px; background: #7f8c8d;" disabled onclick="updateSelectedRack()">{{ t('admin.btn_save_prop', lang) }}</button>
+            </div>
+
+            <div style="display: flex; gap: 10px; border-right: 1px solid #ddd; padding-right: 15px;">
+                <button id="btnDuplicate" class="btn-primary" style="height: 36px; background: #f39c12;" disabled onclick="duplicateSelectedRack()"><i class="material-icons" style="font-size: 1.1rem;">content_copy</i></button>
+                <button id="btnDelete" class="btn-primary" style="height: 36px; background: var(--danger-red);" disabled onclick="deleteSelectedRack()"><i class="material-icons" style="font-size: 1.1rem;">delete</i></button>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-left: auto;">
+                <button class="btn-primary" style="height: 36px; background: white; color: var(--primary); border: 1px solid var(--primary);" onclick="addNewRack()">
+                    <i class="material-icons" style="font-size: 1.2rem;">add</i> {{ t('admin.btn_add_block', lang) }}
+                </button>
+                <button class="btn-primary" style="height: 36px;" onclick="saveMapToDb()">
+                    <i class="material-icons" style="font-size: 1.2rem;">cloud_upload</i> {{ t('admin.btn_deploy_map', lang) }}
+                </button>
+            </div>
+        </div>
+
+        <div style="width: 100%; height: 1000px; overflow: auto; border: 1px solid #ddd; border-radius: 8px; background: #e2e8f0; position: relative;">
+            <div style="width: 1200px; margin: 0 auto; background: #ffffff; box-shadow: 0 0 20px rgba(0,0,0,0.05);">
+                <canvas id="editorCanvas" width="1200" height="1800" style="cursor: crosshair; display: block; background: transparent;"></canvas>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const ADMIN_I18N = {
+        selected_count: "{{ t('admin.selected_count', lang) }}",
+        new_rack_name: "{{ t('admin.new_rack_name', lang) }}",
+        confirm_deploy: `{{ t('admin.confirm_deploy', lang) }}`,
+        deploy_success: "{{ t('admin.deploy_success', lang) }}",
+        deploy_fail: "{{ t('admin.deploy_fail', lang) }}",
+        processing: "{{ t('admin.processing', lang) }}",
+        success: "{{ t('admin.success', lang) }}",
+        net_error: "{{ t('admin.net_error', lang) }}"
+    };
+</script>
+<script src="/static/js/admin.js"></script>
+{% endblock %}

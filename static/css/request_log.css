@@ -1,0 +1,80 @@
+.log-container {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+
+.log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 15px;
+}
+
+.log-header h2 {
+    margin: 0;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* 数据表格 */
+.req-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.req-table th {
+    background: #f8f9fa;
+    color: var(--text-muted);
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 2px solid #eee;
+    font-weight: 600;
+}
+
+.req-table td {
+    padding: 15px;
+    border-bottom: 1px solid #f0f0f0;
+    color: var(--text-main);
+    vertical-align: middle;
+}
+
+.req-table tr:hover {
+    background: #fdfdfd;
+}
+
+/* 状态徽章 */
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.status-pending {
+    background: #fff3e0;
+    color: #e65100;
+    border: 1px solid #ffe0b2;
+}
+
+.status-approved {
+    background: #e6f4ea;
+    color: #1e8e3e;
+    border: 1px solid #c8e6c9;
+}
+
+.status-rejected {
+    background: #fce8e6;
+    color: #d93025;
+    border: 1px solid #ffcdd2;
+}

@@ -1,0 +1,230 @@
+.scrap-container {
+    height: calc(100vh - 195px); /* 减去顶部和底部栏的高度，防止整体页面出现滚动条 */
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* 🌟 1. 极速扫码控制台 (完全复刻 Audit 风格) */
+.scan-console {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.scan-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.scan-input-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.scan-input {
+    height: 40px; /* 配合按钮高度 */
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 0 15px;
+    font-size: 1.1rem;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.scan-input:focus {
+    border-color: var(--danger-red);
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+}
+
+.scan-result-box {
+    border-radius: 8px;
+    border: 1px dashed #ccc;
+    display: flex;
+    padding: 15px 20px;
+}
+
+#scrapForm {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+#scrapForm > div:last-child {
+    flex-shrink: 0; /* 绝对禁止按钮区域被压缩 */
+}
+
+/* 🌟 2. 盘点/报废区块卡片化 */
+.location-block {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.location-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.table-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    background: #fafafa;
+}
+
+.table-wrapper::-webkit-scrollbar { width: 6px; }
+.table-wrapper::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 6px; }
+.table-wrapper::-webkit-scrollbar-track { background: transparent; }
+
+.status-badge {
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+/* 🌟 3. 紧凑型表格 (完全复刻 Audit 风格) */
+.scrap-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.scrap-table th {
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-muted);
+    white-space: nowrap;
+    padding: 12px 20px;
+    text-align: left;
+}
+
+.scrap-table td {
+    padding: 12px 20px;
+    border-bottom: 1px solid #f8f9fa;
+    vertical-align: middle;
+    color: var(--text-main);
+    transition: background-color 0.2s;
+}
+
+/* 报废名单专属：悬浮预警色 */
+.scrap-table tbody tr.scrap-item:hover td {
+    background-color: #fff5f5;
+}
+
+/* 🌟 4. 报废移除按钮 */
+.btn-remove {
+    background: transparent;
+    border: none;
+    color: #bbb;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    border-radius: 8px;
+    transition: 0.2s;
+}
+
+.btn-remove:hover {
+    background: rgba(231, 76, 60, 0.1);
+    color: var(--danger-red);
+}
+
+/* 提交按钮禁用态修复 */
+#submitBtn:disabled {
+    background: #bdc3c7 !important;
+    box-shadow: none !important;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* 滑动解锁样式 */
+.slider-container {
+    width: 100%;
+    height: 56px;
+    background-color: #f1f3f4;
+    border-radius: 28px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+    user-select: none;
+}
+
+.slider-track {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slider-text {
+    font-size: 0.95rem;
+    color: #7f8c8d;
+    z-index: 2;
+    pointer-events: none; /* 防止文字干扰拖拽 */
+}
+
+.slider-bg {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0;
+    background-color: var(--danger-red, #d93025);
+    z-index: 1;
+    transition: none; /* 拖拽时不需要过渡 */
+}
+
+.slider-handle {
+    width: 50px;
+    height: 50px;
+    background-color: #fff;
+    border-radius: 50%;
+    position: absolute;
+    left: 3px;
+    z-index: 3;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transition: transform 0.1s; /* 稍微顺滑一点 */
+}
+
+.slider-handle:active {
+    cursor: grabbing;
+}
+
+.slider-handle i {
+    color: #555;
+    font-size: 1.5rem;
+}
+
+/* 成功状态 */
+.slider-container.unlocked .slider-text {
+    color: #fff;
+    font-weight: bold;
+}

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ t('title.login', lang) }} - {{ t('title.base', lang) }}</title>
+
+    <link rel="stylesheet" href="/static/css/login.css">
+</head>
+<body>
+
+    <div class="fake-sidebar"></div>
+    <div class="fake-main"></div>
+
+    <div class="overlay-mask" id="overlayMask">
+        <div class="login-card" id="loginCard">
+
+            <div class="card-illustration"></div>
+
+            <div class="card-form-form">
+                <h2><i class="material-icons" style="color: #3498db; font-size: 2.2rem;">inventory_2</i>Smart Warehouse System</h2>
+
+                <div class="error-msg" id="errorBox" {% if error %}style="display: block;"{% endif %}>
+                    {{ error }}
+                </div>
+
+                <form id="loginForm">
+                    <label>Username</label>
+                    <input type="text" name="username" required autofocus placeholder="username">
+
+                    <label>Password</label>
+                    <div style="position: relative;">
+                        <input type="password" name="password" id="loginPwd" required placeholder="••••••••">
+                        <i class="material-icons" id="togglePwdIcon" style="position: absolute; right: 16px; top: 16px; cursor: pointer; color: #aaa; user-select: none; font-size: 1.5rem;">visibility</i>
+                    </div>
+
+                    <button type="submit" id="submitBtn">LOGIN</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/login.js"></script>
+
+</body>
+</html>

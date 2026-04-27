@@ -1,0 +1,829 @@
+/* 🎨 核心：CSS Grid 打造 Spotify 级布局 */
+:root {
+    --bg-dark: #121212;       /* 侧边栏和底栏背景 (夜间模式风格) */
+    --bg-main: #d8d7da;       /* 主显示区背景 */
+    --text-light: #b3b3b3;    /* 侧边栏未选中文字 */
+    --text-white: #ffffff;    /* 侧边栏高亮文字 */
+    --primary: #5d8c8a;       /* 核心点缀色  */
+    --primary-blue: #3498db;  /* 核心点缀色  */
+    --surface: #ffffff;       /* 卡片背景 */
+    --status: #1db954;        /* 状态指示 */
+    --danger-red: #e74c3c;    /* 危险/警告红 */
+    --text-main: #2c3e50;     /* 主要深色文字 */
+    --text-muted: #7f8c8d;    /* 次要灰色文字 */
+    --border-color: #e0e0e0;  /* 统一边框颜色 */
+}
+
+/* 1. 全局定义继承 */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/static/fonts/material-icons.woff2') format('woff2');
+}
+
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;  /* Preferred icon size */
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  /* Support for all WebKit browsers. */
+  -webkit-font-smoothing: antialiased;
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizeLegibility;
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
+}
+
+input, button, select, textarea {
+    font-family: inherit; /* 关键：强制控件继承父级字体 */
+}
+
+body {
+    margin: 0; padding: 0; height: 100vh; overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    display: grid;
+    background-color: var(--bg-dark);
+    grid-template-columns: 240px 1fr; /* 左侧 240px，右侧自适应 */
+    grid-template-rows: 1fr 80px;     /* 上方自适应，底部 80px */
+    grid-template-areas:
+        "sidebar main"
+        "bottom bottom";          /* 底部贯穿全屏 */
+}
+
+/* --- 日语字体优化 (lang-jp) --- */
+/* 优先使用苹果的冬青黑体，这是公认在日文显示中最美观的系统字体 */
+.lang-jp, .lang-jp input, .lang-jp textarea, .lang-jp select {
+    font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif !important;
+}
+
+/* --- 英语/国际化字体优化 (lang-en) --- */
+/* 优先使用苹果的 San Francisco 或 Helvetica */
+.lang-en, .lang-en input, .lang-en textarea, .lang-en select {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+/* --- 越南语优化 (lang-vn) --- */
+.lang-vn, .lang-vn input, .lang-vn textarea, .lang-vn select {
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+/* --- 特别针对 Placeholder 的美化 --- */
+.lang-jp input::placeholder,
+.lang-jp textarea::placeholder {
+    font-family: "Hiragino Sans", Meiryo, sans-serif;
+    font-size: 0.9rem; /* 日语字符较复杂，可以略微调小字号显精致 */
+    letter-spacing: 0.02em;
+    opacity: 0.6;
+}
+
+.font-monospace {
+    /* 优先使用苹果的 SF Mono 或系统的等宽字体 */
+    font-family: "SF Mono", "Monaco", "Consolas", "Liberation Mono", "Courier New", monospace !important;
+    letter-spacing: 0; /* 数字不需要额外间距 */
+}
+
+/* 🎵 侧边栏 (导航) */
+.sidebar {
+    grid-area: sidebar;
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    display: flex; flex-direction: column;
+    padding: 20px 15px;
+    overflow: hidden;
+}
+
+/* 用户信息区 */
+.user-profile { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer; }
+.user-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; }
+.user-info h4 { margin: 0; color: var(--text-white); font-size: 0.95rem; }
+.user-info p { margin: 0; font-size: 0.75rem; }
+
+/* 导航菜单 */
+.nav-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+.nav-menu::-webkit-scrollbar { width: 4px; }
+.nav-menu::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, 0.15); border-radius: 4px; }
+.nav-menu::-webkit-scrollbar-track { background: transparent; }
+.nav-menu::-webkit-scrollbar-thumb:hover { background-color: rgba(255, 255, 255, 0.3); }
+
+.nav-group-title {
+    font-size: 0.7rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 15px 0 5px 10px;
+    font-weight: 600;
+    user-select: none;
+}
+.nav-item { display: flex; align-items: center; gap: 15px; padding: 12px 15px; color: var(--text-light); text-decoration: none; border-radius: 6px; font-weight: 500; transition: 0.2s; }
+.nav-item:hover, .nav-item.active { background-color: rgba(255,255,255,0.1); color: var(--text-white); }
+.nav-item i { font-size: 1.2rem; }
+
+/* 🎵 底部控制台 */
+.bottom-bar {
+    grid-area: bottom;
+    background-color: #181818;
+    border-top: 1px solid #282828;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0 20px;
+    color: var(--text-light);
+    z-index: 9999;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    box-sizing: border-box;
+    height: 80px;
+    transition: height 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* 🌟 展开后的底部栏 */
+.bottom-bar.expanded {
+    height: 90vh !important;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 0px;
+}
+
+/* 🌟 新增：标题区域的锁定样式 */
+.bottom-bar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: 80px; /* 锁定高度与未拉起时一致 */
+    flex-shrink: 0;
+    padding: 0 20px;
+    box-sizing: border-box;
+    background-color: #181818; /* 确保标题背景色一致 */
+    z-index: 10;
+}
+
+/* 🌟 新增：横向分割线 */
+.bottom-bar-divider {
+    width: 100%;
+    height: 1px;
+    background-color: #282828; /* 比背景稍亮的深灰色线 */
+    margin: 0;
+    opacity: 0; /* 默认隐藏 */
+    transition: opacity 0.3s ease;
+}
+
+.bottom-bar.expanded .bottom-bar-divider {
+    opacity: 1; /* 展开时显示 */
+}
+
+/* 🌟 1. 视口窗口 (固定 1000x500 的取景框) */
+.map-viewport {
+    width: 100%;
+    height: 0px;
+    overflow: hidden; /* 核心：隐藏 1500 高度中超出的部分 */
+    position: relative;
+    opacity: 0;
+    margin-top: 0;
+    border-radius: 8px;
+    background: #2c3e50;
+    box-shadow: inset 0 5px 20px rgba(0,0,0,0.6); /* 内部阴影，增加窗口纵深立体感 */
+    transition: opacity 0.3s ease, height 0.5s ease, margin-top 0.5s ease;
+    pointer-events: none; /* 收起时不可触控 */
+}
+
+/* 展开时：视口变高，恢复触控 */
+.bottom-bar.expanded .map-viewport {
+    height: 100%;
+    opacity: 1;
+    margin: 20px;
+    pointer-events: auto;
+}
+
+/* 🌟 2. 内部地图 Canvas (被拖动的本体) */
+#footerWarehouseCanvas {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 4000px !important;
+    height: 3000px !important; /* 维持本体巨大的尺寸 */
+    cursor: grab;
+    background: #ffffff;
+    transform: translate(0px, 0px); /* 默认坐标 */
+    /* 预设平滑移动的动画，非拖拽时(如自动对焦)生效，显得丝滑高级 */
+    transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+#footerWarehouseCanvas:active {
+    cursor: grabbing; /* 拖拽时鼠标变紧握 */
+}
+
+/* 抽屉触发器（文字与图标） */
+.expand-trigger {
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* 🌟 让文字和图标居中 */
+    gap: 15px;
+}
+.expand-trigger:hover { filter: brightness(1.2); }
+
+/* 🎵 主显示区 */
+.main-area {
+    grid-area: main;
+    background-color: var(--bg-main);
+    display: flex; flex-direction: column;
+    overflow: hidden; /* 防止主干溢出，由内部滚动 */
+}
+
+/* 主屏幕顶部搜索栏 */
+.top-bar { padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
+.search-box { display: flex; align-items: center; background: #fff; padding: 0 15px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); width: 400px; border: 1px solid #ddd; height: 42px; box-sizing: border-box;}
+.search-box input { border: none; outline: none; background: transparent; width: 100%; margin-left: 10px; font-size: 0.95rem; height: 100%;}
+#clearBtn {padding: 0; margin: 0; line-height: 1; outline: none; display: flex; align-items: center; justify-content: center; }
+
+/* 内容注入区 */
+.content-scroll-area { flex: 1; overflow-y: auto; padding: 0 30px 30px 30px; }
+
+/* ==========================================
+   🌟 全局统一控件样式 (按钮 & 下拉框)
+   ========================================== */
+.btn-primary {
+    background-color: var(--primary); /* 统一使用主题点缀色 */
+    color: #ffffff;
+    border: none;
+    padding: 0 18px;
+    border-radius: 20px;  /* 优雅的胶囊圆角 */
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    text-decoration: none;
+    height: 38px;         /* 📏 核心：强制锁定所有控件高度为 38px */
+    box-sizing: border-box;
+    outline: none;
+    font-family: inherit;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: clip;
+}
+
+/* 统一图标大小与垂直居中 */
+.btn-primary i.material-icons {
+    font-size: 1.2rem;
+    margin-top: -1px;
+}
+
+/* 悬停时的 Q弹浮动与发光效果 */
+.btn-primary:hover {
+    filter: brightness(1.1); /* 自动提亮，无需手写亮色 */
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* 点击时的按压沉降反馈 */
+.btn-primary:active {
+    transform: translateY(1px);
+    filter: brightness(0.95);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-sm {
+    height: 28px !important;
+    font-size: 0.75rem !important;
+    padding: 0 10px !important;
+    border-radius: 6px !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.btn-sm i.material-icons {
+    font-size: 1.05rem !important;
+}
+
+/* ==========================================
+   🌟 自定义圆角下拉菜单 (替代原生 Select)
+   ========================================== */
+select.btn-primary {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.custom-select-container {
+    position: relative;
+    display: inline-block;
+}
+
+.custom-select-container {
+    position: relative;
+    display: inline-block;
+}
+
+/* 彻底隐藏原生 select，用我们画的替代 */
+.custom-select-container select {
+    display: none;
+}
+
+/* 触发按钮 (复用了 btn-primary 的基因) */
+.select-trigger {
+    padding-right: 38px !important; /* 给右侧箭头留出空间 */
+    position: relative;
+    user-select: none;
+}
+
+/* 纯手工画的 SVG 旋转小箭头 */
+.select-trigger::after {
+    content: "";
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px; height: 14px;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-size: cover;
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* 展开时箭头倒转 */
+.select-trigger.open::after {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+/* 🌟 核心：圆圆的悬浮下拉表单 */
+.select-options {
+    position: absolute;
+    top: calc(100% + 8px); /* 悬浮在按钮下方 8px */
+    left: 0;
+    min-width: 100%;       /* 至少和按钮一样宽 */
+    white-space: nowrap;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;   /* ✨ 破局关键：完美的 16px 大圆角！ */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    overflow: hidden;      /* 保证里面的选项不会溢出破坏圆角 */
+    z-index: 9999;
+
+    /* 弹出动画预设 */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* 展开菜单时的动画状态 */
+.select-options.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* 里面的每一行选项 */
+.select-option {
+    padding: 12px 20px;
+    color: var(--text-main);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s, color 0.2s;
+}
+
+.select-option:hover {
+    background: #f4f6f8;
+    color: var(--primary);
+}
+
+/* 当前选中的项 */
+.select-option.selected {
+    background: rgba(29, 185, 84, 0.1); /* 淡淡的主题色背景 */
+    color: var(--primary);
+    font-weight: bold;
+}
+
+/* ==========================================
+   🌟 全局弹窗 (Modal) 基础样式 (紧凑版 + 动画增强)
+   ========================================== */
+.custom-modal {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    overflow-y: auto;
+}
+
+.custom-modal-content {
+    background-color: var(--surface, #fff);
+    padding: 25px 30px;
+    border-radius: 12px;
+    width: 500px; /* 紧凑宽度 */
+    max-width: 90%;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+    border: 1px solid var(--border-color, #eee);
+    animation: modalFadeIn 0.2s ease-out; /* 移植的快速弹出动画 */
+}
+
+.close-modal {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #95a5a6;
+    line-height: 1;
+    transition: 0.2s;
+}
+.close-modal:hover { color: var(--danger-red, #e74c3c); }
+
+/* 🌟 移植的全局动画核心 */
+@keyframes modalFadeIn {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes shakeError {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-4px); }
+    40%, 80% { transform: translateX(4px); }
+}
+.shake-animation { animation: shakeError 0.4s ease-in-out; }
+
+/* ==========================================
+   🌟 全局页面加载动画 & 按钮禁用状态
+   ========================================== */
+
+/* 1. 全局遮罩层 (毛玻璃质感) */
+#global-page-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.4); /* 极其通透的白色背景 */
+    backdrop-filter: blur(10px); /* 强力毛玻璃效果 */
+    -webkit-backdrop-filter: blur(10px); /* 兼容 Safari */
+    z-index: 9999; /* 保证在最最顶层，拦截所有点击 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+/* 隐藏时的状态 (JS 触发) */
+#global-page-loader.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* 2. 现代感转圈圈动画 */
+.loader-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--primary-blue, #3498db);
+    border-radius: 50%;
+    animation: globalSpin 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.loader-text {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--text-main, #2c3e50);
+    letter-spacing: 2px;
+}
+
+@keyframes globalSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 3. 让加载时的按钮和侧边栏看起来是禁用的 */
+body.is-loading button,
+body.is-loading .nav-item {
+    opacity: 0.5; /* 半透明变灰 */
+    pointer-events: none !important; /* 彻底物理阻断鼠标事件 */
+    cursor: not-allowed;
+}
+
+/* ==========================================
+   🌟 1080p 屏幕智能全局缩放 (67%) 及视口修正
+   ========================================== */
+@media screen and (max-width: 1920px), screen and (max-height: 1080px) {
+    html {
+        zoom: 0.67;
+    }
+
+    #global-page-loader {
+        width: calc(100vw / 0.67) !important;
+        height: calc(100vh / 0.67) !important;
+    }
+
+    /* 1. 抵消缩放带来的整体塌陷，使主干重新填满屏幕 */
+    body {
+        width: calc(100vw / 0.67) !important;
+        height: calc(100vh / 0.67) !important;
+    }
+
+    /* 2. 抵消悬浮底部栏的宽度萎缩 */
+    .bottom-bar {
+        width: calc(100vw / 0.67) !important;
+    }
+
+    /* 3. 抵消抽屉展开时的高度萎缩 (原本是 90vh) */
+    .bottom-bar.expanded {
+        height: calc(90vh / 0.67) !important;
+    }
+
+    /* 4. 补偿二维码 / 操作弹窗的深色遮罩层 */
+    .custom-modal {
+        width: calc(100vw / 0.67) !important;
+        height: calc(100vh / 0.67) !important;
+    }
+    /* 5. 补偿 Master-Detail 布局的 100vh 塌陷 */
+    .dashboard-container {
+        /* 将 100vh 放大还原后再减去固定的 170px */
+        height: calc((100vh / 0.67) - 195px) !important;
+    }
+
+    /* 6. 补偿页面专属的 modal-overlay 遮罩层 */
+    .modal-overlay {
+        width: calc(100vw / 0.67) !important;
+        height: calc(100vh / 0.67) !important;
+    }
+
+    /* 7. 补偿 scrap-container */
+    .scrap-container {
+        height: calc((100vh / 0.67) - 195px) !important;
+    }
+}
+
+    /* 8. 补偿 asset-audit */
+    .audit-wrapper-main {
+        height: calc((100vh / 0.67) - 195px) !important;
+    }
+
+    /* 9. 补偿 asset-history 和 history */
+    .history-container {
+        height: calc((100vh / 0.67) - 195px) !important;
+        max-height: calc((100vh / 0.67) - 195px) !important;
+    }
+
+    /* 9. 补偿 inventory-table */
+    .table-container {
+        height: calc((100vh / 0.67) - 195px) !important;
+        max-height: calc((100vh / 0.67) - 195px) !important;
+    }
+
+/* ==========================================
+   💬 悬浮聊天窗样式
+   ========================================== */
+.chat-widget {
+    position: fixed;
+    bottom: 90px;
+    right: 30px;
+    z-index: 9999;
+    /*display: flex;*/
+    /*flex-direction: column;*/
+    /*align-items: flex-end;*/
+}
+
+.chat-toggle-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: var(--primary-blue, #3498db);
+    color: white;
+    border: none;
+    box-shadow: 0 5px 20px rgba(52, 152, 219, 0.4);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.2s, background 0.2s;
+    position: relative;
+}
+.chat-toggle-btn:hover { transform: scale(1.05); background-color: #2980b9; }
+.chat-toggle-btn i { font-size: 2rem; }
+
+.chat-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: var(--danger-red, #e74c3c);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid var(--bg-dark, #121212);
+}
+
+.chat-panel {
+    width: 480px;
+    height: 650px;
+    background: var(--surface, #fff);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    position: absolute;
+    bottom: 50px;
+    right: 0;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    margin-bottom: 15px;
+    border: 1px solid var(--border-color, #eee);
+    transform-origin: bottom right;
+    animation: chatPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes chatPop {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.chat-header {
+    background: var(--primary-blue, #3498db);
+    color: white;
+    padding: 15px 20px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.close-chat-btn {
+    background: none; border: none; color: white; cursor: pointer; opacity: 0.8;
+}
+.close-chat-btn:hover { opacity: 1; }
+
+.chat-body {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.chat-body::-webkit-scrollbar { width: 6px; }
+.chat-body::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+
+.chat-msg {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    word-break: break-word;
+    position: relative;
+}
+
+.msg-others {
+    align-self: flex-start;
+    background: white;
+    border: 1px solid #e0e0e0;
+    color: #333;
+    border-bottom-left-radius: 2px;
+}
+
+.msg-self {
+    align-self: flex-end;
+    background: var(--primary-blue, #3498db);
+    color: white;
+    border-bottom-right-radius: 2px;
+}
+
+.msg-sender {
+    font-size: 0.9rem;
+    color: #888;
+    margin-bottom: 4px;
+    display: block;
+}
+.msg-self .msg-sender { color: #d0e7f7; text-align: right; }
+
+.chat-footer {
+    padding: 15px;
+    background: white;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 10px;
+}
+
+.chat-footer input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    outline: none;
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+.chat-footer input:focus { border-color: var(--primary-blue, #3498db); }
+
+.chat-send-btn {
+    background: var(--primary-blue, #3498db);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px; height: 40px;
+    display: flex; justify-content: center; align-items: center;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.chat-send-btn:hover { background: #2980b9; }
+
+/* ==========================================
+   🌟 多语言国旗切换栏 (兼容全平台图片版)
+   ========================================== */
+.lang-flags-container {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 25px;
+    margin-top: -15px;
+    padding: 0 10px;
+}
+
+.lang-flag {
+    width: 28px;      /* 稍微调小一点，图片比Emoji显大 */
+    height: 28px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 2px solid transparent;
+    filter: grayscale(60%) opacity(0.5);
+    overflow: hidden; /* 🌟 核心：把方形国旗切成正圆形 */
+}
+
+/* 🌟 让里面的图片填满圆形 */
+.lang-flag img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.lang-flag:hover {
+    filter: grayscale(0%) opacity(1);
+    transform: scale(1.15);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* 当前选中的语言状态 */
+.lang-flag.active {
+    border-color: var(--primary-blue, #3498db);
+    filter: grayscale(0%) opacity(1);
+    box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+    transform: scale(1.1);
+    cursor: default;
+    pointer-events: none;
+}

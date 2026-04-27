@@ -1,0 +1,144 @@
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/static/fonts/material-icons.woff2') format('woff2');
+}
+
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;  /* Preferred icon size */
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  /* Support for all WebKit browsers. */
+  -webkit-font-smoothing: antialiased;
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizeLegibility;
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 🎨 1. 虚假的主界面背景 (模仿深色模式布局) */
+body {
+    margin: 0; padding: 0; height: 100vh; overflow: hidden;
+    font-family: inherit;
+    background-color: #121212;
+    display: grid;
+    grid-template-columns: 240px 1fr;
+}
+.fake-sidebar { background: #121212; border-right: 1px solid #282828; }
+.fake-main { background: #d8d7da; padding: 50px; display: flex; gap: 30px; opacity: 0.3; justify-content: center; align-items: center;}
+
+/* 🌟 2. 覆盖全屏的半透明蒙版 */
+.overlay-mask {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 1000;
+    perspective: 1500px;
+    transition: opacity 1.5s ease, backdrop-filter 1.5s ease, -webkit-backdrop-filter 1.5s ease;
+}
+
+/* 🌟 3. 悬浮登录卡片 */
+.login-card {
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 35px 70px rgba(0,0,0,0.4);
+    width: 480px;
+    height: 690px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.2);
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 1.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease;
+}
+
+/* 🌟 4. 卡片上半部分：插画区 */
+.card-illustration {
+    height: 40%;
+    width: 100%;
+    background-color: #cce5f7;
+    background-image: url('/static/image/login.png'); /* 使用绝对路径 */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid #b3d5f2;
+}
+
+/* 🌟 5. 卡片下半部分：表单区 */
+.card-form-form {
+    flex: 1;
+    padding: 40px 45px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+h2 { text-align: center; color: #2c3e50; margin-top: 0; margin-bottom: 30px; font-size: 1.8rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px;}
+
+.error-msg {
+    background: #fce8e6; color: #d93025; padding: 12px; border-radius: 8px;
+    margin-bottom: 20px; font-size: 1rem; text-align: center; font-weight: 500;
+    display: none; /* 默认隐藏，由 HTML/JS 决定是否显示 */
+}
+
+label { display: block; margin-bottom: 8px; color: #7f8c8d; font-size: 1.05rem; font-weight: 500; }
+input {
+    width: 100%; padding: 16px 20px; margin-bottom: 20px; border: 1px solid #ddd;
+    border-radius: 10px; box-sizing: border-box; font-size: 1.15rem; background: #f8f9fa;
+    transition: 0.2s;
+}
+input:focus { border-color: #3498db; outline: none; box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2); background: white; }
+
+button {
+    width: 100%; padding: 18px; background: #3498db; color: white; border: none;
+    border-radius: 10px; font-size: 1.3rem; font-weight: bold; cursor: pointer; transition: 0.2s;
+    margin-top: 15px; display: flex; justify-content: center; align-items: center; gap: 10px;
+}
+button:hover { background: #2980b9; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(52, 152, 219, 0.3); }
+button:disabled { background: #95a5a6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* 动画 1：密码错误的左右摇晃 */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-12px); }
+    20%, 40%, 60%, 80% { transform: translateX(12px); }
+}
+.shake-animation { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+
+/* 动画 2：登录成功的翻转掉落 */
+.login-success .login-card {
+    transform: translateZ(-800px) rotateX(60deg) translateY(400px) scale(0.5);
+    opacity: 0;
+}
+.login-success.overlay-mask {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+}
+
+/* 动画 3：Loading 旋转圈圈 (从原来的 JS 中提取出来) */
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+
+/* 全局缩放适配 */
+@media screen and (max-width: 1920px), screen and (max-height: 1080px) {
+    html { zoom: 0.67; }
+    body { width: calc(100vw / 0.67) !important; height: calc(100vh / 0.67) !important; }
+    .overlay-mask { width: calc(100vw / 0.67) !important; height: calc(100vh / 0.67) !important; }
+}

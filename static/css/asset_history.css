@@ -1,0 +1,94 @@
+/* =========================================
+   🌟 1. 容器高度补偿与 Flex 排版 (防塌陷核心)
+   ========================================= */
+.history-container {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+
+    /* 开启 Flex 限制高度，为内部独立滚动创造条件 */
+    max-height: calc(100vh - 195px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+.history-container::-webkit-scrollbar { width: 6px; height: 6px; }
+.history-container::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 6px; }
+.history-container::-webkit-scrollbar-track { background: transparent; }
+/* =========================================
+   🌟 2. 建立表格独立的滚动外壳
+   ========================================= */
+#historyTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    table-layout: fixed;
+}
+
+/* =========================================
+   🌟 3. 单元格样式
+   ========================================= */
+th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #f8f9fa;
+    color: var(--text-muted);
+    font-weight: 500;
+    padding: 12px 15px;
+    text-align: left;
+    box-shadow: inset 0 -2px 0 var(--border-color);
+    border-bottom: none;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #f8f9fa; /* 稍微淡化底边线，更显现代感 */
+    color: var(--text-main);
+    vertical-align: middle;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: background-color 0.2s; /* 悬浮过渡 */
+}
+
+/* 表格行悬浮效果 */
+#historyTable tbody tr:hover td {
+    background-color: #f8f9fa;
+}
+
+/* =========================================
+   🌟 4. 资产状态颜色 (扁平化指示灯)
+   ========================================= */
+.color-in {
+    color: #0f9d58; font-weight: 600; background: rgba(15, 157, 88, 0.1);
+    padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;
+}   /* 绿：在库/归还 */
+
+.color-out {
+    color: #e67e22; font-weight: 600; background: rgba(230, 126, 34, 0.1);
+    padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;
+}  /* 橙：出借 */
+
+.color-scrap {
+    color: #d93025; font-weight: 600; background: rgba(217, 48, 37, 0.1);
+    padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;
+    text-decoration: line-through;
+} /* 红：报废 */
+
+.color-init {
+    color: #1a73e8; font-weight: 600; background: rgba(26, 115, 232, 0.1);
+    padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;
+}  /* 蓝：建档 */
+
+.searchable-hidden {
+    display: none !important;
+}

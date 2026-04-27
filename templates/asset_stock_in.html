@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('title.asset_stock_in', lang) }} - {{ t('title.base', lang) }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/asset_stock_in.css">
+{% endblock %}
+
+{% block top_actions %}
+    <div style="display: flex; gap: 15px;">
+        <button type="button" class="btn-primary" onclick="clearGrid()" style="background: transparent; color: var(--text-muted); box-shadow: none; border: 1px solid #ccc;">
+            <i class="material-icons" style="font-size: 1.2rem; margin-right: 5px;">delete</i> {{ t('asset_stockin.clear_grid', lang) }}
+        </button>
+        <button type="submit" form="assetStockInForm" class="btn-primary">
+            <i class="material-icons" style="font-size: 1.2rem; margin-right: 5px;">how_to_reg</i> {{ t('asset_stockin.confirm_submit', lang) }}
+        </button>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="stockin-container">
+    <div style="margin-bottom: 15px; font-size: 0.9rem; color: #555; display: flex; align-items: center; gap: 8px;">
+        <i class="material-icons" style="color: var(--primary);">info</i>
+        <span>{{ t('asset_stockin.guide_text', lang) | safe }}</span>
+    </div>
+
+    <form id="assetStockInForm" action="/asset_batch_submit" method="post">
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-mid">{{ t('asset_stockin.th_ctrl_no', lang) }}</th>
+                    <th class="col-mid">{{ t('asset_stockin.th_pn1', lang) }}<span class="required-star">*</span></th>
+                    <th class="col-mid">{{ t('asset_stockin.th_pn2', lang) }}</th>
+                    <th class="col-long">{{ t('asset_stockin.th_name', lang) }}<span class="required-star">*</span></th>
+                    <th class="col-mid">{{ t('asset_stockin.th_category', lang) }}</th>
+                    <th class="col-long">{{ t('asset_stockin.th_desc', lang) }}</th>
+                    <th class="col-mid">{{ t('asset_stockin.th_use_for', lang) }}</th>
+                    <th class="col-mid">{{ t('asset_stockin.th_date', lang) }}<span class="required-star">*</span></th>
+                    <th class="col-short">{{ t('asset_stockin.th_loc', lang) }}</th>
+                    <th class="col-long">{{ t('asset_stockin.th_remarks', lang) }}</th>
+                    <th style="width: 60px;">{{ t('asset_stockin.th_action', lang) }}</th>
+                </tr>
+            </thead>
+            <tbody id="gridBody">
+                </tbody>
+        </table>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const ASSET_STOCKIN_I18N = {
+        ph_ctrl_no: "{{ t('asset_stockin.ph_ctrl_no', lang) }}",
+        ph_pn1: "{{ t('asset_stockin.ph_pn1', lang) }}",
+        title_clear_row: "{{ t('asset_stockin.title_clear_row', lang) }}",
+        confirm_clear_all: "{{ t('asset_stockin.confirm_clear_all', lang) }}",
+        err_fetch_seq: "{{ t('asset_stockin.err_fetch_seq', lang) }}",
+        err_miss_ctrl: "{{ t('asset_stockin.err_miss_ctrl', lang) }}",
+        err_miss_pn1: "{{ t('asset_stockin.err_miss_pn1', lang) }}",
+        err_miss_name: "{{ t('asset_stockin.err_miss_name', lang) }}",
+        err_empty_submit: "{{ t('asset_stockin.err_empty_submit', lang) }}",
+        err_query_fail: "{{ t('asset_stockin.err_query_fail', lang) }}"
+    };
+</script>
+<script src="/static/js/asset_stock_in.js"></script>
+{% endblock %}

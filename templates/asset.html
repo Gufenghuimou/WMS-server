@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('title.asset', lang) }} - {{ t('title.base', lang) }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/asset.css">
+{% endblock %}
+
+{% block top_actions %}
+<a href="/asset/export" class="btn-primary">
+    <i class="material-icons">download</i> {{ t('asset_view.export_btn', lang) }}
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+
+    <script>
+    window.ASSET_DATA = {
+        {% for pn1, group in items|groupby('pn_1') %}
+        {% set first = group[0] %}
+        "{{ pn1|replace(' ', '-')|replace('/', '-') }}": {
+            pn1: {{ first.pn_1 | tojson }},
+            pn2: {{ (first.pn_2 or '') | tojson }},
+            items: [
+                {% for item in group %}
+                {
+                    id: {{ item.id }},
+                    ctrl_no: {{ item.ctrl_no | tojson }},
+                    location: {{ (item.location or '') | tojson }},
+                    first_in_date: {{ (item.first_in_date or '') | tojson }},
+                    po_type: {{ (item.po_type or '' ) | tojson }},
+                    is_stock: {{ 'true' if item.is_stock else 'false' }},
+                    is_stop: {{ 'true' if item.is_stop else 'false' }}
+                }{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ]
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    };
+    </script>
+
+    <div class="left-panel" id="assetCardList">
+        {% if not items %}
+            <div style="text-align:center; padding: 40px 20px; color: var(--text-muted);">
+                <i class="material-icons" style="font-size: 3rem; opacity: 0.5;">inbox</i>
+                <p>{{ t('asset_view.no_asset', lang) }}</p>
+            </div>
+        {% endif %}
+
+        {% for pn1, group in items|groupby('pn_1') %}
+            {% set first = group[0] %}
+
+            <div class="asset-card"
+                 id="card-{{ pn1|replace(' ', '-')|replace('/', '-') }}"
+                 onclick="switchAssetType('{{ pn1|replace(' ', '-')|replace('/', '-') }}')"
+                 data-search-keys="{{ first.pn_1|lower }} {{ first.pn_2|lower }} {{ (first.name or '')|lower }} {{ (first.description_1 or '')|lower }} {{ (first.description_2 or '')|lower }} {% for item in group %}{{ item.ctrl_no|lower }} {{ item.location|lower }} {% endfor %}">
+
+                <div class="card-front">
+                    <div class="left-part" style="flex-shrink: 0;">
+                        <img class="card-img" style="{% if not first.has_image %}display:none;{% endif %}"
+                             src="{% if first.has_image %}/static/asset_images/{{ first.pn_1 }}.jpg?t={{ range(1, 99999) | random }}{% else %}data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs={% endif %}"
+                             loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+
+                        <div class="card-img" style="{% if first.has_image %}display:none;{% else %}display:flex;{% endif %} justify-content: center; align-items: center; background: #f8f9fa; color: #dcdcdc; border: 1px dashed #ddd;">
+                            <i class="material-icons" style="font-size: 2.2rem;">{% if first.has_image %}inventory_2{% else %}add_photo_alternate{% endif %}</i>
+                        </div>
+                    </div>
+
+                    <div class="right-part" style="flex: 1;">
+                        <div class="card-header">
+                            <div class="card-info">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <h3 class="text-truncate font-monospace" style="margin: 0 0 4px 0; font-size: 1.5rem; font-weight: bold; color: var(--text-main); max-width: 300px;" title="{{ first.pn_1 }}">{{ first.pn_1 }} | {{ first.pn_2 or '' }}</h3>
+                                    <span style="font-size: 0.9rem; color: #888; background: #eee; padding: 6px 6px; border-radius: 10px;">{{ t('asset_view.total_count', lang) | replace('{count}', group|length) }}</span>
+                                </div>
+                                <div class="text-truncate" style="font-size: 0.9rem; font-weight: 500;" title="{{ first.name }}">{{ first.name or t('asset_view.unnamed', lang) }}</div>
+                            </div>
+                        </div>
+
+                        <div style="font-size: 0.8rem; color: #666; margin-top: 4px; line-height: 1.5;">
+                            <div style="display:flex; justify-content:space-between;">
+                                <span class="text-truncate" style="max-width: 300px;" title="{{ first.description_1 }}">{{ t('asset_view.category_lbl', lang) }} {{ first.description_1 or '-' }}</span>
+                                <span class="text-truncate" style="max-width: 300px; color: var(--primary); font-weight: 600;" title="{{ first.use_for }}">{{ t('asset_view.dest_lbl', lang) }} {{ first.use_for or '-' }}</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between;">
+                                <span class="text-truncate" style="max-width: 300px;" title="{{ first.description_2 }}">{{ t('asset_view.desc_lbl', lang) }} {{ first.description_2 or '-' }}</span>
+                                <span class="text-truncate" style="max-width: 300px; color: var(--primary-blue); font-weight: 600;" title="model">MODEL: {{ first.model or '-' }}</span>
+                            </div>
+<!--                            <div class="text-truncate" style="margin-top:2px;" title="{{ first.description_2 }}">{{ t('asset_view.desc_lbl', lang) }} {{ first.description_2 or '-' }}</div>-->
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; border-top: 1px dashed #eee; padding-top: 5px;">
+                            <div class="tags">
+                                {% if first.is_consign %}<span class="badge-tag" style="background:#e8f4fd; color:#2196f3; border-color:#90caf9;">{{ t('asset_view.tag_consign', lang) }}</span>{% endif %}
+                                {% if first.is_csc %}<span class="badge-tag" style="background:#fdf2e8; color:#ff9800; border-color:#ffcc80;">{{ t('asset_view.tag_csc', lang) }}</span>{% endif %}
+                            </div>
+
+                            <button type="button" class="btn-primary" style="height: 26px; font-size: 0.75rem; padding: 0 10px; border-radius: 6px; background: transparent; color: var(--text-muted); border: 1px solid #ccc; box-shadow: none;"
+                                    onclick="flipToEdit(event, 'card-{{ pn1|replace(' ', '-')|replace('/', '-') }}')">
+                                <i class="material-icons" style="font-size: 0.9rem;">edit</i> {{ t('asset_view.btn_edit', lang) }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-back" onclick="event.stopPropagation();">
+                    <div style="width: 130px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                        <label style="font-size:0.75rem; color:#888; text-align:center;">{{ t('asset_view.click_to_change_img', lang) }}</label>
+                        <div style="position:relative; cursor:pointer;" onclick="document.getElementById('edit-upload-{{first.id}}').click();">
+
+                            <img id="edit-preview-{{first.id}}" class="card-img" style="{% if not first.has_image %}display:none;{% endif %} width:130px; height:130px; border-radius:8px; object-fit:cover; border: 1px solid #ddd;"
+                                 src="{% if first.has_image %}/static/asset_images/{{ first.pn_1 }}.jpg?t={{ range(1, 99999) | random }}{% else %}data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs={% endif %}"
+                                 onerror="this.style.display='none'; document.getElementById('edit-placeholder-{{first.id}}').style.display='flex';">
+
+                            <div id="edit-placeholder-{{first.id}}" class="card-img" style="{% if first.has_image %}display:none;{% else %}display:flex;{% endif %} justify-content: center; align-items: center; background: #f8f9fa; color: #dcdcdc; border: 1px dashed #ddd; width:130px; height:130px; border-radius:8px;">
+                                <i class="material-icons" style="font-size: 2.2rem;">{% if first.has_image %}inventory_2{% else %}add_photo_alternate{% endif %}</i>
+                            </div>
+
+                            <div style="position:absolute; bottom:5px; right:5px; background:rgba(0,0,0,0.5); color:#fff; border-radius:50%; width:24px; height:24px; display:flex; justify-content:center; align-items:center;"><i class="material-icons" style="font-size: 14px;">photo_camera</i></div>
+                        </div>
+                        <input type="file" id="edit-upload-{{first.id}}" style="display:none;" accept="image/*" onchange="uploadCardImage(this, '{{first.pn_1}}', '{{first.id}}')">
+                    </div>
+
+                    <form method="post" action="/asset_edit_group/{{ first.pn_1 }}" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div class="edit-form-grid">
+                            <div><label class="edit-label">{{ t('asset_view.edit_pn1', lang) }}</label><input type="text" name="pn_1" class="edit-input" value="{{ first.pn_1 }}" readonly style="background:#eee; cursor:not-allowed; color:#888;"></div>
+                            <div><label class="edit-label">{{ t('asset_view.edit_pn2', lang) }}</label><input type="text" name="pn_2" class="edit-input" value="{{ first.pn_2 or '' }}"></div>
+                            <div><label class="edit-label">{{ t('asset_view.edit_dest', lang) }}</label><input type="text" name="use_for" class="edit-input" value="{{ first.use_for or '' }}"></div>
+
+                            <div style="grid-column: span 2;"><label class="edit-label">{{ t('asset_view.edit_name', lang) }}</label><input type="text" name="name" class="edit-input" value="{{ first.name or '' }}"></div>
+                            <div><label class="edit-label">{{ t('asset_view.edit_remark', lang) }}</label><input type="text" name="remarks" class="edit-input" value="{{ first.remarks or '' }}"></div>
+
+                            <div style="grid-column: span 1;"><label class="edit-label">{{ t('asset_view.edit_desc1', lang) }}</label><input type="text" name="description_1" class="edit-input" value="{{ first.description_1 or '' }}"></div>
+                            <div style="grid-column: span 2;"><label class="edit-label">{{ t('asset_view.edit_desc2', lang) }}</label><input type="text" name="description_2" class="edit-input" value="{{ first.description_2 or '' }}"></div>
+
+                            <div style="grid-column: span 1;"><label class="edit-label">Model</label><input type="text" name="model" class="edit-input" value="{{ first.model or '' }}"></div>
+                            <div style="display: flex; gap: 8px; grid-column: span 2; align-items: end; justify-content: flex-end;">
+                                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #333; box-shadow: none;" onclick="cancelEdit(event, 'card-{{ pn1|replace(' ', '-')|replace('/', '-') }}')">{{ t('asset_view.btn_cancel', lang) }}</button>
+                                <button type="submit" class="btn-primary" style="background: #1db954;">{{ t('asset_view.btn_save', lang) }}</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        {% endfor %}
+    </div>
+
+  <div class="right-panel">
+        <div class="table-wrapper">
+            <table class="detail-table">
+                <thead>
+                    <tr style="font-size: 0.95rem;">
+                        <th style="width: 25%;">{{ t('asset_view.th_ctrl_no', lang) }}</th>
+                        <th style="width: 8%;">{{ t('asset_view.th_loc', lang) }}</th>
+                        <th style="width: 20%;">{{ t('asset_view.th_date', lang) }}</th>
+                        <th style="width: 15%;">{{ t('asset_view.th_status', lang) }}</th>
+                        <th style="width: 15%;">PO Type</th>
+                        <th style="width: 27%; text-align: center;">{{ t('asset_view.th_action', lang) }}</th>
+                    </tr>
+                </thead>
+                <tbody id="dynamicDetailTbody">
+                    <tr id="emptyDetailRow">
+                        <td colspan="5" style="text-align: center; padding: 120px 0; color: #ccc; border: none;">
+                            <i class="material-icons" style="font-size: 4rem; margin-bottom: 15px; display: block;">ads_click</i>
+                            <span style="font-size: 1.1rem;">{{ t('asset_view.click_left_hint', lang) }}</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="toggleModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3 id="toggleTitle" style="margin-top:0; color:var(--text-main); display:flex; align-items:center; gap:8px;">
+            <i class="material-icons" style="color:var(--primary);">swap_horiz</i> {{ t('asset_view.modal_toggle_title', lang) }}
+        </h3>
+        <p id="toggleHintBox" style="font-size: 0.85rem; color: #666; margin-bottom: 20px; line-height: 1.5; background:#f8f9fa; padding:10px; border-radius:8px; border-left:3px solid var(--primary);"></p>
+
+        <form id="toggleForm" method="post" action="">
+            <div style="margin-bottom: 20px;">
+                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('asset_view.modal_toggle_lbl', lang) }}</label>
+                <input type="text" name="target_loc" id="locInput" autocomplete="off" placeholder="{{ t('asset_view.modal_toggle_ph', lang) }}"
+                       style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; outline: none;">
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #555; box-shadow: none;" onclick="closeToggleModal()">{{ t('asset_view.btn_cancel_modal', lang) }}</button>
+                <button type="submit" class="btn-primary">{{ t('asset_view.btn_confirm_modal', lang) }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="stopConfirmModal" class="modal-overlay">
+    <div class="modal-box" style="width: 380px; text-align: center; padding: 30px 25px;">
+        <div id="stopModalIcon" style="margin-bottom: 15px;"></div>
+        <h3 id="stopModalTitle" style="margin-top:0; color:var(--text-main);">{{ t('asset_view.modal_stop_title', lang) }}</h3>
+        <p id="stopModalText" style="font-size: 0.95rem; color: #666; margin-bottom: 25px; line-height: 1.5;"></p>
+
+        <form id="stopForm" method="post" action="">
+            <div id="raisonRadio" style="display: flex; justify-content: center; gap: 30px; margin-bottom: 20px;">
+                <div>
+                    <input id="no-use" type="radio" name="is_no_use" value="true" required>
+                    <label class="radio-label" for="no-use">{{ t('asset_scrap.no_use', lang) }}</label>
+                </div>
+                <div>
+                    <input id="broken" type="radio" name="is_no_use" value="false" required checked>
+                    <label class="radio-label" for="broken">{{ t('asset_scrap.broken', lang) }}</label>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: center; gap: 15px;">
+                <button type="button" class="btn-primary" style="background: #f0f2f5; color: #555; box-shadow: none;" onclick="closeStopConfirmModal()">{{ t('asset_view.btn_cancel_modal', lang) }}</button>
+                <button type="submit" id="stopSubmitBtn" class="btn-primary" style="width: 120px;"></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="itemEditModal" class="modal-overlay">
+    <div class="modal-box" style="width: auto; padding: 20px 30px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.15);">
+        <h4 style="margin: 0 0 15px 0; color: var(--text-main); font-size: 1rem; border-bottom: 1px solid #eee; padding-bottom: 8px;">
+            <i class="material-icons" style="font-size: 1.1rem; color: #3498db; vertical-align: middle;">edit_note</i>
+            {{ t('asset_view.modal_item_title', lang) }} <span id="modalCtrlNoDisplay" style="color:#888; font-size:0.85rem; margin-left:10px;"></span>
+        </h4>
+
+        <form id="itemEditForm" method="post" action="" style="display: flex; gap: 15px; align-items: flex-end; margin: 0;">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('asset_view.modal_item_ctrl', lang) }}</label>
+                <input type="text" name="ctrl_no" id="editCtrlNo" class="edit-input" style="width: 160px;" required>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('asset_view.modal_item_loc', lang) }}</label>
+                <input type="text" name="location" id="editLocation" class="edit-input" style="width: 160px;" placeholder="{{ t('asset_view.modal_item_loc_ph', lang) }}">
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('asset_view.modal_item_date', lang) }}</label>
+                <input type="date" name="first_in_date" id="editDate" class="edit-input" style="width: 140px;">
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">PO Type</label>
+                <select id="editPoType" class="edit-input" name="po_type" style="width: 140px;">
+                    <option value=""></option>
+                    <option value="common">Common</option>
+                    <option value="reimburse">Reimburse</option>
+                    <option value="consign">Consign</option>
+                </select>
+<!--                <input type="date" name="po_type" class="edit-input" style="width: 140px;">-->
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-left: 10px;">
+                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #555; box-shadow: none; height: 33px; line-height: 1; padding: 0 15px;" onclick="closeItemEditModal()">{{ t('asset_view.btn_cancel_modal', lang) }}</button>
+                <button type="submit" class="btn-primary" style="background: #3498db; height: 33px; line-height: 1; padding: 0 15px;">{{ t('asset_view.btn_save_changes', lang) }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const ASSET_I18N = {
+        status_stop: "{{ t('asset_view.status_stop', lang) }}",
+        status_in_stock: "{{ t('asset_view.status_in_stock', lang) }}",
+        status_out_stock: "{{ t('asset_view.status_out_stock', lang) }}",
+        btn_take_out: "{{ t('asset_view.btn_take_out', lang) }}",
+        btn_return_in: "{{ t('asset_view.btn_return_in', lang) }}",
+        btn_edit: "{{ t('asset_view.btn_edit', lang) }}",
+        btn_stop_deny: `{{ t('asset_view.btn_stop_deny', lang) }}`,
+        btn_stop: "{{ t('asset_view.btn_stop', lang) }}",
+        btn_reuse: "{{ t('asset_view.btn_reuse', lang) }}",
+        loc_unassigned: "{{ t('asset_view.loc_unassigned', lang) }}",
+        no_detail_data: "{{ t('asset_view.no_detail_data', lang) }}",
+        toggle_out_title: "{{ t('asset_view.toggle_out_title', lang) }}",
+        toggle_out_hint: "{{ t('asset_view.toggle_out_hint', lang) }}",
+        toggle_out_ph: "{{ t('asset_view.toggle_out_ph', lang) }}",
+        toggle_in_title: "{{ t('asset_view.toggle_in_title', lang) }}",
+        toggle_in_hint: "{{ t('asset_view.toggle_in_hint', lang) }}",
+        toggle_in_ph: "{{ t('asset_view.toggle_in_ph', lang) }}",
+        stop_reuse_title: "{{ t('asset_view.stop_reuse_title', lang) }}",
+        stop_reuse_text: "{{ t('asset_view.stop_reuse_text', lang) }}",
+        stop_freeze_title: "{{ t('asset_view.stop_freeze_title', lang) }}",
+        stop_freeze_text: "{{ t('asset_view.stop_freeze_text', lang) }}",
+        upload_fail: "{{ t('asset_view.upload_fail', lang) }}",
+        upload_net_err: "{{ t('asset_view.upload_net_err', lang) }}",
+        btn_processing: "{{ t('asset_view.btn_processing', lang) }}",
+        backend_fail: "{{ t('asset_view.backend_fail', lang) }}",
+        net_req_fail: "{{ t('asset_view.net_req_fail', lang) }}",
+        unnamed: "{{ t('asset_view.unnamed', lang) }}",
+        category_lbl: "{{ t('asset_view.category_lbl', lang) }}",
+        dest_lbl: "{{ t('asset_view.dest_lbl', lang) }}",
+        desc_lbl: "{{ t('asset_view.desc_lbl', lang) }}"
+    };
+</script>
+<script src="/static/js/asset.js"></script>
+{% endblock %}

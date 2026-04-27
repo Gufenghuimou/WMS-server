@@ -1,0 +1,99 @@
+/* =========================================
+   🌟 1. 容器高度补偿与 Flex 排版 (防塌陷核心)
+   ========================================= */
+.audit-wrapper-main {
+    height: calc(100vh - 195px);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    overflow: hidden; /* 掐断整个页面的外部滚动条 */
+}
+
+/* =========================================
+   🌟 2. 极速扫码控制台样式 (绝对不被压缩)
+   ========================================= */
+.scan-console {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.scan-input-group { display: flex; flex-direction: column; gap: 8px; }
+.scan-input-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+.scan-input {
+    height: 44px; border: 2px solid #ddd; border-radius: 8px; padding: 0 15px;
+    font-size: 1.1rem; outline: none; transition: 0.2s; box-sizing: border-box;
+}
+.scan-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(93, 140, 138, 0.1); }
+.scan-result-box {
+    flex: 1; height: 60px; background: #f8f9fa; border-radius: 8px;
+    border: 1px dashed #ccc; display: flex; align-items: center; padding: 0 20px;
+    font-size: 1.2rem; font-weight: bold;
+}
+
+/* =========================================
+   🌟 3. 滚动区域 (接管所有剩余空间)
+   ========================================= */
+.locations-scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    padding-bottom: 30px;
+}
+
+.locations-scroll-area::-webkit-scrollbar { width: 6px; }
+.locations-scroll-area::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 6px; }
+.locations-scroll-area::-webkit-scrollbar-track { background: transparent; }
+
+/* =========================================
+   🌟 4. 盘点区块卡片化
+   ========================================= */
+.location-block {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    overflow: hidden;
+    flex-shrink: 0; /* 保持原高，不被挤压 */
+}
+
+.location-header {
+    background: #f8f9fa; padding: 12px 20px; border-bottom: 1px solid var(--border-color);
+    display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer; user-select: none; transition: 0.2s;
+}
+.location-header:hover { background: #f1f3f5; }
+.location-header h3 { margin: 0; font-size: 1.1rem; color: var(--primary-blue); }
+.collapse-icon { color: #888; transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
+.location-block.collapsed .collapse-icon { transform: rotate(-90deg); }
+.location-block.collapsed .audit-table { display: none; }
+
+/* =========================================
+   🌟 5. 盘点表格极致紧凑
+   ========================================= */
+.audit-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.audit-table th { background: #f1f5f9; border-bottom: 1px solid var(--border-color); color: var(--text-muted); white-space: nowrap; padding: 12px 15px; text-align: left; }
+.audit-table td { padding: 10px 15px; border-bottom: 1px solid #f1f1f1; vertical-align: middle; }
+
+.text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px;
+}
+
+/* =========================================
+   🌟 6. 盘点状态徽章
+   ========================================= */
+.status-badge { padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; }
+.status-done { background: #e6f4ea; color: #1e8e3e; }    /* 已盘 */
+.status-miss { background: #f1f3f4; color: #5f6368; }    /* 未盘 */
+.status-warn { background: #fef7e0; color: #f29900; }    /* 位置异常 */

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('title.inventory_table', lang) }} - {{ t('title.base', lang) }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/inventory_table.css">
+{% endblock %}
+
+{% block top_actions %}
+    <div style="display: flex; gap: 15px; align-items: center;">
+        <a href="/all/export" style="text-decoration: none;">
+            <button class="btn-primary" style="border-radius: 20px; gap: 8px;">
+                <i class="material-icons">download</i> {{ t('table.export_all', lang) }}
+            </button>
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="table-container">
+    <div class="table-header">
+        <h2><i class="material-icons">view_list</i> {{ t('table.adv_title', lang) }}</h2>
+        <span style="font-size: 0.85rem;"><i class="material-icons" style="font-size: 1rem; vertical-align: middle;">auto_awesome</i> {{ t('table.adv_subtitle', lang) }}</span>
+    </div>
+    <div class="table-scroll-wrapper">
+        <table class="adv-table" id="advancedTable">
+            <thead>
+                <tr>
+                    <th style="width: 150px;" onclick="sortTable(0, 'string')">{{ t('table.th_pn1', lang) }} <i class="material-icons sort-icon">unfold_more</i></th>
+                    <th>{{ t('table.th_name', lang) }}</th>
+                    <th style="width: 80px;" onclick="sortTable(2, 'number')">{{ t('table.th_stock', lang) }} <i class="material-icons sort-icon">unfold_more</i></th>
+                    <th style="width: 80px;" onclick="sortTable(3, 'number')">{{ t('table.th_1y', lang) }} <i class="material-icons sort-icon">unfold_more</i></th>
+                    <th style="width: 80px;" onclick="sortTable(4, 'number')">{{ t('table.th_2y', lang) }} <i class="material-icons sort-icon">unfold_more</i></th>
+                    <th style="width: 80px;" onclick="sortTable(5, 'number')">{{ t('table.th_3y', lang) }} <i class="material-icons sort-icon">unfold_more</i></th>
+                    <th style="width: 150px;" onclick="sortTable(6, 'string')">{{ t('table.th_first_in', lang) }} <i class="material-icons sort-icon">unfold_more</i></th>
+                    <th style="width: 80px;" onclick="sortTable(7, 'number')">{{ t('table.th_status', lang) }} <i class="material-icons sort-icon">unfold_more</i></th>
+                    <th style="width: 80px;">{{ t('table.th_water_level', lang) }}</th>
+                    <th style="text-align: center; width: 80px;">{{ t('table.th_mva', lang) }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                {% set is_alarming = item.warning_level > 0 and item.stock <= item.warning_level %}
+
+                <tr data-id="{{ item.id }}" id="row-{{ item.id }}">
+                    <td class="font-monospace" style="font-size: 1.1rem; font-weight: bold;">{{ item.pn_1 }}</td>
+                    <td title="{{ item.name or '-' }}">{{ item.name or '-' }}</td>
+                    <td data-sort="{{ item.stock }}" style="font-weight: bold; font-size: 1rem;">{{ item.stock }}</td>
+                    <td data-sort="{{ item.usage_1y }}">{{ item.usage_1y }}</td>
+                    <td data-sort="{{ item.usage_2y }}">{{ item.usage_2y }}</td>
+                    <td data-sort="{{ item.usage_3y }}">{{ item.usage_3y }}</td>
+                    <td data-sort="{{ item.first_in_date }}"><span style="color: #7f8c8d;">{{ item.first_in_date or '-' }}</span></td>
+
+                    <td data-sort="{{ 1 if is_alarming else 0 }}">
+                        {% if is_alarming %}
+                            <span class="alarm-badge alarm-yes"><i class="material-icons" style="font-size: 0.8rem; vertical-align: middle;">warning</i> {{ t('table.alarm_yes', lang) }}</span>
+                        {% else %}
+                            <span class="alarm-badge alarm-no"><i class="material-icons" style="font-size: 0.8rem; vertical-align: middle;">check</i> {{ t('table.alarm_no', lang) }}</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <input type="number" class="inline-input warning-input" value="{{ item.warning_level or 0 }}" min="0" onchange="autoSave('{{ item.id }}')">
+                    </td>
+
+                    <td style="text-align: center;">
+                        <label class="switch">
+                            <input type="checkbox" class="mva-checkbox" onchange="autoSave('{{ item.id }}')" {% if item.is_mva %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const TABLE_I18N = {
+        net_err_save: "{{ t('table.net_err_save', lang) }}"
+    };
+</script>
+<script src="/static/js/inventory_table.js"></script>
+{% endblock %}

@@ -1,0 +1,42 @@
+.queue-container { max-width: 1000px; margin: 0 auto; }
+
+.req-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px 25px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    transition: 0.2s;
+}
+
+.req-card:hover {
+    border-color: var(--primary-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+}
+
+.req-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #7f8c8d;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.req-info { flex: 1; }
+.req-info h4 { margin: 0 0 5px 0; font-size: 1.1rem; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+.req-info p { margin: 0; font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+
+.req-qty { font-size: 1.5rem; font-weight: bold; color: var(--danger-red); text-align: right; min-width: 80px; }
+.req-qty-label { font-size: 0.75rem; color: var(--text-muted); display: block; }
+
+.req-actions { display: flex; gap: 10px; margin-left: 20px; border-left: 1px dashed #eee; padding-left: 20px; }

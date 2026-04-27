@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{ t('mobile.page_title', lang) }} - {{ t('title.base', lang) }}</title>
+
+    <link href="/static/css/cropper.min.css" rel="stylesheet">
+
+    <style>
+        @font-face {
+          font-family: 'Material Icons';
+          font-style: normal;
+          font-weight: 400;
+          src: url('/static/fonts/material-icons.woff2') format('woff2');
+        }
+
+        .material-icons {
+          font-family: 'Material Icons';
+          font-weight: normal;
+          font-style: normal;
+          font-size: 24px;  /* Preferred icon size */
+          display: inline-block;
+          line-height: 1;
+          text-transform: none;
+          letter-spacing: normal;
+          word-wrap: normal;
+          white-space: nowrap;
+          direction: ltr;
+          /* Support for all WebKit browsers. */
+          -webkit-font-smoothing: antialiased;
+          /* Support for Safari and Chrome. */
+          text-rendering: optimizeLegibility;
+          /* Support for Firefox. */
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+        :root {
+            --primary: #1db954;
+            --bg-color: #f5f6fa;
+            --surface: #ffffff;
+            --text-main: #2c3e50;
+            --border: #dcdde1;
+        }
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-color); color: var(--text-main);
+            -webkit-tap-highlight-color: transparent;
+        }
+        .header {
+            background: var(--surface); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 10;
+        }
+        .header h2 { margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 8px; }
+
+        .container { padding: 20px; }
+
+        /* 移动端友好的输入框卡片 */
+        .form-card {
+            background: var(--surface); border-radius: 12px; padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px;
+        }
+        .input-group { margin-bottom: 15px; position: relative; }
+        .input-group:last-child { margin-bottom: 0; }
+        .input-group label { display: block; font-size: 0.85rem; color: #7f8c8d; margin-bottom: 6px; font-weight: bold; }
+        .input-group input {
+            width: 100%; box-sizing: border-box; padding: 12px 15px; border: 1px solid var(--border);
+            border-radius: 8px; font-size: 1rem; transition: 0.2s; background: #fcfcfc;
+        }
+        .input-group input:focus { border-color: var(--primary); outline: none; background: #fff; }
+        .correct-flash { animation: flashGreen 0.6s ease-out; }
+        @keyframes flashGreen { 0% { background-color: #e8f8f5; border-color: var(--primary); } 100% { background-color: #fcfcfc; } }
+
+        /* 上传区域 UI */
+        .upload-card {
+            background: var(--surface); border-radius: 12px; padding: 20px; text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 80px;
+        }
+        .camera-btn {
+            background: #e8f8f5; color: var(--primary); border: 2px dashed var(--primary);
+            border-radius: 12px; padding: 30px; display: flex; flex-direction: column;
+            align-items: center; gap: 10px; cursor: pointer; transition: 0.2s;
+        }
+        .camera-btn:active { background: #d1f2eb; }
+        .preview-area { display: none; margin-top: 15px; }
+        .preview-area img { max-width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .file-info { font-size: 0.8rem; color: #888; margin-top: 8px; }
+
+        /* 底部悬浮提交按钮 */
+        .bottom-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: var(--surface);
+            padding: 15px 20px; box-sizing: border-box; box-shadow: 0 -2px 15px rgba(0,0,0,0.05); z-index: 10;
+        }
+        .submit-btn {
+            width: 100%; background: var(--primary); color: white; border: none;
+            padding: 14px; border-radius: 25px; font-size: 1.1rem; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .submit-btn:disabled { background: #bdc3c7; }
+
+        /* 裁剪模态框 (全屏) */
+        .crop-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 9999; flex-direction: column;
+        }
+        .crop-container { flex: 1; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .crop-container img { max-width: 100%; max-height: 100%; }
+        .crop-actions {
+            background: #111; padding: 20px; display: flex; justify-content: space-between; gap: 15px;
+        }
+        .crop-btn {
+            flex: 1; padding: 12px; border-radius: 8px; border: none; font-size: 1rem; font-weight: bold; color: white;
+        }
+        .btn-cancel { background: #333; }
+        .btn-confirm { background: var(--primary); }
+
+        #reader {
+            width: 300px;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden; /* 保证摄像头画面不超出边框 */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2><i class="material-icons" style="color:var(--primary);">linked_camera</i> {{ t('mobile.header_title', lang) }}</h2>
+    </div>
+
+    <div class="container">
+        <div class="form-card">
+            <div style="font-size: 0.8rem; color: #888; margin-bottom: 15px; line-height: 1.5;">
+                {{ t('mobile.smart_hint', lang) | safe }}
+            </div>
+
+            <div class="input-group">
+                <label>{{ t('mobile.lbl_ctrl_no', lang) }}</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="ctrlInput" placeholder="{{ t('mobile.ph_ctrl_no', lang) }}" autocomplete="off">
+                    <button type="button" onclick="startScanner('ctrlInput')" style="padding: 0 10px; background: #fff">
+                        <i class="material-icons">qr_code_scanner</i>
+                    </button>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>{{ t('mobile.lbl_pn1', lang) }} <span style="color:red">*</span></label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="pn1Input" placeholder="{{ t('mobile.ph_pn1', lang) }}" autocomplete="off">
+                    <button type="button" onclick="startScanner('pn1Input')" style="padding: 0 10px; background: #fff">
+                        <i class="material-icons">qr_code_scanner</i>
+                    </button>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>{{ t('mobile.lbl_pn2', lang) }}</label>
+                <input type="text" id="pn2Input" placeholder="{{ t('mobile.ph_pn2', lang) }}" autocomplete="off">
+            </div>
+        </div>
+
+        <div class="upload-card">
+            <input type="file" id="fileInput" accept="image/*" capture="environment" style="display: none;">
+
+            <div class="camera-btn" id="cameraBtn" onclick="document.getElementById('fileInput').click();">
+                <i class="material-icons" style="font-size: 3rem;">add_a_photo</i>
+                <span style="font-weight:bold;">{{ t('mobile.btn_take_photo', lang) }}</span>
+            </div>
+
+            <div class="preview-area" id="previewArea">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span style="font-size: 0.9rem; font-weight:bold;">{{ t('mobile.crop_done_title', lang) }}</span>
+                    <button onclick="document.getElementById('fileInput').click();" style="background:none; border:none; color:var(--primary); font-size:0.9rem; padding:0;">{{ t('mobile.btn_retake', lang) }}</button>
+                </div>
+                <img id="finalPreview" src="">
+                <div class="file-info" id="fileInfo"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <button class="submit-btn" id="submitBtn" onclick="uploadData()" disabled>
+            <i class="material-icons">cloud_upload</i> {{ t('mobile.btn_submit', lang) }}
+        </button>
+    </div>
+
+    <div class="crop-modal" id="cropModal">
+        <div class="crop-container">
+            <img id="cropImage" src="">
+        </div>
+        <div class="crop-actions">
+            <button class="crop-btn btn-cancel" onclick="cancelCrop()">{{ t('mobile.btn_cancel', lang) }}</button>
+            <button class="crop-btn btn-confirm" onclick="confirmCrop()">{{ t('mobile.btn_confirm_crop', lang) }}</button>
+        </div>
+    </div>
+
+    <div id="scannerModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; flex-direction:column; align-items:center; justify-content:center;">
+        <div id="reader" style="width: 300px;"></div>
+        <button onclick="stopScanner()" style="margin-top:20px; padding:10px 20px; background:#fff; color:#333; border-radius:5px;">{{ t('mobile.btn_close_scanner', lang) }}</button>
+    </div>
+
+    <script src="/static/js/cropper.min.js"></script>
+    <script src="/static/js/html5-qrcode.min.js"></script>
+
+    <script>
+        const MOBILE_I18N = {
+            msg_query_fail: "{{ t('mobile.msg_query_fail', lang) }}",
+            msg_compressing: "{{ t('mobile.msg_compressing', lang) }}",
+            msg_process_done: "{{ t('mobile.msg_process_done', lang) }}",
+            msg_need_pn1: "{{ t('mobile.msg_need_pn1', lang) }}",
+            msg_uploading: "{{ t('mobile.msg_uploading', lang) }}",
+            btn_submit: "{{ t('mobile.btn_submit', lang) }}",
+            msg_upload_success: "{{ t('mobile.msg_upload_success', lang) }}",
+            msg_upload_fail: "{{ t('mobile.msg_upload_fail', lang) }}",
+            msg_upload_net_err: "{{ t('mobile.msg_upload_net_err', lang) }}",
+            msg_https_warn: "{{ t('mobile.msg_https_warn', lang) }}",
+            msg_cam_deny: "{{ t('mobile.msg_cam_deny', lang) }}",
+            msg_cam_start_fail: "{{ t('mobile.msg_cam_start_fail', lang) }}",
+            msg_cam_stop_async_err: "{{ t('mobile.msg_cam_stop_async_err', lang) }}",
+            msg_cam_stop_sync_err: "{{ t('mobile.msg_cam_stop_sync_err', lang) }}"
+        };
+
+        const ctrlInput = document.getElementById('ctrlInput');
+        const pn1Input = document.getElementById('pn1Input');
+        const pn2Input = document.getElementById('pn2Input');
+
+        let cropper = null;
+        let compressedBlob = null; // 最终将被上传的二进制对象
+
+        // ==========================================
+        // 1. 智能数据查询、补全与纠偏逻辑
+        // ==========================================
+
+        // 动画特效
+        function flashGreen(element) {
+            element.classList.add('correct-flash');
+            setTimeout(() => element.classList.remove('correct-flash'), 600);
+        }
+
+        async function fetchAutoFill(query, type) {
+            if (!query) return;
+            try {
+                if (type === 'ctrl') {
+                    // 查资产表
+                    let res = await fetch(`/api/asset_info/${encodeURIComponent(query)}`);
+                    let data = await res.json();
+                    if (!data.error) {
+                        if(data.pn_1) { pn1Input.value = data.pn_1; flashGreen(pn1Input); }
+                        if(data.pn_2) { pn2Input.value = data.pn_2; flashGreen(pn2Input); }
+                    }
+                } else {
+                    // 查物品总表 (支持 pn1 或 pn2 查询)
+                    let res = await fetch(`/api/item/${encodeURIComponent(query)}`);
+                    let data = await res.json();
+                    if (!data.error) {
+                        // 🌟 核心纠偏逻辑：如果用户把PN2当成PN1扫进去了
+                        if (data.matched_by === 'pn_2') {
+                            pn1Input.value = data.pn_1 || '';
+                            pn2Input.value = query; // 将原本的输入移到 PN2
+                            flashGreen(pn1Input);
+                            flashGreen(pn2Input);
+                        } else {
+                            // 正常补全
+                            if(type === 'pn2' && data.pn_1) { pn1Input.value = data.pn_1; flashGreen(pn1Input); }
+                            if(type === 'pn1' && data.pn_2) { pn2Input.value = data.pn_2; flashGreen(pn2Input); }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error(MOBILE_I18N.msg_query_fail, e);
+            }
+        }
+
+        // 绑定失焦事件
+        ctrlInput.addEventListener('blur', () => fetchAutoFill(ctrlInput.value.trim(), 'ctrl'));
+        pn1Input.addEventListener('blur', () => fetchAutoFill(pn1Input.value.trim(), 'pn1'));
+        pn2Input.addEventListener('blur', () => fetchAutoFill(pn2Input.value.trim(), 'pn2'));
+
+
+        // ==========================================
+        // 2. 图片载入与唤起裁剪框
+        // ==========================================
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            let file = e.target.files[0];
+            if (!file) return;
+
+            let reader = new FileReader();
+            reader.onload = function(event) {
+                let imgElement = document.getElementById('cropImage');
+                imgElement.src = event.target.result;
+
+                document.getElementById('cropModal').style.display = 'flex';
+
+                if (cropper) cropper.destroy();
+                cropper = new Cropper(imgElement, {
+                    viewMode: 1,
+                    dragMode: 'move',
+                    aspectRatio: NaN, // 自由裁剪比例
+                    autoCropArea: 0.9,
+                    background: false
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function cancelCrop() {
+            document.getElementById('cropModal').style.display = 'none';
+            if (cropper) { cropper.destroy(); cropper = null; }
+            document.getElementById('fileInput').value = ''; // 清空输入允许重选相同文件
+        }
+
+        // ==========================================
+        // 3. 裁剪确认与 100KB 极限压缩算法
+        // ==========================================
+        async function confirmCrop() {
+            if (!cropper) return;
+
+            // 拿到裁剪后的原始 Canvas (分辨率可能极高)
+            let canvas = cropper.getCroppedCanvas();
+            document.getElementById('cropModal').style.display = 'none';
+
+            // 切换 UI
+            document.getElementById('cameraBtn').style.display = 'none';
+            document.getElementById('previewArea').style.display = 'block';
+            document.getElementById('fileInfo').innerText = MOBILE_I18N.msg_compressing;
+
+            // 开始压缩循环
+            compressedBlob = await compressToTargetSize(canvas, 100); // 目标 100KB
+
+            // 展示最终结果
+            let finalUrl = URL.createObjectURL(compressedBlob);
+            document.getElementById('finalPreview').src = finalUrl;
+            let sizeText = (compressedBlob.size / 1024).toFixed(1);
+            document.getElementById('fileInfo').innerText = MOBILE_I18N.msg_process_done.replace('{size}', sizeText);
+            document.getElementById('submitBtn').disabled = false;
+        }
+
+        // 核心算法：循环降质与降分辨率，直到体积 < 100KB
+        function compressToTargetSize(sourceCanvas, maxKb) {
+            return new Promise((resolve) => {
+                let quality = 0.9;
+                let scale = 1.0;
+                let targetBytes = maxKb * 1024;
+
+                function attemptCompress() {
+                    let w = sourceCanvas.width * scale;
+                    let h = sourceCanvas.height * scale;
+
+                    let tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = w;
+                    tempCanvas.height = h;
+                    let ctx = tempCanvas.getContext('2d');
+                    ctx.drawImage(sourceCanvas, 0, 0, w, h);
+
+                    tempCanvas.toBlob(function(blob) {
+                        if (blob.size <= targetBytes || (quality <= 0.2 && scale <= 0.3)) {
+                            // 达成目标，或者已经压缩到视觉极限，强行返回
+                            resolve(blob);
+                        } else {
+                            // 策略：先降质量，质量降到底了再降分辨率
+                            if (quality > 0.4) {
+                                quality -= 0.15;
+                            } else {
+                                scale -= 0.2;
+                                quality = 0.8; // 降低分辨率后，恢复一些画质
+                            }
+                            attemptCompress(); // 递归重试
+                        }
+                    }, 'image/jpeg', quality);
+                }
+
+                attemptCompress();
+            });
+        }
+
+        // ==========================================
+        // 4. 数据打包与一键上传
+        // ==========================================
+        async function uploadData() {
+            let pnToSubmit = pn1Input.value.trim();
+            if (!pnToSubmit) {
+                alert(MOBILE_I18N.msg_need_pn1);
+                return;
+            }
+
+            let btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="material-icons">hourglass_empty</i> ${MOBILE_I18N.msg_uploading}`;
+
+            let formData = new FormData();
+            formData.append("pn", pnToSubmit);
+            formData.append("file", compressedBlob, "upload.jpg");
+
+            try {
+                let res = await fetch('/api/mobile_upload_image', {
+                    method: 'POST',
+                    body: formData
+                });
+                let data = await res.json();
+
+                if (data.status === 'success') {
+                    alert(MOBILE_I18N.msg_upload_success);
+                    // 清空表单准备下一次拍摄
+                    pn1Input.value = ''; pn2Input.value = ''; ctrlInput.value = '';
+                    document.getElementById('previewArea').style.display = 'none';
+                    document.getElementById('cameraBtn').style.display = 'flex';
+                    compressedBlob = null;
+                } else {
+                    alert(MOBILE_I18N.msg_upload_fail + data.message);
+                }
+            } catch (e) {
+                alert(MOBILE_I18N.msg_upload_net_err);
+            } finally {
+                btn.innerHTML = `<i class="material-icons">cloud_upload</i> ${MOBILE_I18N.btn_submit}`;
+                btn.disabled = true; // 等待下一张图
+            }
+        }
+
+        // ==========================================
+        // 5. 手机扫码 (优化安全版)
+        // ==========================================
+        let html5QrCode = null; // 初始化为 null
+        let currentTargetId = '';
+        let isProcessingScan = false;
+
+        async function startScanner(targetId) {
+            if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+                alert(MOBILE_I18N.msg_https_warn);
+                return;
+            }
+
+            currentTargetId = targetId;
+            document.getElementById('scannerModal').style.display = 'flex';
+
+            // 🌟 优化点：复用实例，而不是每次都 new 一个新的
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("reader");
+            }
+
+            const config = { fps: 10, qrbox: { width: 250, height: 150 }, aspectRatio: 1.0 };
+
+            try {
+                // 只有在非扫描状态下才启动
+                if (!html5QrCode.isScanning) {
+                    await html5QrCode.start(
+                        { facingMode: "environment" },
+                        config,
+                        async (decodedText) => {
+                            if (isProcessingScan) return;
+                            isProcessingScan = true;
+
+                            const targetInput = document.getElementById(currentTargetId);
+                            targetInput.value = decodedText;
+
+                            if (navigator.vibrate) navigator.vibrate(100);
+
+                            // 扫码成功，立刻关闭摄像头
+                            stopScanner();
+
+                            const type = currentTargetId === 'ctrlInput' ? 'ctrl' : (currentTargetId === 'pn1Input' ? 'pn1' : 'pn2');
+                            await fetchAutoFill(decodedText, type);
+
+                            isProcessingScan = false;
+                        }
+                    );
+                }
+            } catch (err) {
+                console.error(MOBILE_I18N.msg_cam_start_fail, err);
+                alert(MOBILE_I18N.msg_cam_deny);
+                stopScanner(); // 启动失败也要关掉弹窗
+            }
+        }
+
+        function stopScanner() {
+            // 🌟 优化点 1：无条件立刻隐藏弹窗，让按钮点下去绝对有反应！
+            document.getElementById('scannerModal').style.display = 'none';
+            isProcessingScan = false; // 解除业务锁
+
+            // 🌟 优化点 2：安全地停止摄像头
+            if (html5QrCode) {
+                try {
+                    // 判断是否真的在扫描，如果是，才执行停止
+                    if (html5QrCode.isScanning) {
+                        html5QrCode.stop().then(() => {
+                            html5QrCode.clear(); // 清理残影
+                        }).catch(err => {
+                            console.warn(MOBILE_I18N.msg_cam_stop_async_err, err);
+                        });
+                    }
+                } catch (err) {
+                    console.warn(MOBILE_I18N.msg_cam_stop_sync_err, err);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

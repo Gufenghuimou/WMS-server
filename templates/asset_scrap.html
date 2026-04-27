@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('title.asset_scrap', lang) }} - {{ t('title.base', lang) }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/asset_scrap.css">
+{% endblock %}
+
+{% block top_actions %}
+<a href="/asset_scrap/export" style="text-decoration: none;">
+    <button class="btn-primary" style="border-radius: 20px; gap: 8px;">
+        <i class="material-icons" style="font-size: 1.2rem;">file_download</i> {{ t('asset_scrap.export_btn', lang) }}
+    </button>
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="scrap-container">
+    <div class="scan-console">
+        <div class="scan-input-group" style="width: 320px;">
+            <label>{{ t('asset_scrap.scan_label', lang) }}</label>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="scanInput" class="scan-input" style="flex: 1; width: 100%;" placeholder="{{ t('asset_scrap.scan_placeholder', lang) }}" autocomplete="off" autofocus>
+                <button class="btn-primary" onclick="addAsset()" style="border-radius: 8px; padding: 0 15px;">{{ t('asset_scrap.btn_input', lang) }}</button>
+            </div>
+        </div>
+
+        <div class="scan-result-box" style="flex: 1; flex-direction: column; align-items: flex-start; justify-content: center; background: #fff5f5; border-color: #ffcdd2;">
+            <div style="font-size: 1.1rem; color: var(--danger-red); display: flex; align-items: center; gap: 8px; font-weight: bold;">
+                <i class="material-icons">warning</i> {{ t('asset_scrap.danger_zone_title', lang) }}
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: normal; margin-top: 4px;">
+                {{ t('asset_scrap.danger_zone_desc', lang) }}
+            </div>
+        </div>
+    </div>
+
+    <form id="scrapForm" action="/asset_scrap" method="POST" onsubmit="return confirmScrap()">
+        <div class="location-block" style="margin-bottom: 20px;">
+            <div class="location-header" style="cursor: default; background: #fafafa; justify-content: space-between;">
+                <div style="display: flex; flex-direction: row; gap: 10px;">
+                    <button type="button" class="btn-primary" onclick="fetchStoppedAssets(event)" style="background-color: var(--primary-blue); border: 1px solid var(--primary-blue); border-radius: 20px; box-shadow: 0 6px 20px rgba(12, 60, 128, 0.4)">
+                        <i class="material-icons" style="font-size: 1.2rem; margin-right: 5px;">content_paste_go</i> {{ t('asset_scrap.btn_fetch_stop', lang) }}
+                    </button>
+                    <button type="button" class="btn-primary" onclick="openSecurityModal()" style="background-color: var(--danger-red); border: 1px solid var(--danger-red); border-radius: 20px; box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);">
+                        <i class="material-icons" style="font-size: 1.5rem; margin-right: 8px;">delete_forever</i> {{ t('asset_scrap.btn_destroy', lang) }}
+                    </button>
+                </div>
+                <span class="status-badge" style="background: rgba(231, 76, 60, 0.1); color: var(--danger-red); font-size: 1rem; padding: 6px 15px;">
+                    {{ t('asset_scrap.prefix_total', lang) }} <span id="countDisplay" style="font-size: 1.2rem; font-weight: 900; margin: 0 3px;">0</span> {{ t('asset_scrap.suffix_item', lang) }}
+                </span>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="scrap-table">
+                    <thead style="position: sticky; top: 0; background: #f1f5f9; z-index: 10;">
+                        <tr>
+                            <th style="width: 15%;">{{ t('asset_scrap.th_ctrl_no', lang) }}</th>
+                            <th style="width: 15%;">{{ t('asset_scrap.th_pn1', lang) }}</th>
+                            <th style="width: 15%;">{{ t('asset_scrap.th_pn2', lang) }}</th>
+                            <th style="width: 30%;">{{ t('asset_scrap.th_name', lang) }}</th>
+                            <th style="width: 10%;">{{ t('asset_scrap.th_raison', lang) }}</th>
+                            <th style="width: 15%;">{{ t('asset_scrap.th_loc', lang) }}</th>
+                            <th style="width: 10%; text-align: center;">{{ t('asset_scrap.th_remove', lang) }}</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scrapList">
+                        <tr id="emptyState">
+                            <td colspan="6" style="text-align: center; padding: 80px 20px; color: var(--text-muted); border: none;">
+                                <i class="material-icons" style="font-size: 4rem; color: #e0e0e0; display: block; margin-bottom: 15px;">document_scanner</i>
+                                <span style="font-size: 1.1rem;">{{ t('asset_scrap.empty_table', lang) }}</span>
+                            </td>
+                        </tr>
+                        {% for draft in draft_records %}
+                        <tr id="row-{{ draft.ctrl_no }}" class="scrap-item">
+                            <td class="font-monospace" style="font-weight: bold; font-size: 1.15rem;">
+                                <i class="material-icons" style="font-size: 18px; color: var(--danger-red); vertical-align: middle; margin-right: 8px;">qr_code</i>
+                                {{ draft.ctrl_no }}
+                            </td>
+                            <td class="font-monospace" style="font-size: 1.1rem">{{ draft.pn_1 or '-' }}</td>
+                            <td class="font-monospace" style="font-size: 1.1rem">{{ draft.pn_2 or '-' }}</td>
+                            <td>{{ draft.name or '-' }}</td>
+                            <td>{% if draft.is_no_use %}NO USE{% else %}NG Scrap{% endif %}</td>
+                            <td>{{ draft.location or '-' }}</td>
+                            <td style="text-align: center;">
+                                <button type="button" class="btn-remove"
+                                        {% if draft.is_stop %} disabled style="opacity: 0.3; cursor: not-allowed;" {% endif %}
+                                        onclick="removeAsset('{{ draft.ctrl_no }}', this)"
+                                        title="{% if draft.is_stop %}Must unstop asset firstly{% else %}{{ t('asset_scrap.title_remove', lang) }}{% endif %}">
+                                    <i class="material-icons">close</i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!--<div id="scrapSecurityModal" class="modal-overlay" style="display: none; z-index: 10000;">-->
+<!--    <div class="modal-box" style="width: 400px; text-align: center; border-top: 6px solid var(&#45;&#45;danger-red, #d93025);">-->
+<!--        <i class="material-icons" style="font-size: 4rem; color: var(&#45;&#45;danger-red, #d93025); margin-bottom: 10px;">warning</i>-->
+<!--        <h3 style="margin-top: 0; color: #333; font-size: 1.3rem;">{{ t('asset_scrap.modal_title', lang) }}</h3>-->
+
+<!--        <div style="background: #fce8e6; color: #c0392b; padding: 12px; border-radius: 8px; font-size: 0.9rem; margin-bottom: 20px; text-align: left; line-height: 1.5;">-->
+<!--            {{ t('asset_scrap.modal_warning', lang) | safe }}-->
+<!--        </div>-->
+
+<!--        <p style="font-size: 0.95rem; color: #555; margin-bottom: 10px;">{{ t('asset_scrap.modal_captcha_msg', lang) }}</p>-->
+
+<!--        <div style="font-size: 2rem; font-weight: 900; color: var(&#45;&#45;primary-blue, #1a73e8); margin-bottom: 15px; letter-spacing: 2px;" id="mathProblemDisplay">-->
+<!--            X + Y = ?-->
+<!--        </div>-->
+
+<!--        <input type="number" id="securityAnswerInput" placeholder="{{ t('asset_scrap.ph_captcha', lang) }}" autocomplete="off"-->
+<!--               style="width: 80%; padding: 12px; font-size: 1.2rem; text-align: center; border: 2px solid #ccc; border-radius: 8px; outline: none; transition: 0.3s; margin-bottom: 20px;">-->
+
+<!--        <div id="securityErrorMsg" style="color: #d93025; font-size: 0.85rem; margin-top: -10px; margin-bottom: 15px; display: none;">-->
+<!--            <i class="material-icons" style="font-size: 1rem; vertical-align: middle;">close</i> {{ t('asset_scrap.msg_calc_error', lang) }}-->
+<!--        </div>-->
+
+<!--        <div style="display: flex; gap: 15px; justify-content: center;">-->
+<!--            <button type="button" class="btn-primary" style="background: #f1f3f4; color: #555; box-shadow: none;" onclick="closeSecurityModal()">{{ t('asset_scrap.btn_think_again', lang) }}</button>-->
+<!--            <button type="button" class="btn-primary" style="background: var(&#45;&#45;danger-red, #d93025);" onclick="verifyAndExecuteScrap()">🔥 {{ t('asset_scrap.btn_destroy_now', lang) }}</button>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+
+<div id="scrapSecurityModal" class="custom-modal" style="display: none; z-index: 10000;">
+    <div class="custom-modal-content" style="width: 440px; text-align: center; border-top: 6px solid var(--danger-red, #d93025); padding: 30px;">
+        <i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red); margin-bottom: 10px; width: auto; height: auto; line-height: 1;">report_problem</i>
+        <h3 style="margin-top: 0; color: #333; font-size: 1.3rem;">{{ t('asset_scrap.modal_title', lang) }}</h3>
+
+        <div style="background: #fce8e6; color: #c0392b; padding: 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 25px; text-align: left; line-height: 1.5;">
+            {{ t('asset_scrap.modal_warning', lang) | safe }}
+        </div>
+
+        <div class="slider-container" id="sliderContainer">
+            <div class="slider-track" id="sliderTrack">
+                <div class="slider-text" id="sliderText">{{ t('asset_scrap.slider_text', lang) }}</div>
+                <div class="slider-bg" id="sliderBg"></div>
+                <div class="slider-handle" id="sliderHandle">
+                    <i class="material-icons">double_arrow</i>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 15px; justify-content: center; margin-top: 25px;">
+            <button type="button" class="btn-primary" style="background: #f1f3f4; color: #555; box-shadow: none;" onclick="closeSecurityModal()">{{ t('asset_scrap.btn_think_again', lang) }}</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const SCRAP_I18N = {
+        title_remove: "{{ t('asset_scrap.title_remove', lang) }}",
+        fetching: "{{ t('asset_scrap.fetching', lang) }}",
+        fetch_success: `{{ t('asset_scrap.fetch_success', lang) }}`,
+        fetch_net_error: "{{ t('asset_scrap.fetch_net_error', lang) }}",
+        scan_net_error: "{{ t('asset_scrap.scan_net_error', lang) }}",
+        destroying: "{{ t('asset_scrap.destroying', lang) }}",
+        slider_text: "{{ t('asset_scrap.slider_text', lang) }}"
+    };
+</script>
+<script src="/static/js/asset_scrap.js"></script>
+{% endblock %}

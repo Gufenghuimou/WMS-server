@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{{ t('title.base', lang) }}{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%23121212'/%3E%3Cpolygon points='50,22 75,36.5 75,65.5 50,80 25,65.5 25,36.5' fill='none' stroke='%233498db' stroke-width='5' stroke-linejoin='round'/%3E%3Cpolygon points='50,38 55,41 50,44 45,41' fill='%233498db'/%3E%3Cpolygon points='46,48 54,48 54,66 50,68.5 46,66' fill='%23ffffff'/%3E%3C/svg%3E">
+    <script src="/static/js/qrious.min.js"></script>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="is-loading lang-{{ lang }}">
+
+    <div id="global-page-loader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">{{ t('base.loading', lang) }}</div>
+    </div>
+
+    <nav class="sidebar">
+        <a href="/settings" class="user-profile" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 12px; margin-bottom: 30px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+            <div class="avatar" style="width: 80px; height: 80px; min-width: 36px; overflow: hidden; background: #282828; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                <img class="user-avatar" src="/static/avatars/{{ user.username }}.jpg"
+                     style="width:100%; height:100%; object-fit:cover;"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <i class="material-icons" style="display:none; color:#777; font-size: 20px;">person</i>
+            </div>
+
+            <div class="user-info" style="flex: 1; overflow: hidden;">
+                <div class="user-name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.95rem; color: var(--text-white); font-weight: 500;">
+                    {{ user.full_name or user.username }}
+                </div>
+                <div class="user-role" >{{ user.role }}</div>
+            </div>
+        </a>
+        <div class="lang-flags-container">
+            <a href="/api/switch_lang/zh" class="lang-flag {% if request.state.lang == 'zh' %}active{% endif %}" title="中文">
+                <img src="/static/flags/cn.svg" alt="ZH">
+            </a>
+            <a href="/api/switch_lang/en" class="lang-flag {% if request.state.lang == 'en' %}active{% endif %}" title="English">
+                <img src="/static/flags/us.svg" alt="EN">
+            </a>
+            <a href="/api/switch_lang/jp" class="lang-flag {% if request.state.lang == 'jp' %}active{% endif %}" title="日本語">
+                <img src="/static/flags/jp.svg" alt="JP">
+            </a>
+            <a href="/api/switch_lang/vn" class="lang-flag {% if request.state.lang == 'vn' %}active{% endif %}" title="Tiếng Việt">
+                <img src="/static/flags/vn.svg" alt="VN">
+            </a>
+        </div>
+
+
+        <div class="nav-menu">
+            {% if user.role in ['admin', 'operator'] %}
+            <div class="nav-group-title">{{ t('base.inventory', lang) }}</div>
+            <a href="/all" class="nav-item {% if active_page == 'inventory' %}active{% endif %}"><i class="material-icons">inventory_2</i>{{ t('title.inventory_cards', lang) }}</a>
+            <a href="/inventory_table" class="nav-item {% if active_page == 'inventory_table' %}active{% endif %}"><i class="material-icons">view_list</i>{{ t('title.inventory_table', lang) }}</a>
+            <a href="/request_queue" class="nav-item {% if active_page == 'request_queue' %}active{% endif %}">
+                <i class="material-icons">notifications</i>{{ t('title.request_queue', lang) }}
+                {% if request.state.pending_count and request.state.pending_count > 0 %}
+                <span style="background-color: var(--danger-red); color: white; border-radius: 12px; padding: 4px 7px; font-size: 0.8rem; font-weight: bold; margin-left: auto; box-shadow: 0 2px 4px rgba(0,0,0,0.2); line-height: 1;">
+                    {{ request.state.pending_count }}
+                </span>
+                {% endif %}
+            </a>
+            <a href="/request_log" class="nav-item {% if active_page == 'request_log' %}active{% endif %}"><i class="material-icons">list_alt</i>{{ t('title.request_log', lang) }}</a>
+            <a href="/stock_in" class="nav-item {% if active_page == 'stock_in' %}active{% endif %}"><i class="material-icons">add_box</i>{{ t('title.stock_in', lang) }}</a>
+            <a href="/history" class="nav-item {% if active_page == 'history' %}active{% endif %}"><i class="material-icons">history</i>{{ t('title.history', lang) }}</a>
+            <a href="/audit" class="nav-item {% if active_page == 'audit' %}active{% endif %}"><i class="material-icons">fact_check</i>{{ t('title.audit', lang) }}</a>
+            <div class="nav-group-title" style="margin-top: 20px;">{{ t('base.asset', lang) }}</div>
+            <a href="/asset" class="nav-item {% if active_page == 'asset' %}active{% endif %}"><i class="material-icons">devices</i>{{ t('title.asset', lang) }}</a>
+            <a href="/asset_stock_in" class="nav-item {% if active_page == 'asset_stock_in' %}active{% endif %}"><i class="material-icons">app_registration</i>{{ t('title.asset_stock_in', lang) }}</a>
+            <a href="/asset_history" class="nav-item {% if active_page == 'asset_history' %}active{% endif %}"><i class="material-icons">manage_history</i>{{ t('title.asset_history', lang) }}</a>
+            <a href="/asset_audit/dashboard" class="nav-item {% if active_page == 'asset_audit' %}active{% endif %}"><i class="material-icons">barcode_reader</i>{{ t('title.asset_audit', lang) }}</a>
+            <a href="/asset_scrap" class="nav-item {% if active_page == 'asset_scrap' %}active{% endif %}"><i class="material-icons">playlist_remove</i>{{ t('title.asset_scrap', lang) }}</a>
+                {% if user.role == 'admin' %}
+                <div class="nav-group-title" style="margin-top: 20px;">{{ t('base.system', lang) }}</div>
+                <a href="/backend" class="nav-item {% if active_page == 'backend' %}active{% endif %}"><i class="material-icons">admin_panel_settings</i>{{ t('title.admin', lang) }}</a>
+                {% endif %}
+            {% endif %}
+            {% if user.role == 'user' %}
+            <a href="/all" class="nav-item {% if active_page == 'inventory' %}active{% endif %}"><i class="material-icons">inventory_2</i>{{ t('title.inventory_cards', lang) }}</a>
+            <a href="/request_log" class="nav-item {% if active_page == 'request_log' %}active{% endif %}"><i class="material-icons">list_alt</i>{{ t('title.request_log', lang) }}</a>
+            {% endif %}
+        </div>
+
+        <a href="/logout" class="nav-item" style="margin-top: auto; color: #e74c3c; flex-shrink: 0;"><i class="material-icons">logout</i>{{ t('base.logout', lang) }}</a>
+    </nav>
+
+    <footer class="bottom-bar">
+        <div class="bottom-bar-header">
+
+            <div class="expand-trigger" onclick="toggleMapExpansion()" id="mapHeader">
+                <i class="material-icons" id="expandIcon" style="color: var(--status); transition: 0.3s;">keyboard_arrow_up</i>
+                <div>
+                    <h5 style="margin: 0; color: #fff;">{{ t('base.warehouse_map', lang) }}</h5>
+                    <p id="mapSubtitle" style="margin: 0; font-size: 0.8rem; color: #aaa;">{{ t('base.map_btn', lang) }}</p>
+                </div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.08); padding: 6px 18px; border-radius: 20px; font-size: 0.85rem; color: #e0e0e0; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+
+                {% if active_page == 'inventory' %}
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">inventory_2</i>
+                    {{ t('status.inventory_cards', lang) }}:
+                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                        {{ items|length if items is defined else '--' }}
+                    </span>
+
+                {% elif active_page == 'inventory_table' %}
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--danger-red);">report_problem</i>
+                    {{ t('status.inventory_table', lang) }}:
+                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--danger-red); margin-left: 4px;">
+                        {{ alarm_count|default(0) }}
+                    </span>
+
+                {% elif active_page == 'request_queue' %}
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">pending_actions</i>
+                    {{ t('status.request_queue', lang, count='') }}:
+                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                        {{ request.state.pending_count|default(0) }}
+                    </span>
+
+                {% elif active_page == 'request_log' %}
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">done_all</i>
+                    {{ t('status.request_log', lang) }}:
+                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                        {{ processed_count|default(0) }}
+                    </span>
+
+                {% elif active_page == 'stock_in' %}
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">playlist_add_check</i>
+                    {{ t('status.stock_in', lang) }}:
+                    <span id="stockinCountDisplay" style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                        0
+                    </span>
+
+                {% elif active_page == 'history' %}
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">history</i>
+                    {{ t('status.history', lang) }}:
+                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                        {{ logs|length if logs is defined else '--' }}
+                    </span>
+
+                {% elif active_page == 'audit' %}
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">fact_check</i>
+                    {{ t('status.audit', lang) }}:
+                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                        {{ progress|default(0) }}% ({{ completed|default(0) }}/{{ total|default(0) }})
+                    </span>
+
+                {% elif active_page == 'asset' %}
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">category</i>
+                    {{ t('status.asset_1', lang) }}:
+                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                        {{ asset_categories_count|default(0) }}
+                    </span>
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status); margin-left: 15px;">devices</i>
+                    {{ t('status.asset_2', lang, count='') }}:
+                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                        {{ asset_total_count|default(0) }}
+                    </span>
+
+                {% elif active_page == 'asset_stock_in' %}
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">app_registration</i>
+                    {{ t('status.asset_stock_in', lang) }}:
+                    <span id="assetStockinCountDisplay" style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                        0
+                    </span>
+
+                {% elif active_page == 'asset_history' %}
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">manage_history</i>
+                    {{ t('status.asset_history', lang) }}:
+                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                        {{ logs|length if logs is defined else '--' }}
+                    </span>
+
+                {% elif active_page == 'asset_audit' %}
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">barcode_reader</i>
+                    {{ t('status.asset_audit', lang) }}:
+                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                        {{ progress|default(0) }}% ({{ completed|default(0) }}/{{ total|default(0) }})
+                    </span>
+
+                {% elif active_page == 'asset_scrap' %}
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">delete_sweep</i>
+                    {{ t('status.asset_scrap', lang) }}:
+                    <span id="scrapCountDisplay" style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                        {{ draft_records|length if draft_records is defined else 0 }}
+                    </span>
+
+                {% elif active_page == 'backend' %}
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">group</i>
+                    {{ t('status.admin', lang) }}:
+                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                        {{ users|length if users is defined else '--' }}
+                    </span>
+
+                {% else %}
+                    <i class="material-icons" style="font-size: 1.1rem; color: var(--status);">check_circle</i>
+                    {{ t('status.base', lang) }}
+                {% endif %}
+            </div>
+
+        </div>
+
+        <div class="bottom-bar-divider"></div>
+        <div id="mapViewport" class="map-viewport">
+            <canvas id="footerWarehouseCanvas" class="wh-canvas" width="4000" height="3000"></canvas>
+        </div>
+    </footer>
+
+    <main class="main-area">
+        <header class="top-bar" style="display: flex; align-items: center;">
+            <div class="gerenal-actions" style="display: flex; align-items: center;">
+            {% if user.role in ['admin', 'operator'] %}
+            <button type="button" class="btn-primary" onclick="openMobileUploadAuth(event)" style="background-color: #8e44ad; border-radius: 20px; gap: 8px; min-width: 135px;">
+                <i class="material-icons" style="font-size: 1.2rem;">phone_iphone</i>{{ t('title.mobile_quick_upload', lang) }}
+            </button>
+            <button type="button" class="btn-primary" id="openReprint"  style="background-color: #3498db; border-radius: 20px; gap: 8px; margin-left: 16px; min-width: 135px;">
+                <div id="printerStatusBadge" style="display: flex; align-items: center; border: none;">
+                    <span id="printerDot" style="width: 10px; height: 10px; border-radius: 50%; background: #ccc; transition: all 0.3s ease;"></span>
+                </div>
+                <i class="material-icons" style="font-size: 1.2rem;">print</i>{{ t('title.reprint', lang) }}
+            </button>
+            {% endif %}
+                <div class="search-box" style="margin-left: 16px;">
+                    <i class="material-icons" style="color: #888;">search</i>
+                    <input type="text" id="globalSearch" placeholder="{{ t('base.search_placeholder', lang) }}">
+                    <button type="button" id="clearBtn" class="material-icons" style="border: none; background-color: #fff; cursor: pointer; display: none;">clear</button>
+                </div>
+            </div>
+            <div class="top-actions">
+                {% block top_actions %}{% endblock %}
+            </div>
+        </header>
+
+        <div class="content-scroll-area">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <div id="qrModal" class="custom-modal" style="display: none; z-index: 5000;">
+        <div class="custom-modal-content" style="width: 320px; text-align: center; padding: 30px;">
+            <span class="close-modal" onclick="closeQrModal()">&times;</span>
+            <h3 style="margin-top:0; color: var(--text-main); display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <i class="material-icons" style="color: #8e44ad;">qr_code_scanner</i>{{ t('base.scan_to_login', lang) }}
+            </h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">{{ t('base.qr_note', lang) }}</p>
+
+            <canvas id="qrcodeCanvas" style="margin: 0 auto; display: block; border: 1px solid #eee; padding: 10px; border-radius: 8px;"></canvas>
+
+            <div style="font-size: 0.75rem; color: #aaa; margin-top: 15px;">
+                <i class="material-icons" style="font-size: 0.9rem; vertical-align: middle;">timer</i>{{ t('base.qr_time_note', lang) }}
+            </div>
+        </div>
+    </div>
+
+    <div id="chatWidget" class="chat-widget">
+        <button id="chatToggleBtn" class="chat-toggle-btn" onclick="toggleChat()">
+            <i class="material-icons">support_agent</i>
+            <span class="chat-badge" id="chatUnreadBadge" style="display:none;"></span>
+        </button>
+
+        <div id="chatPanel" class="chat-panel">
+            <div class="chat-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="material-icons">forum</i>
+                    <span>{{ t('base.chat_title', lang) }}</span>
+                </div>
+                <button onclick="toggleChat()" class="close-chat-btn"><i class="material-icons">close</i></button>
+            </div>
+
+            <div id="chatBody" class="chat-body">
+                <div style="text-align: center; color: #aaa; font-size: 0.8rem; margin-top: 10px;">
+                    {{ t('base.chat_note', lang) }}
+                </div>
+            </div>
+
+            <div class="chat-footer">
+                <input type="text" id="chatInput" placeholder="{{ t('base.chat_placeholder', lang) }}" onkeydown="if(event.key === 'Enter') sendChatMessage()">
+                <button class="chat-send-btn" onclick="sendChatMessage()">
+                    <i class="material-icons">send</i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.CURRENT_USER = {
+            username: "{{ user.username }}",
+            role: "{{ user.role }}"
+        };
+    </script>
+
+    <script>
+    const BASE_I18N = {
+        map_not_found: "{{ t('base.map_not_found', lang) }}",
+        map_load_fail: "{{ t('base.map_load_fail', lang) }}",
+        target_loc: "{{ t('base.target_loc', lang) }}",
+        drag_tip: "{{ t('base.drag_tip', lang) }}",
+        map_legend: "{{ t('base.map_legend', lang) }}",
+        generating: "{{ t('base.generating', lang) }}",
+        auth_fail: "{{ t('base.auth_fail', lang) }}",
+        unknown_error: "{{ t('base.unknown_error', lang) }}",
+        network_error_qr: "{{ t('base.network_error_qr', lang) }}",
+        chat_note: "{{ t('base.chat_note', lang) }}",
+        admin_tag: "{{ t('base.admin_tag', lang) }}",
+        send_fail: "{{ t('base.send_fail', lang) }}"
+    };
+</script>
+
+    <script src="/static/js/base.js"></script>
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('title.audit', lang) }} - {{ t('title.base', lang) }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/audit.css">
+{% endblock %}
+
+{% block top_actions %}
+    <div style="display: flex; gap: 15px; align-items: center;">
+        <form action="/audit/start" method="post" style="margin: 0;" onsubmit="return confirm('{{ t('audit.confirm_start', lang) }}');">
+            <button type="submit" class="btn-primary" style="background: transparent; color: var(--text-muted);">
+                <i class="material-icons" style="font-size: 1.2rem; margin-right: 5px;">sync</i> {{ t('audit.start_new', lang) }}
+            </button>
+        </form>
+
+        <a href="/audit/export" style="text-decoration: none;">
+            <button class="btn-primary" style="border-radius: 20px; display: flex; align-items: center; gap: 5px;">
+                <i class="material-icons" style="font-size: 1.2rem;">file_download</i> {{ t('audit.export_report', lang) }}
+            </button>
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div id="auditContainer">
+    <div class="scan-console">
+        <div class="scan-input-group" style="width: 320px;">
+            <label>{{ t('audit.scan_label', lang) }}</label>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="scanInput" class="scan-input" style="flex: 1; width: 100%;" placeholder="{{ t('audit.scan_placeholder', lang) }}" autocomplete="off" autofocus>
+            </div>
+        </div>
+
+        <div class="scan-result-box" id="scanResultBox" style="flex: 1; flex-direction: column; align-items: flex-start; justify-content: center; background: #f8f9fa; border-color: #ddd;">
+            <div style="font-size: 1.1rem; color: var(--primary-blue); display: flex; align-items: center; gap: 8px; font-weight: bold;">
+                <i class="material-icons">qr_code_scanner</i> {{ t('audit.waiting_scan', lang) }}
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: normal; margin-top: 4px;">
+                {{ t('audit.scan_desc', lang) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="audit-list-wrapper">
+        {% for loc, items in grouped.items() %}
+        <div class="location-block collapsed" data-loc="{{ loc | lower }}">
+            <div class="location-header" onclick="this.parentElement.classList.toggle('collapsed')">
+                <h3>
+                    <i class="material-icons collapse-icon">expand_more</i>
+                    <i class="material-icons" style="font-size: 1.2rem;">place</i> {{ loc }}
+                </h3>
+                <span class="status-badge" style="background: #eee; color: #666;">{{ t('audit.total_items', lang) | replace('{count}', items|length) }}</span>
+            </div>
+
+            {% for item in items %}
+            <form class="audit-form" id="auditForm_{{ item.id }}" action="/audit/submit/{{ item.id }}" method="post"></form>
+            {% endfor %}
+            <table class="audit-table">
+                <thead style="position: sticky; top: 0; background: #f1f5f9; z-index: 10; box-shadow: inset 0 -2px 0 var(--border-color);">
+                    <tr>
+                        <th style="width: 140px;">{{ t('audit.th_pn1', lang) }}</th>
+                        <th style="width: 140px;">PN2</th> <th style="min-width: 250px;">{{ t('audit.th_name', lang) }}</th>
+                        <th style="width: 80px; text-align: center;">{{ t('audit.th_book_qty', lang) }}</th>
+                        <th style="width: 100px; ">{{ t('audit.th_actual_qty', lang) }}</th>
+                        <th style="width: 100px;">{{ t('audit.th_actual_loc', lang) }}</th>
+                        <th style="width: 150px;">{{ t('audit.th_remarks', lang) }}</th>
+                        <th style="width: 80px; text-align: center;">{{ t('audit.th_status', lang) }}</th>
+                        <th style="width: 80px; text-align: center;">{{ t('audit.th_action', lang) }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr id="row-{{ item.id }}" data-pn1="{{ item.pn_1 | lower }}" data-pn2="{{ (item.pn_2 or '') | lower }}">
+                        <td><strong>{{ item.pn_1 }}</strong></td>
+                        <td class="font-monospace" style="color: #555;">{{ item.pn_2 or '-' }}</td> <td>
+                            <div style="font-weight: 500;">{{ item.name }}</div>
+                            <div style="font-size: 0.75rem; color: #999;">{{ item.description_2 or '' }}</div>
+                        </td>
+                        <td style="text-align: center; background: #fafafa;">{{ item.expected_stock }}</td>
+                        <td><input type="number" form="auditForm_{{ item.id }}" name="actual_stock" value="{{ item.actual_stock if item.actual_stock is not none else item.expected_stock }}" style="height: 28px;"></td>
+                        <td><input type="text" form="auditForm_{{ item.id }}" name="actual_location" value="{{ item.actual_location or item.expected_location }}" style="height: 28px;"></td>
+                        <td><input type="text" form="auditForm_{{ item.id }}" name="remarks" value="{{ item.remarks or '' }}" style="height: 28px;"></td>
+                        <td style="text-align: center;">
+                            <span id="status-{{ item.id }}" class="status-badge status-{{ item.status | lower | default('pending') }}">
+                                {{ item.status or t('audit.status_uncounted', lang) }}
+                            </span>
+                        </td>
+                        <td style="text-align: center;">
+                            <button type="submit" form="auditForm_{{ item.id }}" class="btn-primary" style="border-radius: 12px; background-color: var(--primary-blue); display: flex; align-items: center; justify-content: center; width: 36px; height: 32px; padding: 0;">
+                                <i class="material-icons" style="font-size: 1.1rem; margin:0;">save</i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/audit.js"></script>
+{% endblock %}

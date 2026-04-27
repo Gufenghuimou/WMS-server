@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('title.request_queue', lang) }} - {{ t('title.base', lang) }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/request_queue.css">
+{% endblock %}
+
+{% block content %}
+<div class="queue-container">
+
+    {% if error %}
+    <div style="background: #fce8e6; color: #d93025; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; border: 1px solid #fadbd8;">
+        <i class="material-icons">error</i>
+        <strong>{{ error }}</strong>
+    </div>
+    {% endif %}
+
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 25px;">
+        <h2 style="margin: 0; color: var(--text-main); display: flex; align-items: center; gap: 10px;">
+            <i class="material-icons" style="color: var(--primary-blue); font-size: 1.8rem;">inbox</i> {{ t('queue.page_title', lang) }}
+        </h2>
+        <span style="background: #eef2f5; color: var(--primary-blue); padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 0.9rem;">
+            {{ t('queue.pending_count', lang) | replace('{count}', req_data|length) }}
+        </span>
+    </div>
+
+    {% if req_data|length == 0 %}
+    <div style="text-align: center; padding: 60px 0; color: #bdc3c7;">
+        <i class="material-icons" style="font-size: 4rem; opacity: 0.5;">done_all</i>
+        <h3 style="margin-top: 15px; font-weight: normal;">{{ t('queue.no_pending', lang) }}</h3>
+    </div>
+    {% endif %}
+
+    {% for data in req_data %}
+    <div class="req-card">
+        <div class="req-avatar">{{ data.req.applicant[0:1] }}</div>
+
+        <div class="req-info">
+            <h4>
+                {{ data.req.applicant }} <span style="font-size: 0.8rem; background: #f0f2f5; padding: 2px 6px; border-radius: 4px; color: #666; font-weight: normal;">{{ data.req.department }}</span>
+                <span style="font-size: 0.8rem; color: #aaa; margin-left: auto;">{{ data.req.created_at }}</span>
+            </h4>
+            <p><strong>{{ data.req.pn_1 }}</strong> | {{ data.req.item_name }}</p>
+            <p style="color: #95a5a6; margin-top: 5px;">
+                <i class="material-icons" style="font-size: 0.9rem; vertical-align: middle;">chat_bubble_outline</i>
+                {{ data.req.note or t('queue.no_reason', lang) }}
+            </p>
+        </div>
+
+        <div class="req-qty">
+            <span class="req-qty-label">{{ t('queue.req_qty_label', lang) }}</span>
+            {{ data.req.req_qty }}
+        </div>
+
+        <div class="req-actions">
+            <button class="btn-primary" style="background: #1db954; height: 40px; padding: 0 15px;"
+                    onclick="openApproveModal('{{ data.req.id }}', '{{ data.req.pn_1 }}', '{{ data.req.item_name }}', {{ data.req.req_qty }}, {{ data.item.stock }}, '{{ data.item.location or '' }}')">
+                <i class="material-icons">check_circle</i> {{ t('queue.approve', lang) }}
+            </button>
+
+            <form action="/request_queue/reject/{{ data.req.id }}" method="post" style="margin: 0;" onsubmit="return confirm('{{ t('queue.confirm_reject', lang) }}');">
+                <button type="submit" class="btn-primary" style="background: white; border: 1px solid #ccc; color: #7f8c8d; height: 40px; padding: 0 15px;">
+                    <i class="material-icons">block</i> {{ t('queue.reject', lang) }}
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div id="approveModal" class="custom-modal">
+    <div class="custom-modal-content">
+        <span class="close-modal" onclick="closeApproveModal()">&times;</span>
+        <h3 style="margin-top: 0; color: #1db954; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+            <i class="material-icons" style="vertical-align: middle;">inventory_2</i> {{ t('queue.modal_title', lang) }}
+        </h3>
+
+        <form id="approveForm" method="post" onsubmit="return validateApproveForm(event)">
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee;">
+                <div style="margin-bottom: 8px; font-size: 0.9rem; color: #666;">{{ t('queue.item_pn', lang) }} <strong id="modalPn" style="color: #333;"></strong></div>
+                <div style="margin-bottom: 8px; font-size: 0.9rem; color: #666;">{{ t('queue.item_name', lang) }} <strong id="modalName" style="color: #333;"></strong></div>
+                <div style="display: flex; gap: 15px; margin-top: 15px;">
+                    <div style="flex: 1; text-align: center; background: white; padding: 10px; border-radius: 6px; border: 1px solid #ddd;">
+                        <span style="display: block; font-size: 0.75rem; color: #888;">{{ t('queue.sys_stock', lang) }}</span>
+                        <strong id="modalSysStock" style="font-size: 1.2rem; color: var(--primary-blue);"></strong>
+                    </div>
+                    <div style="flex: 1; text-align: center; background: #fff0f0; padding: 10px; border-radius: 6px; border: 1px solid #fadbd8;">
+                        <span style="display: block; font-size: 0.75rem; color: #e74c3c;">{{ t('queue.deduct_qty', lang) }}</span>
+                        <strong id="modalReqQty" style="font-size: 1.2rem; color: var(--danger-red);"></strong>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; color: var(--text-main); margin-bottom: 8px;">{{ t('queue.real_stock', lang) }} <span style="color: red;">*</span></label>
+                <input type="number" id="realStock" name="real_stock" required min="0" step="1"
+                       style="width: 100%; height: 42px; font-size: 1.2rem; text-align: center; border: 2px solid var(--danger-red); border-radius: 6px; outline: none;">
+                <p style="font-size: 0.75rem; color: #888; margin-top: 5px;"><i class="material-icons" style="font-size: 1rem; vertical-align: middle;">info</i> {{ t('queue.stock_tip', lang) }}</p>
+            </div>
+
+            <div id="approveError" style="display: none; background: #fce8e6; color: #d93025; padding: 10px; border-radius: 6px; font-size: 0.85rem; margin-bottom: 15px; align-items: center; gap: 5px; border: 1px solid #fadbd8;">
+                <i class="material-icons" style="font-size: 1.2rem;">error_outline</i>
+                <span id="approveErrorText"></span>
+            </div>
+
+            <button type="submit" class="btn-primary" style="width: 100%; height: 42px; background: #1db954; font-size: 1.1rem; border-radius: 6px;">
+                {{ t('queue.confirm_approve', lang) }}
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const QUEUE_I18N = {
+        stock_insufficient: "{{ t('queue.stock_insufficient', lang) }}"
+    };
+</script>
+<script src="/static/js/request_queue.js"></script>
+{% endblock %}

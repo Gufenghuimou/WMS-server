@@ -1,0 +1,78 @@
+/* 🌟 核心：强行切断 base.css 赋给外部容器的滚动，交给本页面自己管理 */
+.content-scroll-area {
+    overflow: hidden !important;
+    display: flex;
+    flex-direction: column;
+}
+
+#auditContainer {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* 🌟 极速扫码控制台 (现已固定不随之滚动) */
+.scan-console {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    flex-shrink: 0; /* 绝对禁止被压缩 */
+}
+
+/* 🌟 独立的区块滚动层 */
+.audit-list-wrapper {
+    flex: 1; /* 撑满下方所有的剩余空间 */
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0; /* Flex 滚动核心 */
+    padding-right: 5px; /* 防遮挡美化 */
+}
+
+/* 滚动条美化 */
+.audit-list-wrapper::-webkit-scrollbar { width: 6px; }
+.audit-list-wrapper::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 6px; }
+.audit-list-wrapper::-webkit-scrollbar-track { background: transparent; }
+
+/* ... 以下保持不变 ... */
+.scan-input-group { display: flex; flex-direction: column; gap: 8px; }
+.scan-input-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+.scan-input { height: 40px; border: 2px solid #ddd; border-radius: 8px; padding: 0 15px; font-size: 1.1rem; outline: none; transition: border-color 0.2s; box-sizing: border-box;}
+.scan-input:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1); }
+.scan-result-box { border-radius: 8px; border: 1px dashed #ccc; display: flex; padding: 15px 20px; transition: background 0.3s, border-color 0.3s; }
+
+.location-block { background: var(--surface); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 25px; overflow: hidden; }
+.location-header { background: #f8f9fa; padding: 12px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; transition: background-color 0.2s; }
+.location-header:hover { background: #f1f3f5; }
+.location-header h3 { margin: 0; font-size: 1.1rem; color: var(--primary-blue); }
+.collapse-icon { color: #888; transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
+.location-block.collapsed .collapse-icon { transform: rotate(-90deg); }
+.location-block.collapsed .audit-table { display: none; }
+
+.audit-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.audit-table th { background: transparent; border-bottom: 1px solid var(--border-color); color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 12px 15px;}
+.audit-table td { padding: 5px 15px; border-bottom: 1px solid #f1f1f1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.audit-table input { width: 100%; box-sizing: border-box; height: 28px; padding: 0 5px; border: 1px solid #ddd; border-radius: 4px; outline: none; }
+.audit-table input:focus { border-color: var(--primary); }
+
+.status-badge { padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; display: inline-block; }
+.status-matched, .status-正常 { background: #e6f4ea !important; color: #1e8e3e !important; }
+.status-mismatched, .status-异常 { background: #fce8e6 !important; color: #d93025 !important; }
+.status-pending, .status-未盘点 { background: #f1f3f4 !important; color: #555 !important; }
+
+/* 🌟 扫码成功后的专属黄金闪烁动画 */
+@keyframes scanHighlight {
+    0%, 100% { background-color: transparent; }
+    30%, 70% { background-color: #fff3cd !important; } /* 强制覆盖原本的灰色背景 */
+}
+
+/* 兼容表格行(PN)和区块表头(库位)的动画触发器 */
+.highlight-flash td,
+.highlight-flash.location-header {
+    animation: scanHighlight 1.5s ease-out;
+}

@@ -1,0 +1,107 @@
+/* 🌟 统一的后台卡片风格 */
+.admin-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+
+.admin-card h3 {
+    margin-top: 0;
+    color: var(--text-main);
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 危险操作区 */
+.danger-zone {
+    border-color: #fadbd8;
+    background: #fffafa;
+}
+
+.danger-zone h3 {
+    color: var(--danger-red);
+    border-bottom-color: #fadbd8;
+}
+
+/* 表单输入框与小按钮 */
+.admin-input {
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: var(--text-main);
+}
+
+.admin-input:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(93, 140, 138, 0.2);
+}
+
+.btn-sm {
+    height: 32px !important;
+    padding: 0 12px !important;
+    font-size: 0.85rem !important;
+    border-radius: 6px !important;
+}
+
+/* 表格 */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.admin-table th {
+    background: #f8f9fa;
+    color: var(--text-muted);
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 2px solid #eee;
+}
+
+.admin-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    color: var(--text-main);
+}
+
+.admin-table tr:hover {
+    background: #fdfdfd;
+}
+
+/* 🌟 新增：全局异步提示框样式 */
+.admin-msg-box {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 1.05rem;
+    text-align: center;
+    font-weight: bold;
+    display: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.msg-error {
+    background: #fce8e6;
+    color: #d93025;
+    border: 1px solid #ceea;
+}
+
+.msg-success {
+    background: #e6f4ea;
+    color: #1e8e3e;
+    border: 1px solid #ceead6;
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}

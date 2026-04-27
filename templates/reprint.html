@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block title %}🖨️ {{ t('title.reprint', lang) }} - {{ t('title.base', lang) }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .reprint-container { max-width: 600px; margin: 40px auto; background: var(--surface); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .tab-box { display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
+    .tab-btn { flex: 1; padding: 12px; font-size: 1.1rem; font-weight: bold; border: none; background: #f8f9fa; color: #888; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+    .tab-btn.active { background: var(--primary-blue); color: white; box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3); }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-weight: bold; margin-bottom: 8px; color: #555; }
+    .big-input { width: 100%; padding: 15px; font-size: 1.2rem; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+    .big-input:focus { border-color: var(--primary-blue); outline: none; }
+    .readonly-input { background: #f5f5f5; color: #666; border-color: #eee; }
+
+    .status-msg { margin-top: -10px; margin-bottom: 15px; font-size: 0.9rem; min-height: 20px; }
+    .msg-success { color: #1db954; font-weight: bold; }
+    .msg-warning { color: #f39c12; font-weight: bold; }
+    .msg-error { color: #e74c3c; font-weight: bold; }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if user.role == 'admin' %}
+    <div style="background: #fdfefe; border: 1px solid #dcdde1; border-radius: 8px; padding: 15px 20px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+        <div style="display: flex; align-items: center; gap: 8px; color: #7f8c8d;">
+            <i class="material-icons" style="font-size: 1.2rem;" id="printerStatusIcon">print_disabled</i>
+            <span style="font-weight: bold; font-size: 0.9rem;">{{ t('reprint.config_title', lang) }}</span>
+        </div>
+
+        <form id="printerConfigForm" style="display: flex; gap: 10px; align-items: center; margin: 0;" onsubmit="savePrinterConfig(event)">
+            <input type="text" id="printerIp" class="big-input" style="width: 140px; padding: 8px 12px; font-size: 0.9rem;" placeholder="{{ t('reprint.ph_ip', lang) }}" required>
+            <span style="color:#aaa;">:</span>
+            <input type="number" id="printerPort" class="big-input" style="width: 80px; padding: 8px 12px; font-size: 0.9rem;" placeholder="{{ t('reprint.ph_port', lang) }}" required>
+
+            <button type="submit" class="btn-primary" style="padding: 8px 15px; font-size: 0.85rem; height: auto;">{{ t('reprint.btn_save_config', lang) }}</button>
+            <button type="button" class="btn-primary" style="padding: 8px 15px; font-size: 0.85rem; height: auto; background: #95a5a6; box-shadow: none;" onclick="checkPrinterStatus()">{{ t('reprint.btn_test', lang) }}</button>
+        </form>
+    </div>
+    {% endif %}
+
+<div class="reprint-container">
+    <h2 style="margin-top:0; color: #2c3e50; display:flex; align-items:center; gap:10px;">
+        <i class="material-icons" style="font-size: 2rem; color: #34495e;">print</i> {{ t('reprint.page_title', lang) }}
+    </h2>
+
+    <div class="tab-box">
+        <button class="tab-btn active" id="tabInv" onclick="switchMode('inv')">{{ t('reprint.tab_inv', lang) }}</button>
+        <button class="tab-btn" id="tabAsset" onclick="switchMode('asset')">{{ t('reprint.tab_asset', lang) }}</button>
+    </div>
+
+    <div id="formInv">
+        <div class="form-group">
+            <label>{{ t('reprint.lbl_inv_pn1', lang) }}</label>
+            <input type="text" id="invPn1" class="big-input" placeholder="{{ t('reprint.ph_inv_pn1', lang) }}" autocomplete="off">
+        </div>
+        <div id="invStatus" class="status-msg"></div>
+        <div class="form-group">
+            <label>{{ t('reprint.lbl_inv_pn2', lang) }}</label>
+            <input type="text" id="invPn2" class="big-input readonly-input" readonly>
+        </div>
+        <div class="form-group">
+            <label>{{ t('reprint.lbl_inv_name', lang) }}</label>
+            <input type="text" id="invName" class="big-input readonly-input" readonly>
+        </div>
+        <button class="btn-primary" style="width:100%; height: 50px; font-size: 1.2rem; background: #2c3e50;" onclick="doPrint('inv')">{{ t('reprint.btn_print_now', lang) }}</button>
+    </div>
+
+    <div id="formAsset" style="display: none;">
+        <div class="form-group">
+            <label>{{ t('reprint.lbl_asset_ctrl', lang) }}</label>
+            <input type="text" id="assetCtrl" class="big-input" placeholder="{{ t('reprint.ph_asset_ctrl', lang) }}" autocomplete="off">
+        </div>
+        <div id="assetStatus" class="status-msg"></div>
+        <div class="form-group">
+            <label>{{ t('reprint.lbl_asset_pn1', lang) }}</label>
+            <input type="text" id="assetPn1" class="big-input readonly-input" readonly>
+        </div>
+        <div class="form-group">
+            <label>{{ t('reprint.lbl_asset_name', lang) }}</label>
+            <input type="text" id="assetName" class="big-input readonly-input" readonly>
+        </div>
+        <button class="btn-primary" style="width:100%; height: 50px; font-size: 1.2rem; background: #2c3e50;" onclick="doPrint('asset')">{{ t('reprint.btn_print_now', lang) }}</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const REPRINT_I18N = {
+        msg_querying: "{{ t('reprint.msg_querying', lang) }}",
+        msg_correct_pn2: "{{ t('reprint.msg_correct_pn2', lang) }}",
+        msg_match_success: "{{ t('reprint.msg_match_success', lang) }}",
+        msg_net_fail: "{{ t('reprint.msg_net_fail', lang) }}",
+        alert_no_pn1: "{{ t('reprint.alert_no_pn1', lang) }}",
+        alert_no_ctrl: "{{ t('reprint.alert_no_ctrl', lang) }}",
+        alert_print_success: "{{ t('reprint.alert_print_success', lang) }}",
+        alert_print_fail: "{{ t('reprint.alert_print_fail', lang) }}",
+        alert_empty_ip: "{{ t('reprint.alert_empty_ip', lang) }}",
+        alert_save_fail: "{{ t('reprint.alert_save_fail', lang) }}",
+        alert_save_net_err: "{{ t('reprint.alert_save_net_err', lang) }}"
+    };
+
+    let currentMode = 'inv';
+    let timeoutId = null;
+
+    function switchMode(mode) {
+        currentMode = mode;
+        document.getElementById('tabInv').classList.toggle('active', mode === 'inv');
+        document.getElementById('tabAsset').classList.toggle('active', mode === 'asset');
+        document.getElementById('formInv').style.display = mode === 'inv' ? 'block' : 'none';
+        document.getElementById('formAsset').style.display = mode === 'asset' ? 'block' : 'none';
+
+        if(mode === 'inv') document.getElementById('invPn1').focus();
+        if(mode === 'asset') document.getElementById('assetCtrl').focus();
+    }
+
+    // 🌟 1. 消耗品自动完成与纠偏逻辑
+    const invInput = document.getElementById('invPn1');
+    invInput.addEventListener('keydown', async function (event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            const val = this.value.trim().toUpperCase();
+            const status = document.getElementById('invStatus');
+            const pn2 = document.getElementById('invPn2');
+            const name = document.getElementById('invName');
+
+        if (!val) { status.innerHTML = ''; pn2.value = ''; name.value = ''; return; }
+        status.innerHTML = `<span style="color:#888;">${REPRINT_I18N.msg_querying}</span>`;
+
+        try {
+            let res = await fetch(`/api/item/${val}`);
+            let data = await res.json();
+
+            if (data.error) {
+                status.innerHTML = `<span class="msg-error">❌ ${data.error}</span>`;
+                pn2.value = ''; name.value = '';
+            } else {
+                // 自动纠偏：如果用户把 PN2 输入到了框里
+                if (data.matched_by === 'pn_2') {
+                    status.innerHTML = `<span class="msg-warning">${REPRINT_I18N.msg_correct_pn2}</span>`;
+                    invInput.value = data.pn_1; // 强制替换成真实的 PN1
+                    pn2.value = data.pn_2 || '';
+                } else {
+                    status.innerHTML = `<span class="msg-success">${REPRINT_I18N.msg_match_success}</span>`;
+                    invInput.value = data.pn_1;
+                    pn2.value = data.pn_2 || '';
+                }
+                name.value = data.name || '-';
+            }
+        } catch (err) {
+            status.innerHTML = `<span class="msg-error"> ${REPRINT_I18N.msg_net_fail}</span>`;
+        }
+        }
+    });
+
+    // 🌟 2. 资产自动完成逻辑
+    const assetInput = document.getElementById('assetCtrl');
+    assetInput.addEventListener('keydown', async function(event) {
+        if (event.key === 'Enter') {
+        event.preventDefault();
+        const val = this.value.trim().toUpperCase();
+        this.value = val; // 强制大写
+        const status = document.getElementById('assetStatus');
+        const pn1 = document.getElementById('assetPn1');
+        const name = document.getElementById('assetName');
+
+        if (!val) { status.innerHTML = ''; pn1.value = ''; name.value = ''; return; }
+        status.innerHTML = `<span style="color:#888;">${REPRINT_I18N.msg_querying}</span>`;
+
+        try {
+            let res = await fetch(`/api/asset_info/${val}`);
+            let data = await res.json();
+
+            if (data.error) {
+                status.innerHTML = `<span class="msg-error">❌ ${data.error}</span>`;
+                pn1.value = ''; name.value = '';
+            } else {
+                status.innerHTML = `<span class="msg-success">${REPRINT_I18N.msg_match_success}</span>`;
+                pn1.value = data.pn_1 || '';
+                name.value = data.name || '-';
+            }
+        } catch (err) {
+            status.innerHTML = `<span class="msg-error"> ${REPRINT_I18N.msg_net_fail}</span>`;
+        }
+        }
+    });
+
+    // 🌟 3. 发送打印任务
+    async function doPrint(mode) {
+        let formData = new FormData();
+
+        if (mode === 'inv') {
+            let pn1 = document.getElementById('invPn1').value;
+            let pn2 = document.getElementById('invPn2').value;
+            if (!pn1) return alert(REPRINT_I18N.alert_no_pn1);
+            formData.append('right_barcode', pn1);
+            formData.append('left_text', pn2);
+        } else {
+            let ctrl = document.getElementById('assetCtrl').value;
+            let pn1 = document.getElementById('assetPn1').value;
+            if (!ctrl) return alert(REPRINT_I18N.alert_no_ctrl);
+            formData.append('right_barcode', ctrl);
+            formData.append('left_text', pn1);
+        }
+
+        try {
+            let res = await fetch('/api/trigger_print', { method: 'POST', body: formData });
+            let data = await res.json();
+
+            if (data.status === 'success') {
+                alert(REPRINT_I18N.alert_print_success);
+                // 打印成功后清空框，准备扫下一个
+                if(mode === 'inv') {
+                    document.getElementById('invPn1').value = '';
+                    document.getElementById('invPn1').dispatchEvent(new Event('input'));
+                    document.getElementById('invPn1').focus();
+                } else {
+                    document.getElementById('assetCtrl').value = '';
+                    document.getElementById('assetCtrl').dispatchEvent(new Event('input'));
+                    document.getElementById('assetCtrl').focus();
+                }
+            }
+        } catch (e) {
+            alert(REPRINT_I18N.alert_print_fail);
+        }
+    }
+
+    // ==========================================
+    // 🌟 打印机配置引擎
+    // ==========================================
+
+    // 页面加载时自动获取当前配置并检测连通性
+    document.addEventListener('DOMContentLoaded', () => {
+        checkPrinterStatus();
+    });
+
+    async function checkPrinterStatus() {
+        const icon = document.getElementById('printerStatusIcon');
+        if (icon) icon.innerHTML = 'sync'; // loading 图标
+
+        try {
+            let res = await fetch('/api/printer_status');
+            let data = await res.json();
+
+            // 填充输入框的当前值
+            const ipInput = document.getElementById('printerIp');
+            const portInput = document.getElementById('printerPort');
+            if (ipInput && data.config) ipInput.value = data.config.ip;
+            if (portInput && data.config) portInput.value = data.config.port;
+
+            // 更新状态 UI
+            if (data.status === 'online') {
+                if (icon) {
+                    icon.innerHTML = 'print';
+                    icon.style.color = '#1db954'; // 绿色代表在线
+                }
+            } else {
+                if (icon) {
+                    icon.innerHTML = 'print_disabled';
+                    icon.style.color = '#e74c3c'; // 红色代表离线
+                }
+                console.warn("打印机离线:", data.detail);
+            }
+        } catch (e) {
+            if (icon) {
+                icon.innerHTML = 'error_outline';
+                icon.style.color = '#e74c3c';
+            }
+        }
+    }
+
+    async function savePrinterConfig(e) {
+        e.preventDefault();
+
+        let ip = document.getElementById('printerIp').value.trim();
+        let port = document.getElementById('printerPort').value.trim();
+
+        if (!ip || !port) return alert(REPRINT_I18N.alert_empty_ip);
+
+        let formData = new FormData();
+        formData.append('ip', ip);
+        formData.append('port', port);
+
+        try {
+            let res = await fetch('/api/update_printer_config', {
+                method: 'POST',
+                body: formData
+            });
+            let data = await res.json();
+
+            if (data.status === 'success') {
+                alert(data.message);
+                checkPrinterStatus(); // 保存后立即重新测试连通性
+            } else {
+                alert(REPRINT_I18N.alert_save_fail + (data.message || "未知错误"));
+            }
+        } catch (err) {
+            alert(REPRINT_I18N.alert_save_net_err);
+        }
+    }
+</script>
+{% endblock %}

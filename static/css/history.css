@@ -1,0 +1,84 @@
+/* 🌟 列表页专用扁平化样式 */
+.history-container {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    height: calc(100vh - 195px);
+}
+
+/* 调整表格：去掉所有竖线，仅保留横向分割线 */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    table-layout: fixed;
+}
+
+th {
+    background-color: #f8f9fa;
+    color: var(--text-muted);
+    font-weight: 500;
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 2px solid var(--border-color);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+th::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    border-bottom: 2px solid var(--border-color);
+}
+
+td {
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-main);
+    vertical-align: middle;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 状态颜色：YouTube 扁平风格 */
+.color-in { color: #0f9d58; font-weight: 600; }   /* 绿 */
+.color-out { color: #d93025; font-weight: 600; }  /* 红 */
+.color-adj { color: #1a73e8; font-weight: 600; }  /* 蓝 */
+
+/* 撤销状态视觉增强 */
+.tr-undone { background-color: #f9f9f9; color: #9aa0a6; }
+.note-undone { text-decoration: line-through; color: #9aa0a6; font-size: 0.85rem; }
+.note-undo-action { color: #e67e22; font-weight: 500; }
+
+/* 扁平化操作按钮 */
+.btn-undo {
+    background-color: #fce8e6;
+    color: #d93025;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-undo:hover {
+    background-color: #fad2cf;
+}
+
+/* 隐藏的辅助文本，用于搜索 */
+.searchable-hidden { display: none; }
