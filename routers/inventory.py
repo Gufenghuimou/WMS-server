@@ -25,8 +25,15 @@ router = APIRouter(tags=['Inventory'])
 # -----------------------------物品信息--------------------------#
 
 @router.get("/")
-async def root():
-    return RedirectResponse(url="/all", status_code=303)
+async def root(request: Request):
+    user_agent = request.headers.get('User-Agent', '').lower()
+    mobile_keywords = ["android", "iphone", "ipad", "ipod", "windows phone", "mobile"]
+    is_mobile = any(keyword in user_agent for keyword in mobile_keywords)
+    user = request.session.get('user')
+    if is_mobile:
+        return RedirectResponse(url="/mobile/approve" if user else "/mobile/login", status_code=303)
+    else:
+        return RedirectResponse(url="/all" if user else "/login", status_code=303)
 
 @router.get("/all", response_class=HTMLResponse)
 async def get_all(request: Request, query: Optional[str] = None, warning_only: Optional[str] = None,
@@ -183,7 +190,7 @@ async def upload_image(request: Request, item_id: int, file: UploadFile = File(.
     return {'status': 'success', 'url': f'/{file_path}?t={datetime.now().timestamp()}'}
 
 @router.post("/delete/{item_id}")
-async def delete_item(item_id: int, current_user: dict = Depends(require_admin)):
+async def delete_item(request: Request, item_id: int, current_user: dict = Depends(require_admin)):
     with Session(engine) as session:
         item = session.get(InventoryItem, item_id)
         if item:
@@ -204,7 +211,9 @@ async def delete_item(item_id: int, current_user: dict = Depends(require_admin))
                 print(f"Error deleting image file: {e}")
             session.delete(item)
             session.commit()
-    return RedirectResponse(url="/all", status_code=303)
+            referer = request.headers.get('referer')
+            redirect_url = referer if referer else "/all"
+    return RedirectResponse(url=redirect_url, status_code=303)
 
 
 @router.post("/import")
@@ -258,7 +267,7 @@ async def import_excel(request: Request, file: UploadFile = File(...), current_u
 
 @router.get("/inventory_table", response_class=HTMLResponse)
 async def view_inventory_table(request: Request, current_user: dict = Depends(get_current_user)):
-    if current_user.get('role') not in ['admin', 'operator']:
+    if current_user.get('role') not in ['superadmin', 'admin']:
         return RedirectResponse(url= "/all", status_code=303)
     with Session(engine) as session:
         items =session.exec(select(InventoryItem).order_by(desc(InventoryItem.pn_1))).all()
@@ -317,158 +326,18 @@ def export_all(request: Request, current_user: dict = Depends(get_current_user))
         }
         return StreamingResponse(output, headers=headers, media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
-# -----------------------------申请队列--------------------------#
-
-@router.get("/request_queue", response_class=HTMLResponse)
-async def view_request_queue(request: Request, error: Optional[str] = None, current_user: dict = Depends(get_current_user)):
-    if current_user.get('role') not in ['admin', 'operator']:
-        return RedirectResponse(url= "/all", status_code=303)
-
+@router.get("/all/mva_export")
+def export_mva(request: Request, current_user: dict = Depends(get_current_user)):
     with Session(engine) as session:
-        statement = select(OutboundRequest).where(OutboundRequest.status == 'Pending').order_by(OutboundRequest.created_at)
-        requests = session.exec(statement).all()
-
-        req_data = []
-        for req in requests:
-            item = session.get(InventoryItem, req.item_id)
-            if item:
-                req_data.append({'req': req, 'item': item})
-
-    return templates.TemplateResponse(request, 'request_queue.html', {'req_data': req_data, 'user': current_user, 'active_page': 'request_queue', 'error': error})
-
-@router.post("/api/request_item/{item_id}")
-async def submit_outbound_request(
-        request: Request,
-        item_id: int,
-        req_qty: int = Form(...),
-        department: str = Form(...),
-        note: str = Form(""),
-        current_user: dict = Depends(get_current_user),
-):
-    lang = request.state.lang
-    with Session(engine) as session:
-        item = session.get(InventoryItem, item_id)
-        if not item:
-            return {'status': 'error', 'message': t_lang("do.not_exist", lang)}
-
-        if req_qty < 0:
-            return {'status': 'error', 'message': t_lang("do.illegal_number_1", lang)}
-        if req_qty > (item.stock or 0):
-            return {'status': 'error', 'message': t_lang("do.illegal_number_2", lang)}
-
-        real_applicant = current_user.get('full_name') or current_user.get('username')
-        new_request = OutboundRequest(
-            item_id=item_id,
-            pn_1=item.pn_1,
-            item_name=item.name,
-            req_qty=req_qty,
-            applicant=real_applicant,
-            department=department.strip(),
-            note=note.strip()
-        )
-
-        session.add(new_request)
-        session.commit()
-
-    return {'status': 'success', 'message': t_lang("do.success", lang)}
-
-@router.post('/request_queue/approve/{req_id}')
-async def approve_request(
-        req_id: int,
-        real_stock: int = Form(...),
-        current_user: dict = Depends(get_current_user),
-):
-    with Session(engine) as session:
-        req = session.get(OutboundRequest, req_id)
-        if not req or req.status != 'Pending':
-            return RedirectResponse(url= "/request_queue", status_code=303)
-
-        item = session.get(InventoryItem, req.item_id)
-        if not item:
-            return RedirectResponse(url= "/request_queue", status_code=303)
-
-        if item.stock != real_stock:
-            diff = real_stock - item.stock
-            item.stock = real_stock
-            session.add(item)
-
-            log_adjust = HistoryLog(
-                pn_1=item.pn_1,
-                pn_2=item.pn_2,
-                change_qty=diff,
-                applicant='System',
-                department='-',
-                note='Stock Correction'
-            )
-            session.add(log_adjust)
-
-        if item and item.stock >= req.req_qty > 0:
-            item.stock -= req.req_qty
-            item.total_in = (item.total_out or 0) + req.req_qty
-            session.add(item)
-
-        log = HistoryLog(
-            pn_1=item.pn_1,
-            pn_2=item.pn_2,
-            change_qty=-req.req_qty,
-            applicant=req.applicant,
-            department=req.department,
-            note=req.note or ''
-        )
-        session.add(log)
-
-        req.status = 'Approved'
-        session.add(req)
-
-        update_single_usage(session,item.pn_1)
-        session.commit()
-
-    return RedirectResponse(url= "/request_queue", status_code=303)
-
-@router.post('/request_queue/reject/{req_id}')
-async def reject_request(req_id: int, current_user: dict = Depends(get_current_user)):
-    with Session(engine) as session:
-        req = session.get(OutboundRequest, req_id)
-        if req and req.status == 'Pending':
-            req.status = 'Rejected'
-            session.add(req)
-            session.commit()
-    return RedirectResponse(url= "/request_queue", status_code=303)
-
-@router.get("/request_log", response_class=HTMLResponse)
-async def view_request_log(request: Request, current_user: dict = Depends(get_current_user)):
-    with Session(engine) as session:
-        if current_user.get('role') not in ['admin', 'operator']:
-            real_applicant = current_user.get('full_name') or current_user.get('username')
-            statement = select(OutboundRequest).where(OutboundRequest.applicant == real_applicant).order_by(desc(OutboundRequest.id))
-        else:
-            statement = select(OutboundRequest).order_by(desc(OutboundRequest.id))
-        req_log = session.exec(statement).all()
-        processed_count = session.exec(select(func.count(OutboundRequest.id)).where(OutboundRequest.status != 'Pending')).one()
-    return templates.TemplateResponse(request, 'request_log.html', {'req_log': req_log, 'user': current_user, 'active_page': 'request_log', 'processed_count': processed_count})
-
-@router.get("/request_log/export")
-def request_log_export(request: Request, current_user: dict = Depends(get_current_user)):
-    lang = request.state.lang
-    with Session(engine) as session:
-        if current_user.get('role') not in ['admin', 'operator']:
-            real_applicant = current_user.get('full_name') or current_user.get('username')
-            statement = select(OutboundRequest).where(OutboundRequest.applicant == real_applicant).order_by(desc(OutboundRequest.id))
-        else:
-            statement = select(OutboundRequest).order_by(desc(OutboundRequest.id))
-        contents = session.exec(statement).all()
+        contents = session.exec(select(InventoryItem).where(InventoryItem.is_mva == True, InventoryItem.warning_level > 0, InventoryItem.warning_level > InventoryItem.stock)).all()
         data = []
         for c in contents:
             data.append({
-                t_lang("inv.created_at", lang): c.created_at,
-                'PN1': c.pn_1,
-                'PN2': c.pn_2,
-                t_lang("inv.name", lang): c.item_name,
-                t_lang("inv.req_qty", lang): c.req_qty,
-                t_lang("inv.applicant", lang): c.applicant,
-                t_lang("inv.department", lang): c.department,
-                t_lang("inv.remarks", lang): c.note,
-                t_lang("inv.status", lang): c.status,
+                "Equipment Name(English)": c.name,
+                "Equipment Name(Chinese)": c.description_2,
+                "Pega PN.": c.pn_1,
+                "Demand At Least": c.warning_level-c.stock,
+                "Remarks": c.remarks,
             })
         df = pd.DataFrame(data)
         output = io.BytesIO()
@@ -477,7 +346,7 @@ def request_log_export(request: Request, current_user: dict = Depends(get_curren
         output.seek(0)
 
         headers = {
-            'Content-Disposition': f'attachment; filename="Request Logs {datetime.now().strftime("%Y%m%d")}.xlsx"',
+            'Content-Disposition': f'attachment; filename="MVA_required_{datetime.now().strftime("%Y%m%d")}.xlsx"'
         }
         return StreamingResponse(output, headers=headers, media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
@@ -687,7 +556,7 @@ async def view_audit(request: Request, current_user: dict = Depends(get_current_
     return templates.TemplateResponse(request, "audit.html", {"records": records, "total": total, "progress": progress, "completed": completed, "grouped": grouped, "user": current_user, "active_page": "audit"})
 
 @router.post("/audit/start")
-async def start_audit(current_user: dict = Depends(get_current_user)):
+async def start_audit(request: Request, current_user: dict = Depends(get_current_user)):
     with Session(engine) as session:
         for old_record in session.exec(select(AuditRecord)).all():
             session.delete(old_record)
@@ -707,7 +576,9 @@ async def start_audit(current_user: dict = Depends(get_current_user)):
             )
             session.add(record)
         session.commit()
-    return RedirectResponse(url= "/audit", status_code=303)
+    referer = request.headers.get("referer", "")
+    target_url = "/mobile/audit_inventory" if "mobile" in referer else "/audit"
+    return RedirectResponse(url=target_url, status_code=303)
 
 @router.post("/audit/submit/{audit_id}")
 async def submit_audit(

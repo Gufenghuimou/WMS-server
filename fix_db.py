@@ -3,7 +3,7 @@ import sqlite3
 # 连接到你的本地数据库
 conn = sqlite3.connect('inventory.db')
 # 删掉旧的草稿表
-conn.execute("DROP TABLE IF EXISTS assetscraprecord")
+conn.execute("DROP TABLE IF EXISTS outboundrequest")
 conn.commit()
 conn.close()
 

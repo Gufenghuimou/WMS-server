@@ -247,64 +247,6 @@ window.updateUI = function() {
     }
 };
 
-// // ==========================================
-// // 🛡️ 报废安全锁引擎 (Math CAPTCHA)
-// // ==========================================
-//
-// window.openSecurityModal = function() {
-//     if (assetSet.size === 0) return;
-//
-//     // 1. 生成随机加法题
-//     let num1 = Math.floor(Math.random() * 20) + 1; // 1-20
-//     let num2 = Math.floor(Math.random() * 10) + 1; // 1-10
-//     expectedSecurityAnswer = num1 + num2;
-//
-//     // 2. 渲染题目并清空输入
-//     document.getElementById('mathProblemDisplay').innerText = `${num1} + ${num2} = ?`;
-//     let inputEl = document.getElementById('securityAnswerInput');
-//     inputEl.value = '';
-//     inputEl.style.borderColor = '#ccc';
-//     document.getElementById('securityErrorMsg').style.display = 'none';
-//
-//     // 3. 弹出模态框并自动对焦
-//     document.getElementById('scrapSecurityModal').style.display = 'flex';
-//     setTimeout(() => inputEl.focus(), 100);
-// };
-//
-// window.closeSecurityModal = function() {
-//     document.getElementById('scrapSecurityModal').style.display = 'none';
-// };
-//
-// window.verifyAndExecuteScrap = function() {
-//     let inputEl = document.getElementById('securityAnswerInput');
-//     let userAnswer = parseInt(inputEl.value.trim());
-//
-//     if (userAnswer === expectedSecurityAnswer) {
-//         // ✅ 验证成功！执行表单提交
-//         document.getElementById('securityErrorMsg').style.display = 'none';
-//
-//         let btn = event.target;
-//         btn.disabled = true;
-//         btn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite;">autorenew</i> ${SCRAP_I18N.destroying}`;
-//
-//         // 触发物理销毁
-//         document.getElementById('scrapForm').submit();
-//     } else {
-//         // ❌ 验证失败，给予视觉震动和红框警告
-//         inputEl.style.borderColor = 'var(--danger-red, #d93025)';
-//         document.getElementById('securityErrorMsg').style.display = 'block';
-//
-//         // 震动动画
-//         inputEl.style.transform = 'translateX(-5px)';
-//         setTimeout(() => inputEl.style.transform = 'translateX(5px)', 50);
-//         setTimeout(() => inputEl.style.transform = 'translateX(-5px)', 100);
-//         setTimeout(() => inputEl.style.transform = 'translateX(0)', 150);
-//
-//         inputEl.value = '';
-//         inputEl.focus();
-//     }
-// };
-
 // ==========================================
 // 🛡️ 报废安全锁引擎 (滑动解锁版)
 // ==========================================

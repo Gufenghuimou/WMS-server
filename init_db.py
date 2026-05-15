@@ -9,21 +9,14 @@ from models import User, ChatMessage
 def init_application():
     create_db_tables()
     with Session(engine) as session:
-        if not session.exec(select(User).where(User.username == "admin")).first():
-            admin_user = User(
-                username="admin",
-                password_hash=hashlib.sha256("admin".encode()).hexdigest(),
+        if not session.exec(select(User).where(User.username == "superadmin")).first():
+            superadmin_user = User(
+                username="superadmin",
+                password_hash=hashlib.sha256("superadmin".encode()).hexdigest(),
                 full_name="超级管理员",
-                role="admin",
+                role="superadmin",
             )
-            normal_user = User(
-                username="user",
-                password_hash=hashlib.sha256("123456".encode()).hexdigest(),
-                full_name="小卡拉米",
-                role="user",
-            )
-            session.add(admin_user)
-            session.add(normal_user)
+            session.add(superadmin_user)
             session.commit()
 
     cutoff_date = (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d %H:%M:%S")

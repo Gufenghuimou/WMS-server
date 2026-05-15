@@ -82,6 +82,10 @@
             border-radius: 12px; padding: 30px; display: flex; flex-direction: column;
             align-items: center; gap: 10px; cursor: pointer; transition: 0.2s;
         }
+        #existingImageBtn {
+            display: none;
+            padding: 10px;
+        }
         .camera-btn:active { background: #d1f2eb; }
         .preview-area { display: none; margin-top: 15px; }
         .preview-area img { max-width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
@@ -116,7 +120,7 @@
         .btn-confirm { background: var(--primary); }
 
         #reader {
-            width: 300px;
+            width: 360px;
             background: #000;
             border-radius: 8px;
             overflow: hidden; /* 保证摄像头画面不超出边框 */
@@ -167,6 +171,13 @@
                 <span style="font-weight:bold;">{{ t('mobile.btn_take_photo', lang) }}</span>
             </div>
 
+            <div class="camera-btn" id="existingImageBtn" onclick="document.getElementById('fileInput').click();">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                    <button type="button" style="background:none; border:none; color:var(--primary); font-size:0.9rem; padding:0;">{{ t('mobile.btn_retake', lang) }}</button>
+                </div>
+                <img id="existingImagePreview" src="" style="max-width: 100%; border-radius: 8px; max-height: 100%; object-fit: contain;">
+            </div>
+
             <div class="preview-area" id="previewArea">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <span style="font-size: 0.9rem; font-weight:bold;">{{ t('mobile.crop_done_title', lang) }}</span>
@@ -195,7 +206,7 @@
     </div>
 
     <div id="scannerModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; flex-direction:column; align-items:center; justify-content:center;">
-        <div id="reader" style="width: 300px;"></div>
+        <div id="reader"></div>
         <button onclick="stopScanner()" style="margin-top:20px; padding:10px 20px; background:#fff; color:#333; border-radius:5px;">{{ t('mobile.btn_close_scanner', lang) }}</button>
     </div>
 
@@ -240,6 +251,9 @@
         async function fetchAutoFill(query, type) {
             if (!query) return;
             try {
+                const cameraBtn = document.getElementById('cameraBtn');
+                const existingImageBtn = document.getElementById('existingImageBtn');
+                const existingImagePreview = document.getElementById('existingImagePreview')
                 if (type === 'ctrl') {
                     // 查资产表
                     let res = await fetch(`/api/asset_info/${encodeURIComponent(query)}`);
@@ -247,6 +261,16 @@
                     if (!data.error) {
                         if(data.pn_1) { pn1Input.value = data.pn_1; flashGreen(pn1Input); }
                         if(data.pn_2) { pn2Input.value = data.pn_2; flashGreen(pn2Input); }
+                    }
+                    if (data.has_image) {
+                        let targetPn = data.pn_1 || query;
+                        existingImagePreview.src = `/static/asset_images/${targetPn}.jpg?t=${new Date().getTime()}`;
+                        cameraBtn.style.display = 'none';
+                        existingImageBtn.style.display = 'flex';
+                    } else {
+                        cameraBtn.style.display = 'flex';
+                        existingImageBtn.style.display = 'none';
+                        existingImagePreview.src = '';
                     }
                 } else {
                     // 查物品总表 (支持 pn1 或 pn2 查询)
@@ -264,6 +288,16 @@
                             if(type === 'pn2' && data.pn_1) { pn1Input.value = data.pn_1; flashGreen(pn1Input); }
                             if(type === 'pn1' && data.pn_2) { pn2Input.value = data.pn_2; flashGreen(pn2Input); }
                         }
+                    }
+                    if (data.has_image) {
+                        let targetId = data.id || query;
+                        existingImagePreview.src = `/static/item_images/${targetId}.jpg?t=${new Date().getTime()}`;
+                        cameraBtn.style.display = 'none';
+                        existingImageBtn.style.display = 'flex';
+                    } else {
+                        cameraBtn.style.display = 'flex';
+                        existingImageBtn.style.display = 'none';
+                        existingImagePreview.src = '';
                     }
                 }
             } catch (e) {
@@ -321,6 +355,7 @@
 
             // 切换 UI
             document.getElementById('cameraBtn').style.display = 'none';
+            document.getElementById('existingImageBtn').style.display = 'none';
             document.getElementById('previewArea').style.display = 'block';
             document.getElementById('fileInfo').innerText = MOBILE_I18N.msg_compressing;
 
@@ -402,7 +437,10 @@
                     alert(MOBILE_I18N.msg_upload_success);
                     // 清空表单准备下一次拍摄
                     pn1Input.value = ''; pn2Input.value = ''; ctrlInput.value = '';
+                    document.getElementById('fileInput').value = '';
                     document.getElementById('previewArea').style.display = 'none';
+                    document.getElementById('existingImageBtn').style.display = 'none';
+                    document.getElementById('existingImagePreview').src = '';
                     document.getElementById('cameraBtn').style.display = 'flex';
                     compressedBlob = null;
                 } else {
@@ -437,7 +475,7 @@
                 html5QrCode = new Html5Qrcode("reader");
             }
 
-            const config = { fps: 10, qrbox: { width: 250, height: 150 }, aspectRatio: 1.0 };
+            const config = { fps: 10, qrbox: { width: 320, height: 100 }, aspectRatio: 1.0 };
 
             try {
                 // 只有在非扫描状态下才启动

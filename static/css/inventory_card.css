@@ -2,21 +2,23 @@
 :root {
     --card-w: 320px;
     --card-h: 460px;
-    --stage-h: 600px;
+    --stage-h: 640px;
     --active-scale: 1.15;
 }
 
-@media (min-width: 2000px) {
+@media (min-width: 1440px) {
     :root {
         --card-w: 480px;      /* 4K 下卡片加宽 */
         --card-h: 650px;      /* 4K 下卡片加高 */
-        --stage-h: 850px;     /* 整个舞台拉高 */
+        --stage-h: 900px;     /* 整个舞台拉高 */
         --active-scale: 1.2;  /* 激活时放大更多 */
     }
     .card-title { font-size: 1.6rem !important; }
     .card-subtitle { font-size: 1.1rem !important; }
     .stock-badge { font-size: 2rem !important; padding: 10px 20px !important; }
     .detail-row { font-size: 1.1rem !important; }
+    .card-header { height: 68px !important; }
+    .img-container { height: 200px !important; }
 }
 
 /* 🌟 卡片网格布局 */
@@ -91,7 +93,7 @@
 
 .item-card.is-active .card-front, .item-card.is-active .card-back {
     border-color: var(--primary-blue);
-    box-shadow: 0 35px 80px rgba(0,0,0,0.25);
+    box-shadow: 0 35px 80px rgba(52,152,219,0.25);
     filter: blur(0) grayscale(0);
 }
 

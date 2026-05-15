@@ -1,9 +1,10 @@
 # /routers/functions.py
-from fastapi import Request, Form, UploadFile, File, Depends, BackgroundTasks, APIRouter
+from fastapi import Request, Form, UploadFile, File, Depends, BackgroundTasks, APIRouter, HTTPException, status
 from fastapi.responses import HTMLResponse
 from starlette.responses import RedirectResponse
 from sqlmodel import Session, select, or_, desc
 from typing import Optional
+from collections import defaultdict
 import socket
 import os
 from datetime import datetime, timedelta
@@ -12,7 +13,7 @@ import uuid
 import utils
 
 from database import engine
-from models import User, ChatMessage, InventoryItem, AssetItem
+from models import User, ChatMessage, InventoryItem, AssetItem, OutboundRequest, AuditRecord, AssetAuditRecord
 from dependencies import get_current_user, require_admin
 from core import templates, t_lang
 
@@ -36,6 +37,7 @@ def get_item_api(request: Request, pn_or_loc: str, current_user: dict = Depends(
 
         def build_response(item_obj, match_type):
             return {
+                'id': item_obj.id,
                 'pn_1': item_obj.pn_1,
                 'pn_2': item_obj.pn_2,
                 'name': item_obj.name,
@@ -43,7 +45,8 @@ def get_item_api(request: Request, pn_or_loc: str, current_user: dict = Depends(
                 'description_2': getattr(item_obj, 'description_2', ''),
                 'location': getattr(item_obj, 'location', ''),
                 'remarks': getattr(item_obj, 'remarks', ''),
-                'match_type': match_type
+                'match_type': match_type,
+                'has_image': item_obj.has_image
             }
         item = session.exec(select(InventoryItem).where(InventoryItem.pn_1 == pn_or_loc)).first()
         if item: return build_response(item, 'pn_1')
@@ -87,6 +90,11 @@ async def save_layout(request: Request, current_user: dict = Depends(require_adm
     except Exception as e:
         return {'status': 'error', 'message': str(e)}
 
+def require_mobile_auth(request: Request):
+    user = request.session.get("user")
+    if not user:
+        raise HTTPException(status_code=status.HTTP_303_SEE_OTHER, headers={"Location": "/mobile/login"})
+    return user
 
 MOBILE_AUTH_TOKENS = {}
 @router.post("/api/generate_mobile_token")
@@ -98,28 +106,101 @@ async def generate_mobile_token(current_user: dict = Depends(get_current_user)):
     }
     return {'status': 'success', 'token': token}
 
-@router.get("/mobile/quick_upload", response_class=HTMLResponse)
-async def mobile_quick_upload(request: Request, token: Optional[str] = None):
+@router.get("/mobile/login", response_class=HTMLResponse)
+async def mobile_login_page(request: Request, token: Optional[str] = None):
     lang = request.state.lang
-    if not token or token not in MOBILE_AUTH_TOKENS:
-        return HTMLResponse(t_lang("do.qr_timeout", lang), status_code=403)
-    token_data = MOBILE_AUTH_TOKENS[token]
-    if datetime.now() > token_data['expires']:
-        del MOBILE_AUTH_TOKENS[token]
-        return HTMLResponse(t_lang("do.qr_timeout", lang), status_code=403)
+
+    if request.session.get("user"):
+        return RedirectResponse(url="/mobile/approve", status_code=303)
+
+    if token:
+        if token not in MOBILE_AUTH_TOKENS:
+            return HTMLResponse(t_lang("do.qr_timeout", lang), status_code=403)
+
+        token_data = MOBILE_AUTH_TOKENS[token]
+        if datetime.now() > token_data['expires']:
+            del MOBILE_AUTH_TOKENS[token]
+            return HTMLResponse(t_lang("do.qr_timeout", lang), status_code=403)
+
+        with Session(engine) as session:
+            user = session.exec(select(User).where(User.username == token_data['username'])).first()
+            if user:
+                request.session["user"] = {
+                    "username": user.username,
+                    "full_name": user.full_name,
+                    "role": user.role
+                }
+                del MOBILE_AUTH_TOKENS[token]
+                return RedirectResponse(url="/mobile/approve", status_code=303)
+
+            return HTMLResponse(t_lang("settings.user_error", lang), status_code=404)
+
+    return templates.TemplateResponse(request, "mobile_login.html", {"request": request})
+
+@router.get("/mobile/approve", response_class=HTMLResponse)
+async def mobile_approve_page(request: Request, current_user: dict = Depends(require_mobile_auth)):
+    with Session(engine) as session:
+        statement = select(OutboundRequest).where(OutboundRequest.status == 'Pending').order_by(OutboundRequest.created_at)
+        requests = session.exec(statement).all()
+
+        req_data = []
+        for req in requests:
+            item = session.get(InventoryItem, req.item_id)
+            if item:
+                req_data.append({'req': req, 'item': item})
+
+    return templates.TemplateResponse(request, "mobile_approve.html", {
+        "request": request,
+        "user": current_user,
+        "req_data": req_data
+    })
+
+@router.get("/mobile/upload", response_class=HTMLResponse)
+async def mobile_upload_page(request: Request, current_user: dict = Depends(require_mobile_auth)):
+    return templates.TemplateResponse(request, "mobile_upload.html", {
+        "request": request,
+        "user": current_user
+    })
+
+@router.get("/mobile/audit_asset", response_class=HTMLResponse)
+async def mobile_audit_asset_page(request: Request, current_user: dict = Depends(require_mobile_auth)):
+    lang = request.state.lang
 
     with Session(engine) as session:
-        statement = select(User).where(User.username == token_data['username'])
-        user = session.exec(statement).first()
-        if user:
-            request.session["user"] = {
-                "username": user.username,
-                "full_name": user.full_name,
-                "role": user.role
-            }
-            del MOBILE_AUTH_TOKENS[token]
-            return templates.TemplateResponse(request, "mobile_quick_upload.html", {"request": request})
-        return HTMLResponse(t_lang("settings.user_error", lang), status_code=404)
+        statement = select(AssetAuditRecord).order_by(AssetAuditRecord.expected_location)
+        records = session.exec(statement).all()
+
+        grouped = defaultdict(list)
+        for r in records:
+            loc = r.actual_location or r.expected_location or t_lang("asset_audit.unassigned_init_loc", lang)
+            grouped[loc].append(r)
+
+    return templates.TemplateResponse(request, "mobile_audit_asset.html", {
+        "request": request,
+        "user": current_user,
+        "grouped": grouped,
+        "lang": lang
+    })
+
+@router.get("/mobile/audit_inventory", response_class=HTMLResponse)
+async def mobile_audit_inventory_page(request: Request, current_user: dict = Depends(require_mobile_auth)):
+    lang = request.state.lang
+
+    with Session(engine) as session:
+        statement = select(AuditRecord).order_by(AuditRecord.expected_location)
+        records = session.exec(statement).all()
+
+        grouped = defaultdict(list)
+        for r in records:
+            loc = r.actual_location or r.expected_location or 'Unallocated'
+            grouped[loc].append(r)
+
+    return templates.TemplateResponse(request, "mobile_audit_inventory.html", {
+        "request": request,
+        "user": current_user,
+        "grouped": grouped,
+        "lang": lang
+    })
 
 @router.post("/api/mobile_upload_image")
 async def mobile_upload_image(
@@ -195,7 +276,7 @@ def get_asset_info_api(request: Request, ctrl_no: str, current: dict = Depends(g
         item = session.exec(statement).first()
         if not item:
             return {"error": t_lang("do.not_exist", lang)}
-        return {"ctrl_no": item.ctrl_no, "pn_1": item.pn_1, "pn_2": item.pn_2, "name": item.name}
+        return {"ctrl_no": item.ctrl_no, "pn_1": item.pn_1, "pn_2": item.pn_2, "name": item.name, "has_image": item.has_image}
 
 # -----------------------------全局即时通信--------------------------#
 

@@ -123,6 +123,22 @@ class OutboundRequest(SQLModel, table=True):
     item_name: Optional[str] = None
     req_qty: int
     applicant: str
+    applicant_username: str
+    department: str
+    note: Optional[str] = None
+    status: str = Field(default='Pending')
+    created_at: str = Field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+
+class AssetRequest(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    ctrl_no: Optional[str] = None
+    pn_1: Optional[str] = None
+    pn_2: Optional[str] = None
+    asset_name: Optional[str] = None
+    matter: str
+    req_qty: Optional[int] = 0
+    applicant: str
+    applicant_username: str
     department: str
     note: Optional[str] = None
     status: str = Field(default='Pending')

@@ -8,6 +8,7 @@
     <script src="/static/js/qrious.min.js"></script>
     {% block extra_css %}{% endblock %}
 </head>
+
 <body class="is-loading lang-{{ lang }}">
 
     <div id="global-page-loader">
@@ -15,9 +16,26 @@
         <div class="loader-text">{{ t('base.loading', lang) }}</div>
     </div>
 
+    <div id="screen-lock-overlay" style="display: none">
+        <div class="lock-container" style="text-align: center;">
+            <i class="material-icons lock-icon" style="font-size: 3rem; color: #aaa;">lock_clock</i>
+            <h3 style="color: var(--text-main); margin-bottom: 5px;">{{ t('base.screen_locked', lang) }}</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 30px;">已开启防误触保护</p>
+
+            <div class="slide-unlock-wrap" id="slideUnlockWrap">
+                <div class="slide-track-active" id="slideTrack"></div>
+                <div class="slide-text" id="slideText">向右滑动解锁 <i class="material-icons" style="font-size: 1rem; vertical-align: middle;">keyboard_double_arrow_right</i></div>
+                <div class="slide-thumb" id="slideThumb">
+                    <i class="material-icons">chevron_right</i>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
     <nav class="sidebar">
         <a href="/settings" class="user-profile" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 12px; margin-bottom: 30px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-            <div class="avatar" style="width: 80px; height: 80px; min-width: 36px; overflow: hidden; background: #282828; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+            <div class="avatar" style="width: 72px; height: 72px; min-width: 36px; overflow: hidden; background: #282828; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
                 <img class="user-avatar" src="/static/avatars/{{ user.username }}.jpg"
                      style="width:100%; height:100%; object-fit:cover;"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
@@ -48,10 +66,8 @@
 
 
         <div class="nav-menu">
-            {% if user.role in ['admin', 'operator'] %}
-            <div class="nav-group-title">{{ t('base.inventory', lang) }}</div>
-            <a href="/all" class="nav-item {% if active_page == 'inventory' %}active{% endif %}"><i class="material-icons">inventory_2</i>{{ t('title.inventory_cards', lang) }}</a>
-            <a href="/inventory_table" class="nav-item {% if active_page == 'inventory_table' %}active{% endif %}"><i class="material-icons">view_list</i>{{ t('title.inventory_table', lang) }}</a>
+            {% if user.role in ['superadmin', 'admin'] %}
+            <div class="nav-group-title">Request</div>
             <a href="/request_queue" class="nav-item {% if active_page == 'request_queue' %}active{% endif %}">
                 <i class="material-icons">notifications</i>{{ t('title.request_queue', lang) }}
                 {% if request.state.pending_count and request.state.pending_count > 0 %}
@@ -61,6 +77,9 @@
                 {% endif %}
             </a>
             <a href="/request_log" class="nav-item {% if active_page == 'request_log' %}active{% endif %}"><i class="material-icons">list_alt</i>{{ t('title.request_log', lang) }}</a>
+            <div class="nav-group-title">{{ t('base.inventory', lang) }}</div>
+            <a href="/all" class="nav-item {% if active_page == 'inventory' %}active{% endif %}"><i class="material-icons">inventory_2</i>{{ t('title.inventory_cards', lang) }}</a>
+            <a href="/inventory_table" class="nav-item {% if active_page == 'inventory_table' %}active{% endif %}"><i class="material-icons">view_list</i>{{ t('title.inventory_table', lang) }}</a>
             <a href="/stock_in" class="nav-item {% if active_page == 'stock_in' %}active{% endif %}"><i class="material-icons">add_box</i>{{ t('title.stock_in', lang) }}</a>
             <a href="/history" class="nav-item {% if active_page == 'history' %}active{% endif %}"><i class="material-icons">history</i>{{ t('title.history', lang) }}</a>
             <a href="/audit" class="nav-item {% if active_page == 'audit' %}active{% endif %}"><i class="material-icons">fact_check</i>{{ t('title.audit', lang) }}</a>
@@ -70,7 +89,7 @@
             <a href="/asset_history" class="nav-item {% if active_page == 'asset_history' %}active{% endif %}"><i class="material-icons">manage_history</i>{{ t('title.asset_history', lang) }}</a>
             <a href="/asset_audit/dashboard" class="nav-item {% if active_page == 'asset_audit' %}active{% endif %}"><i class="material-icons">barcode_reader</i>{{ t('title.asset_audit', lang) }}</a>
             <a href="/asset_scrap" class="nav-item {% if active_page == 'asset_scrap' %}active{% endif %}"><i class="material-icons">playlist_remove</i>{{ t('title.asset_scrap', lang) }}</a>
-                {% if user.role == 'admin' %}
+                {% if user.role == 'superadmin' %}
                 <div class="nav-group-title" style="margin-top: 20px;">{{ t('base.system', lang) }}</div>
                 <a href="/backend" class="nav-item {% if active_page == 'backend' %}active{% endif %}"><i class="material-icons">admin_panel_settings</i>{{ t('title.admin', lang) }}</a>
                 {% endif %}
@@ -78,6 +97,7 @@
             {% if user.role == 'user' %}
             <a href="/all" class="nav-item {% if active_page == 'inventory' %}active{% endif %}"><i class="material-icons">inventory_2</i>{{ t('title.inventory_cards', lang) }}</a>
             <a href="/request_log" class="nav-item {% if active_page == 'request_log' %}active{% endif %}"><i class="material-icons">list_alt</i>{{ t('title.request_log', lang) }}</a>
+            <a href="/asset" class="nav-item {% if active_page == 'asset' %}active{% endif %}"><i class="material-icons">devices</i>{{ t('title.asset', lang) }}</a>
             {% endif %}
         </div>
 
@@ -203,14 +223,14 @@
 
         <div class="bottom-bar-divider"></div>
         <div id="mapViewport" class="map-viewport">
-            <canvas id="footerWarehouseCanvas" class="wh-canvas" width="4000" height="3000"></canvas>
+            <canvas id="footerWarehouseCanvas" class="wh-canvas" width="4000" height="4000"></canvas>
         </div>
     </footer>
 
     <main class="main-area">
         <header class="top-bar" style="display: flex; align-items: center;">
             <div class="gerenal-actions" style="display: flex; align-items: center;">
-            {% if user.role in ['admin', 'operator'] %}
+            {% if user.role in ['superadmin', 'admin'] %}
             <button type="button" class="btn-primary" onclick="openMobileUploadAuth(event)" style="background-color: #8e44ad; border-radius: 20px; gap: 8px; min-width: 135px;">
                 <i class="material-icons" style="font-size: 1.2rem;">phone_iphone</i>{{ t('title.mobile_quick_upload', lang) }}
             </button>

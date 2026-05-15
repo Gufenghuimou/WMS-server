@@ -99,35 +99,6 @@
     </form>
 </div>
 
-<!--<div id="scrapSecurityModal" class="modal-overlay" style="display: none; z-index: 10000;">-->
-<!--    <div class="modal-box" style="width: 400px; text-align: center; border-top: 6px solid var(&#45;&#45;danger-red, #d93025);">-->
-<!--        <i class="material-icons" style="font-size: 4rem; color: var(&#45;&#45;danger-red, #d93025); margin-bottom: 10px;">warning</i>-->
-<!--        <h3 style="margin-top: 0; color: #333; font-size: 1.3rem;">{{ t('asset_scrap.modal_title', lang) }}</h3>-->
-
-<!--        <div style="background: #fce8e6; color: #c0392b; padding: 12px; border-radius: 8px; font-size: 0.9rem; margin-bottom: 20px; text-align: left; line-height: 1.5;">-->
-<!--            {{ t('asset_scrap.modal_warning', lang) | safe }}-->
-<!--        </div>-->
-
-<!--        <p style="font-size: 0.95rem; color: #555; margin-bottom: 10px;">{{ t('asset_scrap.modal_captcha_msg', lang) }}</p>-->
-
-<!--        <div style="font-size: 2rem; font-weight: 900; color: var(&#45;&#45;primary-blue, #1a73e8); margin-bottom: 15px; letter-spacing: 2px;" id="mathProblemDisplay">-->
-<!--            X + Y = ?-->
-<!--        </div>-->
-
-<!--        <input type="number" id="securityAnswerInput" placeholder="{{ t('asset_scrap.ph_captcha', lang) }}" autocomplete="off"-->
-<!--               style="width: 80%; padding: 12px; font-size: 1.2rem; text-align: center; border: 2px solid #ccc; border-radius: 8px; outline: none; transition: 0.3s; margin-bottom: 20px;">-->
-
-<!--        <div id="securityErrorMsg" style="color: #d93025; font-size: 0.85rem; margin-top: -10px; margin-bottom: 15px; display: none;">-->
-<!--            <i class="material-icons" style="font-size: 1rem; vertical-align: middle;">close</i> {{ t('asset_scrap.msg_calc_error', lang) }}-->
-<!--        </div>-->
-
-<!--        <div style="display: flex; gap: 15px; justify-content: center;">-->
-<!--            <button type="button" class="btn-primary" style="background: #f1f3f4; color: #555; box-shadow: none;" onclick="closeSecurityModal()">{{ t('asset_scrap.btn_think_again', lang) }}</button>-->
-<!--            <button type="button" class="btn-primary" style="background: var(&#45;&#45;danger-red, #d93025);" onclick="verifyAndExecuteScrap()">🔥 {{ t('asset_scrap.btn_destroy_now', lang) }}</button>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--</div>-->
-
 <div id="scrapSecurityModal" class="custom-modal" style="display: none; z-index: 10000;">
     <div class="custom-modal-content" style="width: 440px; text-align: center; border-top: 6px solid var(--danger-red, #d93025); padding: 30px;">
         <i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red); margin-bottom: 10px; width: auto; height: auto; line-height: 1;">report_problem</i>

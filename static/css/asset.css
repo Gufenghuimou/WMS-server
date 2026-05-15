@@ -1,31 +1,27 @@
-/* 🌟 Master-Detail 核心布局 */
 .dashboard-container {
     display: flex;
-    height: calc(100vh - 195px); /* 减去顶部和底部栏的高度，防止整体页面出现滚动条 */
+    height: calc(100vh - 195px);
     gap: 20px;
     box-sizing: border-box;
     overflow-y: hidden;
 }
 
-/* 🌟 左侧：卡片列表区 */
 .left-panel {
-    width: 50vw; /* 固定合理宽度，放得下图片和文字 */
+    width: 50vw;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
     gap: 15px;
     overflow-x: hidden;
     overflow-y: auto;
-    padding-right: 5px; /* 给滚动条留点空间 */
+    padding-right: 5px;
     perspective: 1200px;
 }
 
-/* 隐藏丑陋的原生滚动条，换成优雅的细条 */
 .left-panel::-webkit-scrollbar { width: 6px; }
 .left-panel::-webkit-scrollbar-thumb { background: #bbb; border-radius: 4px; }
 .left-panel::-webkit-scrollbar-track { background: transparent; }
 
-/* 资产分类卡片 */
 .asset-card {
     background: transparent !important;
     padding: 0 !important;
@@ -42,10 +38,9 @@
     transform: rotateX(180deg);
 }
 
-/* 选中状态的卡片 */
 .asset-card.active {
     border-color: var(--primary);
-    background: #f4f9f9; /* 微微带点主题色的底色 */
+    background: #f4f9f9;
 }
 
 .card-front, .card-back {
@@ -57,6 +52,7 @@
     box-sizing: border-box;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
+
 .card-front {
     display: flex;
     align-items: center;
@@ -72,22 +68,18 @@
 .asset-card.active .card-front { border-color: var(--primary); background: #f4f9f9; }
 .asset-card.active .card-front::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--primary); border-radius: 12px 0 0 12px;}
 
-/* 🌟 反面：表单排版 */
 .card-back {
-    transform: rotateX(180deg); /* 天生反面朝上 */
-    position: absolute; /* 绝对定位，平时不占高度 */
+    transform: rotateX(180deg);
+    position: absolute;
     top: 0; left: 0;
     z-index: 1;
     display: flex;
     padding: 15px;
     gap: 20px;
-    border: 2px solid var(--primary); /* 编辑态高亮边框 */
-    height: max-content; /* 让内部表单自然撑开 */
+    border: 2px solid var(--primary);
+    height: max-content;
 }
 
-/* ==========================================
-   🌟 编辑表单控件样式
-   ========================================== */
 .edit-form-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -102,7 +94,6 @@
 }
 .edit-input:focus { border-color: var(--primary); outline: none; background: #fff; box-shadow: inset 0 0 0 1px var(--primary); }
 
-/* 统一的 Toggle 开关 */
 .toggle-label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
 .toggle-switch { position: relative; display: inline-block; width: 36px; height: 20px; margin: 0; }
 .toggle-switch input { opacity: 0; width: 0; height: 0; }
@@ -123,37 +114,30 @@
     flex-shrink: 0;
 }
 
-.card-info { flex: 1; min-width: 0; /* 防止子元素文本把 flex 撑爆 */ }
+.card-info { flex: 1; min-width: 0; }
 
-/* 严格控制字数溢出显示省略号 */
 .text-truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .tags { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
 .badge-tag { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; border: 1px solid currentColor;}
 
-/* 🌟 右侧：明细表格区 */
-/* 🌟 右侧：明细表格区 */
 .right-panel {
     flex: 1;
     background: var(--surface);
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     border: 1px solid var(--border-color);
-
-    /* 建立 Flex 结构，剥离出独立的滚动区域 */
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* 这里千万不能出滚动条 */
+    overflow: hidden;
 }
 
-/* 右侧表格专用的滚动外壳 */
 .right-panel .table-wrapper {
     flex: 1;
     overflow-y: auto;
     min-height: 0;
 }
 
-/* 优雅的 Excel 级数据表 */
 .detail-table {
     width: 100%;
     border-collapse: collapse;
@@ -183,21 +167,21 @@
     background: #fafafa;
 }
 
-/* 隐藏右侧表格自带的丑陋原生滚动条 */
 .right-panel .table-wrapper::-webkit-scrollbar { width: 6px; }
 .right-panel .table-wrapper::-webkit-scrollbar-thumb { background: #ccc; border-radius: 6px; }
 .right-panel .table-wrapper::-webkit-scrollbar-track { background: transparent; }
 
-/* 模态框样式 */
 .modal-overlay {
     display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center;
     backdrop-filter: blur(3px);
 }
+
 .modal-box {
     background: #fff; width: 420px; border-radius: 16px; padding: 25px;
     box-shadow: 0 15px 40px rgba(0,0,0,0.2); animation: popIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+
 @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
 input[type="radio"] {
@@ -234,4 +218,59 @@ input[type="radio"]:checked + .radio-label::after {
     height: 12px;
     background-color: var(--danger-red);
     border-radius: 50%;
+}
+
+@keyframes highlightPulse {
+    0% { background-color: rgba(29, 185, 84, 0.6); }
+    100% { background-color: rgba(29, 185, 84, 0.05); }
+}
+
+.search-highlight {
+    animation: highlightPulse 1s ease-out;
+    background-color: rgba(29, 185, 84, 0.05);
+    position: relative;
+}
+
+.search-highlight td:first-child {
+    border-left: 4px solid var(--primary-green) !important;
+}
+
+#toast-container {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    pointer-events: none;
+}
+
+.toast-card {
+    color: white;
+    padding: 12px 24px;
+    border-radius: 30px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+    font-size: 1rem;
+    animation: toastSlideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    pointer-events: auto;
+}
+
+.toast-success { background: #1db954; }
+.toast-error { background: var(--danger-red, #e74c3c); }
+
+@keyframes toastSlideUp {
+    0% { opacity: 0; transform: translateY(30px) scale(0.9); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes toastFadeOut {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-20px) scale(0.9); }
 }

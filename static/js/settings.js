@@ -1,4 +1,6 @@
-// 实时预览头像（挂载至 window 供 HTML 内联调用）
+// ==========================================
+// 实时预览头像
+// ==========================================
 window.previewUserAvatar = function(input) {
     if (input.files && input.files[0]) {
         let reader = new FileReader();
@@ -9,11 +11,13 @@ window.previewUserAvatar = function(input) {
     }
 };
 
+// ==========================================
+// 设置表单提交处理
+// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     const settingsForm = document.getElementById('settingsForm');
 
     if (settingsForm) {
-        // 异步拦截提交
         settingsForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -22,8 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
             let btn = document.getElementById('submitBtn');
             let originalBtnText = btn.innerHTML;
 
+            // 按钮进入加载状态
             btn.disabled = true;
-            btn.innerHTML = '<i class="material-icons" style="font-size: 1.2rem; animation: spin 1s linear infinite;">autorenew</i> ${SETTINGS_I18N.saving}';
+            btn.innerHTML = `<i class="material-icons" style="font-size: 1.2rem; animation: spin 1s linear infinite;">autorenew</i> ${SETTINGS_I18N.saving}`;
             msgBox.style.display = 'none';
             msgBox.className = 'settings-msg';
 
@@ -35,11 +40,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 let data = await response.json();
 
-                msgBox.innerText = data.message;
-                msgBox.style.display = 'block';
-
                 if (data.status === 'error') {
+                    // ❌ 失败处理 (带震动动画)
+                    msgBox.innerText = data.message;
                     msgBox.classList.add('msg-error');
+                    msgBox.style.display = 'block';
                     btn.disabled = false;
                     btn.innerHTML = originalBtnText;
 
@@ -48,10 +53,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     setTimeout(() => msgBox.style.transform = "translateX(0)", 200);
 
                 } else if (data.status === 'success') {
+                    // ✅ 成功处理
+                    msgBox.innerText = data.message;
                     msgBox.classList.add('msg-success');
-                    btn.innerHTML = '<i class="material-icons" style="font-size: 1.2rem;">check_circle</i>${SETTINGS_I18N.save_success}';
-                    btn.style.background = '#1db954';
+                    msgBox.style.display = 'block';
+                    btn.innerHTML = `<i class="material-icons" style="font-size: 1.2rem;">check_circle</i> ${SETTINGS_I18N.save_success}`;
+                    btn.style.background = '#1db954'; // 变绿
 
+                    // 延时刷新或跳回登录页(如果改了密码)
                     setTimeout(() => {
                         if (data.action === 'logout') {
                             window.location.href = '/login';

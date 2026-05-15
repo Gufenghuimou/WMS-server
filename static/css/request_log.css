@@ -2,28 +2,85 @@
     background: var(--surface);
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    padding: 25px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    height: calc(100vh - 195px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
-.log-header {
+.log-tabs-container {
+    display: flex;
+    gap: -12px;
+    padding: 0;
+    background: var(--bg-main);
+    flex-shrink: 0;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.log-tab {
+    border-radius: 12px 12px 0 0;
+    padding: 12px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-.log-header h2 {
+.log-tab h3 {
     margin: 0;
-    color: var(--text-main);
+    font-size: 1.15rem;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    transition: color 0.3s;
 }
 
-/* 数据表格 */
+.log-tab.active {
+    flex: 6;
+    background-color: var(--surface);
+    border-top: 3px solid var(--primary-blue);
+    box-shadow: 0 -4px 15px rgba(0,0,0,0.03);
+    z-index: 2;
+}
+
+.log-tab.active h3 { color: var(--text-main); }
+.log-tab.active h3 i { color: var(--primary-blue); font-size: 1.4rem; }
+.log-tab.active .count-badge { background: #e8f4fd; color: var(--primary-blue); }
+
+.log-tab.inactive {
+    flex: 4;
+    background-color: #f4f6f8;
+    box-shadow: inset 0 4px 10px rgba(0,0,0,0.02);
+    border-top: 3px solid transparent;
+    z-index: 1;
+}
+
+.log-tab.inactive:hover { background-color: #f1f3f5; }
+.log-tab.inactive h3 { color: #95a5a6; font-size: 1.05rem; }
+.log-tab.inactive h3 i { color: #bdc3c7; font-size: 1.2rem; }
+.log-tab.inactive .count-badge { background: #e0e6ed; color: #7f8c8d; }
+
+.count-badge {
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: 0.3s;
+}
+
+.table-scroll-wrapper {
+    flex: 1;
+    overflow: auto;
+    padding: 0;
+    background: #f8f9fa;
+}
+
+.table-scroll-wrapper::-webkit-scrollbar { width: 6px; height: 6px; }
+.table-scroll-wrapper::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 6px; }
+.table-scroll-wrapper::-webkit-scrollbar-track { background: transparent; }
+
 .req-table {
     width: 100%;
     border-collapse: collapse;
@@ -35,8 +92,13 @@
     color: var(--text-muted);
     padding: 12px 15px;
     text-align: left;
-    border-bottom: 2px solid #eee;
     font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: none;
+    box-shadow: inset 0 -2px 0 #eee;
+    white-space: nowrap;
 }
 
 .req-table td {
@@ -47,10 +109,9 @@
 }
 
 .req-table tr:hover {
-    background: #fdfdfd;
+    background: #fff;
 }
 
-/* 状态徽章 */
 .status-badge {
     padding: 4px 10px;
     border-radius: 20px;
@@ -59,22 +120,24 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    white-space: nowrap;
 }
 
-.status-pending {
-    background: #fff3e0;
-    color: #e65100;
-    border: 1px solid #ffe0b2;
+.status-pending { background: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; }
+.status-approved { background: #e6f4ea; color: #1e8e3e; border: 1px solid #c8e6c9; }
+.status-rejected { background: #fce8e6; color: #d93025; border: 1px solid #ffcdd2; }
+
+.asset-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
 }
 
-.status-approved {
-    background: #e6f4ea;
-    color: #1e8e3e;
-    border: 1px solid #c8e6c9;
-}
-
-.status-rejected {
-    background: #fce8e6;
-    color: #d93025;
-    border: 1px solid #ffcdd2;
-}
+.badge-require { background: #e8f4fd; color: #2196f3; border: 1px solid #bbdefb; }
+.badge-return { background: #e6f4ea; color: #1e8e3e; border: 1px solid #c8e6c9; }
+.badge-broken { background: #fce8e6; color: #d93025; border: 1px solid #ffcdd2; }

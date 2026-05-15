@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>移动端授权登录 - WMS</title>
+    <style>
+        @font-face {
+            font-family: 'Material Icons';
+            font-style: normal;
+            font-weight: 400;
+            src: url('/static/fonts/material-icons.woff2') format('woff2');
+        }
+
+        .material-icons {
+            font-family: "Material Icons"; font-weight: normal; font-style: normal;
+            font-size: 24px; display: inline-block; line-height: 1; text-transform: none;
+            letter-spacing: normal; word-wrap: normal; white-space: nowrap; direction: ltr;
+            -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* 🌟 全局统一设计语言 */
+        :root {
+            --primary-blue: #3498db;
+            --primary-green: #1db954;
+            --danger-red: #e74c3c;
+            --bg-color: #f5f6fa;
+            --surface: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border: #dcdde1;
+        }
+
+        body {
+            margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-main);
+            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex; flex-direction: column; min-height: 100vh;
+        }
+
+        /* 🌟 极简版顶部导航栏 (无头像) */
+        .header {
+            background-color: var(--surface); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 50;
+        }
+        .header h2 { margin: 0; font-size: 1.25rem; display: flex; align-items: center; gap: 8px; color: var(--text-main); font-weight: bold; }
+
+        /* 🌟 登录卡片布局 */
+        .container {
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px; padding-bottom: 10vh; /* 视觉重心稍微偏上 */
+        }
+
+        .login-card {
+            background: var(--surface); border-radius: 20px; padding: 40px 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); width: 100%; max-width: 380px;
+            box-sizing: border-box; text-align: center;
+        }
+
+        /* 🌟 核心视觉：雷达扫描动画 */
+        .scanner-visual {
+            position: relative; width: 140px; height: 140px; margin: 0 auto 30px auto;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .scanner-visual .bg-qr {
+            font-size: 130px; color: var(--primary-blue); opacity: 0.15;
+        }
+        .scanner-box {
+            position: absolute; inset: 0; border: 3px solid rgba(52, 152, 219, 0.3); border-radius: 16px;
+            overflow: hidden;
+        }
+        /* 四个角的扫描框高亮装饰 */
+        .scanner-box::before, .scanner-box::after { content: ''; position: absolute; width: 25px; height: 25px; border-color: var(--primary-blue); border-style: solid; }
+        .scanner-box::before { top: -3px; left: -3px; border-width: 4px 0 0 4px; border-top-left-radius: 12px; }
+        .scanner-box::after { bottom: -3px; right: -3px; border-width: 0 4px 4px 0; border-bottom-right-radius: 12px; }
+
+        .scanner-line {
+            position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+            background: linear-gradient(90deg, transparent, var(--primary-green), transparent);
+            box-shadow: 0 2px 15px var(--primary-green);
+            animation: scan-move 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        @keyframes scan-move {
+            0% { top: 5%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 95%; opacity: 0; }
+        }
+
+        /* 🌟 文字与步骤指引 */
+        .login-card h3 { margin: 0 0 10px 0; font-size: 1.4rem; color: var(--text-main); }
+        .login-card p { margin: 0 0 25px 0; font-size: 0.95rem; color: var(--text-muted); line-height: 1.5; }
+
+        /* 扫码大按钮 */
+        .scan-login-btn {
+            width: 100%; background: var(--primary-green); color: white; border: none;
+            padding: 16px; border-radius: 12px; font-size: 1.15rem; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            box-shadow: 0 4px 15px rgba(29, 185, 84, 0.3); cursor: pointer; transition: 0.2s;
+        }
+        .scan-login-btn:active { transform: scale(0.98); background: #1aa048; }
+
+        .footer-note { margin-top: 25px; font-size: 0.8rem; color: #aaa; display: flex; align-items: center; justify-content: center; gap: 5px;}
+
+        /* 扫码全屏 Modal */
+        #scannerModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:9999; flex-direction:column; align-items:center; justify-content:center; padding:20px; }
+        #reader { width: 100%; max-width: 320px; border-radius: 12px; overflow: hidden; background: #000; box-shadow: 0 0 30px rgba(52, 152, 219, 0.2); }
+        .close-scan-btn { margin-top: 30px; padding: 12px 30px; background: rgba(255,255,255,0.1); color: #fff; border-radius: 25px; border: 1px solid rgba(255,255,255,0.3); font-size: 1rem; font-weight: bold; backdrop-filter: blur(5px); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2><i class="material-icons" style="color: var(--primary-blue);">security</i> 设备接入授权</h2>
+    </div>
+
+    <div class="container">
+        <div class="login-card">
+
+            <div class="scanner-visual">
+                <i class="material-icons bg-qr">qr_code_2</i>
+                <div class="scanner-box">
+                    <div class="scanner-line"></div>
+                </div>
+            </div>
+
+            <h3>移动端协同</h3>
+            <p>首次接入或登录过期，请在电脑版 WMS 顶部点击 <strong>[手机协同]</strong>，并扫描生成的二维码以同步权限。</p>
+
+            <button class="scan-login-btn" onclick="startScanner()">
+                <i class="material-icons">qr_code_scanner</i> 扫码授权登录
+            </button>
+
+            <div class="footer-note">
+                <i class="material-icons" style="font-size: 1rem;">verified_user</i> 环境加密连接已就绪
+            </div>
+        </div>
+    </div>
+
+    <div id="scannerModal">
+        <div style="color: white; margin-bottom: 20px; font-size: 1.15rem; font-weight: bold; letter-spacing: 1px;">请对准电脑屏幕二维码</div>
+        <div id="reader"></div>
+        <button class="close-scan-btn" onclick="stopScanner()">取消扫描</button>
+    </div>
+
+    <script src="/static/js/html5-qrcode.min.js"></script>
+    <script>
+        let html5QrCode = null;
+        let isProcessingScan = false;
+
+        async function startScanner() {
+            // 校验安全上下文 (摄像头调用必须要 HTTPS 或 localhost)
+            if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+                alert("扫码功能需要 HTTPS 环境支持。");
+                return;
+            }
+
+            document.getElementById('scannerModal').style.display = 'flex';
+            if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
+
+            // 扫描框配置
+            const config = { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
+
+            try {
+                if (!html5QrCode.isScanning) {
+                    await html5QrCode.start(
+                        { facingMode: "environment" },
+                        config,
+                        (decodedText) => {
+                            if (isProcessingScan) return;
+                            isProcessingScan = true;
+
+                            // 震动反馈 (如果设备支持)
+                            if (navigator.vibrate) navigator.vibrate(100);
+
+                            stopScanner(); // 扫到码立即关掉摄像头
+
+                            // 🚨 核心逻辑：拦截并验证是不是本系统的 Token 授权链接
+                            if (decodedText.includes('/mobile/login?token=')) {
+                                // 是的话，直接让当前页面跳转过去，交由后端处理 session
+                                window.location.href = decodedText;
+                            } else {
+                                alert("二维码无效！请扫描 WMS 电脑端生成的【手机协同】二维码。");
+                                isProcessingScan = false;
+                            }
+                        }
+                    );
+                }
+            } catch (err) {
+                console.error("摄像头启动失败", err);
+                alert("无法启动摄像头，请检查浏览器权限设置。");
+                stopScanner();
+            }
+        }
+
+        function stopScanner() {
+            document.getElementById('scannerModal').style.display = 'none';
+            isProcessingScan = false;
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => html5QrCode.clear()).catch(e => console.warn(e));
+            }
+        }
+    </script>
+
+</body>
+</html>

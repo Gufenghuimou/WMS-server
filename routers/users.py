@@ -1,14 +1,14 @@
 # /routers/users.py
 from fastapi import Request, Form, UploadFile, File, Depends, APIRouter
 from fastapi.responses import HTMLResponse
+from pygments.lexers import verification
 from sqlmodel import Session, select
 from starlette.responses import RedirectResponse
 import os
 import hashlib
-
 from database import engine
 from models import User, UserBookmark
-from dependencies import get_current_user, require_admin
+from dependencies import get_current_user, require_admin, require_superadmin
 from core import templates, t_lang
 
 router = APIRouter(tags=['Functions'])
@@ -17,7 +17,16 @@ router = APIRouter(tags=['Functions'])
 
 @router.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
+    user_agent = request.headers.get('User-Agent', '').lower()
+    mobile_keywords = ["android", "iphone", "ipad", "ipod", "windows phone", "mobile"]
+    is_mobile = any(keyword in user_agent for keyword in mobile_keywords)
+    if is_mobile:
+        return RedirectResponse(url="/mobile/login")
     return templates.TemplateResponse(request, "login.html", {})
+
+@router.get("/mobile/login", response_class=HTMLResponse)
+async def mobile_login(request: Request):
+    return templates.TemplateResponse(request, "mobile_login.html", {})
 
 @router.post("/login")
 async def process_login(request: Request, username: str = Form(...), password: str = Form(...)):
@@ -27,6 +36,7 @@ async def process_login(request: Request, username: str = Form(...), password: s
         user = session.exec(select(User).where(User.username == username, User.password_hash == password_hash)).first()
         if user:
             request.session["user"] = {
+                "id": user.id,
                 "username": user.username,
                 "full_name": user.full_name,
                 "role": user.role
@@ -37,7 +47,7 @@ async def process_login(request: Request, username: str = Form(...), password: s
             return templates.TemplateResponse(request, "login.html", {"error": error_msg ,"lang": lang})
 
 @router.get("/backend", response_class=HTMLResponse)
-async def admin_dashboard(request: Request, current_user:dict = Depends(require_admin)):
+async def admin_dashboard(request: Request, current_user:dict = Depends(require_superadmin)):
     with Session(engine) as session:
         user_list = []
         users = session.exec(select(User)).all()
@@ -104,6 +114,7 @@ async def update_user_settings(
             return {"status": "success", "message": t_lang("settings.password_success", lang), "action": "logout"}
 
         return {"status": "success", "message": t_lang("settings.update_success", lang), "action": "reload"}
+
 
 @router.post("/delete_user/{user_id}")
 async def delete_user(request: Request, user_id: int, username: str = Form(...), current_user: dict = Depends(require_admin)):

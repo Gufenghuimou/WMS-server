@@ -25,12 +25,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (grid) {
         let isWheeling = false;
         grid.addEventListener('wheel', (e) => {
-            if (e.deltaY !== 0) {
+            if (e.deltaY !== 0 || e.deltaX !== 0) {
                 e.preventDefault();
                 if (isWheeling) return;
                 isWheeling = true;
-                setTimeout(() => { isWheeling = false; }, 150);
-                const direction = Math.sign(e.deltaY);
+                setTimeout(() => { isWheeling = false; }, 75);
+                let direction = 0;
+                if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+                    direction = Math.sign(e.deltaX);
+                } else {
+                    direction = Math.sign(e.deltaY);
+                }
                 coverFlowIndex += direction;
                 updateCoverFlow();
             }
@@ -50,6 +55,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }, true);
     }
 
+    let autoPlayTimer = null;
+
+    function startAutoPlay() {
+        if (autoPlayTimer) clearInterval(autoPlayTimer);
+        autoPlayTimer = setInterval(() => {
+            if (document.querySelector('.item-card.is-flipped')) return;
+            const visibleCards = document.querySelectorAll('.item-card:not([data-search-hidden="true"])');
+            if (visibleCards.length <= 9) return;
+            coverFlowIndex ++;
+            updateCoverFlow();
+        }, 2500);
+    }
+    function stopAutoPlay() {
+        if (autoPlayTimer) {
+            clearInterval(autoPlayTimer);
+            autoPlayTimer = null;
+        }
+    }
+
+    grid.addEventListener('mouseenter', stopAutoPlay);
+    grid.addEventListener('mouseleave', startAutoPlay);
+
     const sortSelect = document.getElementById('sortSelect');
     if (sortSelect) {
         sortSelect.addEventListener('change', function(e) {
@@ -58,20 +85,23 @@ document.addEventListener('DOMContentLoaded', () => {
             cards.forEach(c => c.style.transition = 'transform 0.1s linear, opacity 0.1s, filter 0.1s');
 
             let spins = 0;
-            let spinInterval = setInterval(() => {
-                coverFlowIndex += 2;
+            const maxSpins = 35;
+            let currentDelay = 40;
+
+            function spinLoop() {
+                coverFlowIndex += 1;
                 updateCoverFlow();
                 spins++;
-
-                if (spins > 6) {
-                    clearInterval(spinInterval);
-                    const cardArray = Array.from(cards);
+                if (spins < maxSpins) {
+                    currentDelay *= 1.05;
+                    setTimeout(spinLoop, currentDelay);
+                } else {
+                    const cardArray = Array.form(cards);
                     cardArray.sort((a, b) => {
                         let valA = parseInt(a.dataset[sortMode === 'usage_desc' ? 'sortUsage' : 'sortId']) || 0;
                         let valB = parseInt(b.dataset[sortMode === 'usage_desc' ? 'sortUsage' : 'sortId']) || 0;
                         return valB - valA;
                     });
-
                     cardArray.forEach(c => grid.appendChild(c));
 
                     setTimeout(() => {
@@ -80,7 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         updateCoverFlow();
                     }, 50);
                 }
-            }, 120);
+            }
+            setTimeout(spinLoop, currentDelay);
         });
     }
 
@@ -94,6 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (realStockInput) realStockInput.addEventListener('input', hideOutError);
     if (outQtyInput) outQtyInput.addEventListener('input', hideOutError);
 
+    setTimeout(startAutoPlay, 10000);
     setTimeout(updateCoverFlow, 500);
     setTimeout(() => grid && grid.dispatchEvent(new Event('scroll')), 500);
 });

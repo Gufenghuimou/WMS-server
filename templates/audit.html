@@ -44,13 +44,14 @@
 
     <div class="audit-list-wrapper">
         {% for loc, items in grouped.items() %}
-        <div class="location-block collapsed" data-loc="{{ loc | lower }}">
+        {% set is_all_done = (items | rejectattr('status', 'equalto', 'Pending') | list | length) == items|length %}
+        <div class="location-block {% if is_all_done %}collapsed{% endif %}" data-loc="{{ loc | lower }}">
             <div class="location-header" onclick="this.parentElement.classList.toggle('collapsed')">
                 <h3>
                     <i class="material-icons collapse-icon">expand_more</i>
                     <i class="material-icons" style="font-size: 1.2rem;">place</i> {{ loc }}
                 </h3>
-                <span class="status-badge" style="background: #eee; color: #666;">{{ t('audit.total_items', lang) | replace('{count}', items|length) }}</span>
+                <span class="status-badge {% if is_all_done %}all-done{% endif %}">{{ t('audit.total_items', lang) | replace('{count}', items|length) }}</span>
             </div>
 
             {% for item in items %}

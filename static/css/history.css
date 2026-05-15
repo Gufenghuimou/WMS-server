@@ -7,6 +7,9 @@
     overflow-y: auto;
     height: calc(100vh - 195px);
 }
+.history-container::-webkit-scrollbar { width: 6px; height: 6px; }
+.history-container::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 6px; }
+.history-container::-webkit-scrollbar-track { background: transparent; }
 
 /* 调整表格：去掉所有竖线，仅保留横向分割线 */
 table {

@@ -40,12 +40,15 @@ window.drawWarehouseMap = function(targetRack = null) {
         if (!canvas.getContext) return;
         const ctx = canvas.getContext('2d');
 
+        canvas.width = canvas.clientWidth * dpr;
+        canvas.height = canvas.clientHeight *dpr;
+
         ctx.resetTransform();
         ctx.scale(dpr, dpr);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
 
         // 绘制工程蓝图风格的背景网格
         const GRID_SIZE = 10;
@@ -110,13 +113,14 @@ window.openFooterMap = function(targetLoc) {
     // ==========================================
     // 🌟 摄像机自动对焦算法 (智能双轴与居中保护)
     // ==========================================
+    setTimeout(() => {
     if (targetLoc && racks.length > 0) {
         let targetRack = racks.find(r => r.name === targetLoc);
         if (targetRack && mapEl) {
-            let canvasWidth = mapEl.width;
-            let canvasHeight = mapEl.height;
+            let canvasWidth = mapEl.clientWidth;
+            let canvasHeight = mapEl.clientHeight;
             let viewportWidth = mapEl.parentElement.clientWidth;
-            let viewportHeight = mapEl.parentElement.clientHeight || 600;
+            let viewportHeight = mapEl.parentElement.clientHeight;
 
             let rackCenterX = targetRack.x + (targetRack.w / 2);
             let rackCenterY = targetRack.y + (targetRack.h / 2);
@@ -143,10 +147,8 @@ window.openFooterMap = function(targetLoc) {
             mapEl.style.transform = `translate(${mapCurrentX}px, ${mapCurrentY}px)`;
         }
     }
-
-    setTimeout(() => {
         if (window.drawWarehouseMap) window.drawWarehouseMap(targetLoc);
-    }, 300);
+    }, 510);
 };
 
 // ==========================================
@@ -184,8 +186,8 @@ if (mapEl) {
         let deltaX = (e.clientX - mapDragStartX) / currentZoom;
         let deltaY = (e.clientY - mapDragStartY) / currentZoom;
 
-        let canvasWidth = mapEl.width;
-        let canvasHeight = mapEl.height;
+        let canvasWidth = mapEl.clientWidth;
+        let canvasHeight = mapEl.clientHeight;
         let viewportWidth = mapEl.parentElement.clientWidth;
         let viewportHeight = mapEl.parentElement.clientHeight || 600;
 
@@ -413,7 +415,7 @@ window.openMobileUploadAuth = async function(event) {
         if (data.status === 'success' && data.token) {
             // 拼接移动端专属页面的 URL (包含 token 身份验证)
             let currentHost = window.location.host
-            let mobileUrl = `https://${currentHost}/mobile/quick_upload?token=${data.token}`;
+            let mobileUrl = `https://${currentHost}/mobile/login?token=${data.token}`;
 
             // 清空并生成新的二维码
             let canvas = document.getElementById('qrcodeCanvas');
@@ -626,3 +628,155 @@ window.sendChatMessage = async function() {
 
 // 页面加载完成时静默获取一次最新消息 ID
 document.addEventListener('DOMContentLoaded', fetchChatHistory);
+
+// ==========================================
+// 🔒 全局闲置锁屏与滑动解锁引擎 (防误触版)
+// ==========================================
+
+(function() {
+    const wrap = document.getElementById('slideUnlockWrap');
+    const thumb = document.getElementById('slideThumb');
+    const track = document.getElementById('slideTrack');
+    const text = document.getElementById('slideText');
+
+    let idleTimeout;
+    const IDLE_LIMIT_MS = 5 * 60 * 1000; // 5分钟闲置判定
+    let isScreenLocked = false;
+
+    function updateLastActiveTime() {
+        if (isScreenLocked) return;
+        localStorage.setItem('eam_last_active', Date.now().toString());
+    }
+
+    function resetIdleTimer() {
+        if (isScreenLocked) return;
+        let lastActive = parseInt(localStorage.getItem('eam_last_active')) || Date.now();
+        let now = Date.now();
+
+        if (now - lastActive >= IDLE_LIMIT_MS) {
+            lockScreen();
+            return;
+        }
+
+        updateLastActiveTime();
+        clearTimeout(idleTimeout);
+        idleTimeout = setTimeout(resetIdleTimer, IDLE_LIMIT_MS);
+    }
+
+    function lockScreen() {
+        isScreenLocked = true;
+        document.getElementById('screen-lock-overlay').style.display = 'flex';
+        resetSlider(); // 锁屏时重置滑块状态
+    }
+
+    // 监听交互，重置倒计时
+    ['keydown', 'click', 'touchstart'].forEach(evt => {
+        document.addEventListener(evt, () => {
+            if (!isScreenLocked) {
+                updateLastActiveTime();
+                clearTimeout(idleTimeout);
+                idleTimeout = setTimeout(resetIdleTimer, IDLE_LIMIT_MS);
+            }
+        }, {passive: true});
+    });
+
+    resetIdleTimer();
+
+    // ==========================================
+    // 🌟 滑动解锁物理逻辑 (兼容 PC 鼠标与手机触摸)
+    // ==========================================
+
+    let isDragging = false;
+    let startX = 0;
+    let maxDrag = 0; // 滑块最大可滑动的像素距离
+
+    function resetSlider() {
+        thumb.style.transition = 'left 0.3s ease';
+        track.style.transition = 'width 0.3s ease';
+        thumb.style.left = '2px';
+        track.style.width = '0px';
+        text.style.opacity = '1';
+        thumb.innerHTML = '<i class="material-icons">chevron_right</i>';
+        thumb.style.background = '#3498db';
+    }
+
+    function unlockSuccess() {
+        thumb.innerHTML = '<i class="material-icons">check</i>';
+        thumb.style.background = '#1db954'; // 变成绿色
+        text.style.opacity = '0';
+
+        // 延时 0.4 秒后解除全局锁屏，让用户看清楚绿色的打勾状态
+        setTimeout(() => {
+            isScreenLocked = false;
+            document.getElementById('screen-lock-overlay').style.display = 'none';
+            localStorage.setItem('eam_last_active', Date.now().toString());
+            resetIdleTimer();
+        }, 400);
+    }
+
+    function handleDragStart(e) {
+        if (!isScreenLocked) return;
+        if (e.type !== 'touchstart') {
+            e.preventDefault();
+        }
+        isDragging = true;
+        thumb.style.transition = 'none'; // 拖动时取消动画，实现跟手
+        track.style.transition = 'none';
+
+        // 兼容触摸屏和鼠标
+        startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        maxDrag = wrap.offsetWidth - thumb.offsetWidth - 4; // 减掉两边的 padding
+    }
+
+    function handleDragMove(e) {
+        if (!isDragging) return;
+
+        if (e.cancelable) {
+            e.preventDefault();
+        }
+
+        let currentX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+
+        let currentZoom = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
+        let deltaX = (currentX - startX) / currentZoom;
+
+        // 限制滑块不超出边界 (0 ~ maxDrag)
+        if (deltaX < 0) deltaX = 0;
+        if (deltaX > maxDrag) deltaX = maxDrag;
+
+        thumb.style.left = deltaX + 2 + 'px';
+        track.style.width = deltaX + 25 + 'px'; // 让轨道稍微跟在滑块后面
+
+        // 拖动过程中文字渐隐
+        text.style.opacity = 1 - (deltaX / maxDrag);
+    }
+
+    function handleDragEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+
+        let currentLeft = parseInt(thumb.style.left || 0);
+
+        // 判断是否滑到了终点 (设定 98% 以上就算成功)
+        if (currentLeft >= maxDrag * 0.98) {
+            thumb.style.left = maxDrag + 2 + 'px'; // 强行贴到最右侧
+            track.style.width = wrap.offsetWidth + 'px';
+            unlockSuccess();
+        } else {
+            // 没滑到头，弹回原点
+            resetSlider();
+        }
+    }
+
+    // 绑定事件
+    if (thumb) {
+        thumb.addEventListener('mousedown', handleDragStart);
+        thumb.addEventListener('touchstart', handleDragStart, {passive: true});
+
+        window.addEventListener('mousemove', handleDragMove);
+        window.addEventListener('touchmove', handleDragMove, {passive: false}); // passive false 允许阻止滚动
+
+        window.addEventListener('mouseup', handleDragEnd);
+        window.addEventListener('touchend', handleDragEnd);
+    }
+})();

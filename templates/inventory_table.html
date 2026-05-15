@@ -8,6 +8,11 @@
 
 {% block top_actions %}
     <div style="display: flex; gap: 15px; align-items: center;">
+        <a href="/all/mva_export" style="text-decoration: none;">
+            <button class="btn-primary" style="border-radius: 20px; gap: 8px;">
+                <i class="material-icons">production_quantity_limits</i> {{ t('table.export_mva', lang) }}
+            </button>
+        </a>
         <a href="/all/export" style="text-decoration: none;">
             <button class="btn-primary" style="border-radius: 20px; gap: 8px;">
                 <i class="material-icons">download</i> {{ t('table.export_all', lang) }}
@@ -19,7 +24,6 @@
 {% block content %}
 <div class="table-container">
     <div class="table-header">
-        <h2><i class="material-icons">view_list</i> {{ t('table.adv_title', lang) }}</h2>
         <span style="font-size: 0.85rem;"><i class="material-icons" style="font-size: 1rem; vertical-align: middle;">auto_awesome</i> {{ t('table.adv_subtitle', lang) }}</span>
     </div>
     <div class="table-scroll-wrapper">
@@ -33,7 +37,7 @@
                     <th style="width: 80px;" onclick="sortTable(4, 'number')">{{ t('table.th_2y', lang) }} <i class="material-icons sort-icon">unfold_more</i></th>
                     <th style="width: 80px;" onclick="sortTable(5, 'number')">{{ t('table.th_3y', lang) }} <i class="material-icons sort-icon">unfold_more</i></th>
                     <th style="width: 150px;" onclick="sortTable(6, 'string')">{{ t('table.th_first_in', lang) }} <i class="material-icons sort-icon">unfold_more</i></th>
-                    <th style="width: 80px;" onclick="sortTable(7, 'number')">{{ t('table.th_status', lang) }} <i class="material-icons sort-icon">unfold_more</i></th>
+                    <th style="width: 120px;" onclick="sortTable(7, 'number')">{{ t('table.th_status', lang) }} <i class="material-icons sort-icon">unfold_more</i></th>
                     <th style="width: 80px;">{{ t('table.th_water_level', lang) }}</th>
                     <th style="text-align: center; width: 80px;">{{ t('table.th_mva', lang) }}</th>
                 </tr>
@@ -42,9 +46,11 @@
                 {% for item in items %}
                 {% set is_alarming = item.warning_level > 0 and item.stock <= item.warning_level %}
 
-                <tr data-id="{{ item.id }}" id="row-{{ item.id }}">
+                <tr class="main-row" data-id="{{ item.id }}" id="row-{{ item.id }}">
                     <td class="font-monospace" style="font-size: 1.1rem; font-weight: bold;">{{ item.pn_1 }}</td>
-                    <td title="{{ item.name or '-' }}">{{ item.name or '-' }}</td>
+                    <td title="{{ item.name or '-' }}">
+                        <input class="name-input" type="text" value="{{ item.name or '-' }}" readonly name="name">
+                    </td>
                     <td data-sort="{{ item.stock }}" style="font-weight: bold; font-size: 1rem;">{{ item.stock }}</td>
                     <td data-sort="{{ item.usage_1y }}">{{ item.usage_1y }}</td>
                     <td data-sort="{{ item.usage_2y }}">{{ item.usage_2y }}</td>
@@ -70,6 +76,70 @@
                         </label>
                     </td>
                 </tr>
+                <tr class="detail-row" data-id="{{ item.id }}" id="detail-{{ item.id }}">
+                    <td colspan="10">
+                        <div class="detail-container">
+                            <template class="detail-template">
+                                <div class="detail-inner">
+                                    <div class="detail-image-box">
+                                        {% if item.has_image %}
+                                            <img class="lazy-image" data-src="/static/item_images/{{ item.id }}.jpg?t={{ range(1, 99999) | random }}" alt="Item Image">
+                                        {% endif %}
+                                    </div>
+                                    <div class="detail-text">
+                                        <label>PN2:
+                                            <input class="detail-input" type="text" value="{{ item.pn_2 }}" readonly name="pn_2">
+                                        </label>
+                                    </div>
+                                    <div class="detail-long-text">
+                                        <label>{{ t('inv.description_2', lang) }}:
+                                            <input class="detail-input" type="text" value="{{ item.description_2 }}" readonly name="description_2">
+                                        </label>
+                                    </div>
+                                    <div class="detail-text">
+                                        <label>{{ t('inv.description_1', lang) }}:
+                                            <input class="detail-input" type="text" value="{{ item.description_1 }}" readonly name="description_1">
+                                        </label>
+                                    </div>
+                                    <div class="detail-long-text">
+                                          <label>{{ t('inv.remarks', lang) }}:
+                                            <input class="detail-input" type="text" value="{{ item.remarks }}" readonly name="remarks">
+                                        </label>
+                                    </div>
+
+                                    <div class="detail-text">
+                                        <label style="display: flex; justify-content: center; gap: 20px;">
+                                            <i class="material-icons location-map-btn" style="color: var(--primary); cursor: pointer;">place</i>
+                                            <input class="detail-input" type="text" value="{{ item.location }}" readonly name="location" style="flex: 0; width: 80px;">
+                                        </label>
+                                    </div>
+                                    <div class="detail-text" style="display: flex; justify-content: space-around;">
+                                        <div>
+                                            <span>{{ t('inv.total_in', lang) }}: </span>
+                                            <span style="font-size: 1.05rem; font-weight: 600;">{{ item.total_in }}</span>
+                                        </div>
+                                        <div>
+                                            <span>{{ t('inv.total_out', lang) }}: </span>
+                                        <span style="font-size: 1.05rem; font-weight: 600;">{{ item.total_out }}</span>
+                                        </div>
+                                        <input type="hidden" name="pn_1" value="{{ item.pn_1 }}">
+                                        <input type="hidden" name="stock" value="{{ item.stock }}">
+                                    </div>
+                                    <div class="btn-container">
+                                        <div class="detail-edit-btn">
+                                            <div class="action-btn">
+                                                <button class="btn-primary scrap-btn" style="background-color: var(--danger-red);">{{ t('table.scrap_btn', lang) }}</button>
+                                                <button class="btn-primary save-btn" style="background-color: var(--primary-blue);">{{ t('table.save_btn', lang) }}</button>
+                                                <button class="btn-primary cancel-btn" style="background-color: #f1f3f4; color: var(--text-main);">{{ t('table.cancel_btn', lang) }}</button>
+                                            </div>
+                                            <button class="btn-primary edit-btn" style="background-color: var(--status);">{{ t('table.edit_btn', lang) }}</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -80,7 +150,8 @@
 {% block extra_js %}
 <script>
     const TABLE_I18N = {
-        net_err_save: "{{ t('table.net_err_save', lang) }}"
+        net_err_save: "{{ t('table.net_err_save', lang) }}",
+        scrap_warn: `{{ t('card.scrap_warn', lang) }}`
     };
 </script>
 <script src="/static/js/inventory_table.js"></script>

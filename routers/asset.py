@@ -701,7 +701,7 @@ async def view_asset_audit(request: Request, current_user: dict = Depends(get_cu
     return templates.TemplateResponse(request, "asset_audit.html", {"records": records, 'missing': missing, 'misplaced': misplaced, "total": total, "progress": progress, "completed": completed, "grouped": grouped, "user": current_user, "active_page": "asset_audit"})
 
 @router.post("/asset_audit/start")
-async def start_audit(current_user: dict = Depends(get_current_user)):
+async def start_audit(request: Request, current_user: dict = Depends(get_current_user)):
     with Session(engine) as session:
         for old_record in session.exec(select(AssetAuditRecord)).all():
             session.delete(old_record)
@@ -720,7 +720,9 @@ async def start_audit(current_user: dict = Depends(get_current_user)):
             )
             session.add(record)
         session.commit()
-    return RedirectResponse(url= "/asset_audit/dashboard", status_code=303)
+    referer = request.headers.get("referer", "")
+    target_url = "/mobile/audit_asset" if "mobile" in referer else "/asset_audit/dashboard"
+    return RedirectResponse(url=target_url, status_code=303)
 
 @router.post("/api/asset_audit/scan")
 async def scan_asset_audit(
@@ -774,7 +776,9 @@ async def commit_asset_audit(request: Request, current_user: dict = Depends(get_
                     session.add(log)
                 session.add(asset)
         session.commit()
-    return RedirectResponse(url= "/asset_audit/dashboard", status_code=303)
+    referer = request.headers.get("referer", "")
+    target_url = "/mobile/audit_asset" if "mobile" in referer else "/asset_audit/dashboard"
+    return RedirectResponse(url=target_url, status_code=303)
 
 @router.get("/asset_audit/export")
 def export_audit(request: Request, current_user: dict = Depends(get_current_user)):
@@ -802,3 +806,4 @@ def export_audit(request: Request, current_user: dict = Depends(get_current_user
             'Content-Disposition': f'attachment; filename="Asset_Audit_Report_{datetime.now().strftime("%Y%m%d")}.xlsx"'
         }
         return StreamingResponse(output, headers=headers, media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+

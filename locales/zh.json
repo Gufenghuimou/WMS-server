@@ -61,7 +61,9 @@
     "unknown_error": "未知错误",
     "network_error_qr": "网络错误，无法连接到服务器生成二维码。",
     "admin_tag": "[管理员] ",
-    "send_fail": "发送失败，请检查网络。"
+    "send_fail": "发送失败，请检查网络。",
+    "screen_locked": "屏幕已锁定",
+    "long_time_no_see": "长时间无操作，请重新输入密码"
   },
   "login": {
     "error": "用户名或密码错误",
@@ -87,7 +89,8 @@
     "save_btn": "保 存 修 改",
     "saving": "保存中...",
     "save_success": "保存成功",
-    "network_error": "网络请求失败，请检查服务器连接"
+    "network_error": "网络请求失败，请检查服务器连接",
+    "trust_this_device": "信任此设备"
   },
   "admin": {
     "user_deleted": "账号 [{username}] 已被彻底抹除！",
@@ -108,6 +111,7 @@
     "th_action": "操作管理",
     "badge_admin": "管理员",
     "badge_operator": "仓管员",
+    "badge_superadmin": "超级管理员",
     "status_online": "当前在线",
     "confirm_reset_pwd": "确定要将账号 [{username}] 的密码强制重置为 123456 吗？",
     "btn_reset_pwd": "重置密码",
@@ -218,9 +222,9 @@
     "usage_1y": "近一年用量",
     "warning_level": "预警水位",
     "remarks": "备注",
-    "edit": "编 辑",
-    "outbound": "出 库",
-    "request": "申 请 领 用",
+    "edit": "编辑",
+    "outbound": "出库",
+    "request": "申请",
     "out_title": "物料出库",
     "pn1": "物料 PN1",
     "pn2_short": "PN2",
@@ -232,12 +236,12 @@
     "applicant": "领用人",
     "out_note": "出库备注",
     "optional": "选填",
-    "confirm_out": "确 认 出 库",
+    "confirm_out": "确认出库",
     "edit_title": "编辑物料",
     "recrop": "重新裁切图片",
     "book_stock": "账面库存",
-    "scrap": "报 废",
-    "save_changes": "保 存 修 改",
+    "scrap": "报废",
+    "save_changes": "保存修改",
     "req_title": "提交领用申请",
     "book_remain": "账面剩余",
     "req_qty": "申请数量",
@@ -260,6 +264,7 @@
   },
   "table": {
     "export_all": "导出全量库存",
+    "export_mva": "导出MVA需求",
     "adv_title": "高级台账与预警分析",
     "adv_subtitle": "修改水位或MVA将自动静默保存",
     "th_pn1": "物料 PN1",
@@ -274,7 +279,11 @@
     "th_mva": "设为 MVA",
     "alarm_yes": "低于水位",
     "alarm_no": "安全",
-    "net_err_save": "⚠️ 网络异常，设定未能保存！"
+    "net_err_save": "⚠️ 网络异常，设定未能保存！",
+    "scrap_btn": "报废",
+    "save_btn": "保存",
+    "cancel_btn": "取消",
+    "edit_btn": "编辑"
   },
   "queue": {
     "page_title": "待审批出库申请",
@@ -478,6 +487,9 @@
     "status_scrap": "彻底报废",
     "status_return": "归还入库",
     "status_takeout": "领用出库",
+    "status_correction": "盘点校正",
+    "status_stopped": "停止使用",
+    "status_enable": "恢复使用",
     "no_record": "暂无资产变动记录"
   },
   "asset_scrap": {
@@ -573,6 +585,27 @@
     "alert_save_net_err": "网络错误，无法保存配置！"
   },
   "mobile": {
+    "approve_page": "审批队列",
+    "inventory_audit": "消耗品盘点",
+    "asset_audit": "资产盘点",
+    "image_upload": "快速传图",
+    "logout": "退出登录"
+  },
+  "mobile_approve": {
+    "page_title": "手机快速审批",
+    "approve_list": "待办申请队列",
+    "list_length": "共 {count} 条待处理",
+    "all_done": "所有审批已完成",
+    "req_qty": "申请数量",
+    "reject": "驳回",
+    "approve": "批准放行",
+    "name": "品名",
+    "stocking": "账面库存",
+    "real_stock": "当前真实库存",
+    "submit": "出库",
+    "stock_insufficient": "库存异常！出库数量不得大于在库数量！"
+  },
+  "mobile_upload": {
     "page_title": "手机传图",
     "header_title": "极速传图",
     "smart_hint": "智能带出：任填一项并点击其他空白处，系统会自动补全或纠正其他料号。",
@@ -602,5 +635,41 @@
     "msg_cam_start_fail": "启动摄像头失败",
     "msg_cam_stop_async_err": "异步关闭摄像头异常:",
     "msg_cam_stop_sync_err": "同步关闭摄像头拦截:"
+  },
+  "mobile_audit_asset": {
+    "page_title": "资产盘点",
+    "reset": "重置",
+    "sync": "同步",
+    "current_loc": "当前位置",
+    "ph_loc": "输入或扫码位置",
+    "ctrl_no": "扫描管理编号",
+    "scanner_idle": "等待扫码...",
+    "loc_counting": "共 {count} 台",
+    "status_miss": "未盘点",
+    "status_warn": "位置异常",
+    "status_done": "正常",
+    "expected_loc": "账面位置",
+    "real_loc": "实盘位置",
+    "err_no_loc": "请先输入库位",
+    "net_error": "网络连接失败",
+    "scanner_info": "请扫描【位置】或【管理编号】条码"
+  },
+  "mobile_audit_inv": {
+    "page_title": "消耗品盘点",
+    "reset": "重置盘点",
+    "scan_input": "扫描库位 或 PN",
+    "ph_scan_input": "请输入/扫码...",
+    "scanner_idle": "等待扫码...",
+    "loc_counting": "共 {count} 种",
+    "expected_stock": "账面数量",
+    "real_stock": "实盘数量",
+    "real_loc": "实盘库位",
+    "audit_note": "盘点备注",
+    "ph_audit_note": "选填",
+    "save_audit": "保存盘点",
+    "scanner_info": "请扫描【库位】或【物料号】条码",
+    "no_result_found": "未找到匹配数据",
+    "saving": "保存中...",
+    "net_error": "网络连接失败"
   }
 }

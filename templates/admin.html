@@ -44,10 +44,12 @@
                 <td style="font-weight: bold;">{{ u.username }}</td>
                 <td>{{ u.full_name }}</td>
                 <td>
-                    {% if u.role == 'admin' %}
-                    <span style="background: #fff3e0; color: #e65100; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">{{ t('admin.badge_admin', lang) }}</span>
+                    {% if u.role == 'superadmin' %}
+                    <span style="background: rgba(217, 48, 37, 0.1); color: #d93025; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">{{ t('admin.badge_superadmin', lang) }}</span>
+                    {% elif u.role == 'admin' %}
+                    <span style="background: rgba(230, 81, 0, 0.1); color: #e65100; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">{{ t('admin.badge_admin', lang) }}</span>
                     {% else %}
-                    <span style="background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">{{ t('admin.badge_operator', lang) }}</span>
+                    <span style="background: rgba(46, 125, 50, 0.1); color: #2e7d32; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">{{ t('admin.badge_operator', lang) }}</span>
                     {% endif %}
                 </td>
                 <td style="text-align: right;">

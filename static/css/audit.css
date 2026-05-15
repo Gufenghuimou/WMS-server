@@ -60,7 +60,8 @@
 .audit-table input { width: 100%; box-sizing: border-box; height: 28px; padding: 0 5px; border: 1px solid #ddd; border-radius: 4px; outline: none; }
 .audit-table input:focus { border-color: var(--primary); }
 
-.status-badge { padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; display: inline-block; }
+.status-badge { padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; display: inline-block; background-color: #eee; color: #666; }
+.status-badge.all-done { background-color: #e6f4ea; color: #1e8e3e; }
 .status-matched, .status-正常 { background: #e6f4ea !important; color: #1e8e3e !important; }
 .status-mismatched, .status-异常 { background: #fce8e6 !important; color: #d93025 !important; }
 .status-pending, .status-未盘点 { background: #f1f3f4 !important; color: #555 !important; }

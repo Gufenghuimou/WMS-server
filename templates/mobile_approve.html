@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%23121212'/%3E%3Cpolygon points='50,22 75,36.5 75,65.5 50,80 25,65.5 25,36.5' fill='none' stroke='%233498db' stroke-width='5' stroke-linejoin='round'/%3E%3Cpolygon points='50,38 55,41 50,44 45,41' fill='%233498db'/%3E%3Cpolygon points='46,48 54,48 54,66 50,68.5 46,66' fill='%23ffffff'/%3E%3C/svg%3E">
+    <title>{{ t('mobile_approve.page_title', lang) }} - {{ t('title.base', lang) }}</title>
+    <style>
+        @font-face {
+            font-family: 'Material Icons';
+            font-style: normal;
+            font-weight: 400;
+            src: url('/static/fonts/material-icons.woff2') format('woff2');
+        }
+        .material-icons {
+            font-family: "Material Icons"; font-weight: normal; font-style: normal;
+            font-size: 24px; display: inline-block; line-height: 1; text-transform: none;
+            letter-spacing: normal; word-wrap: normal; white-space: nowrap; direction: ltr;
+            -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* 🌟 与页面一完全一致的全局变量 */
+        :root {
+            --primary-blue: #3498db;
+            --primary-green: #1db954;
+            --danger-red: #e74c3c;
+            --bg-color: #f5f6fa;
+            --surface: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border: #dcdde1;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-color); color: var(--text-main);
+            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* 🌟 统一顶部导航栏 */
+        .header {
+            background-color: var(--surface); padding: 12px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 50;
+        }
+        .header h2 { margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 8px; color: var(--text-main); }
+        .avatar-btn {
+            width: 38px; height: 38px; border-radius: 50%; background: var(--primary-blue);
+            color: white; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 1.1rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        .avatar-btn .user-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--primary-blue); display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; object-fit:cover; }
+
+        /* 🌟 统一抽屉导航菜单 */
+        .mobile-menu-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+            z-index: 1000; opacity: 0; transition: opacity 0.3s; backdrop-filter: blur(2px);
+        }
+        .mobile-menu {
+            position: fixed; top: 0; right: -280px; width: 260px; height: 100vh;
+            background: var(--surface); z-index: 1001; transition: right 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: -5px 0 20px rgba(0,0,0,0.1); display: flex; flex-direction: column;
+        }
+        .mobile-menu.open { right: 0; }
+        .menu-header-box { padding: 30px 20px 20px 20px; background: #f8f9fa; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 15px; }
+        .menu-header-box .avatar-large { width: 50px; height: 50px; border-radius: 50%; background: var(--primary-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; }
+        .menu-header-box .avatar-large .user-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--primary-blue); display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; object-fit:cover; }
+        .menu-user-info h3 { margin: 0 0 5px 0; font-size: 1.1rem; color: var(--text-main); }
+        .menu-user-info p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+        .menu-nav { flex: 1; padding: 15px 0; overflow-y: auto; display: flex; flex-direction: column; justify-content: space-between; }
+        .menu-item { display: flex; align-items: center; gap: 15px; padding: 15px 25px; color: var(--text-main); text-decoration: none; font-size: 1.05rem; transition: 0.2s; }
+        .menu-item:active { background: #f0f2f5; }
+        .menu-item i { color: var(--text-muted); }
+        .menu-item.active { color: var(--primary-blue); background: #eef2f5; border-right: 4px solid var(--primary-blue); font-weight: bold; }
+        .menu-item.active i { color: var(--primary-blue); }
+        .menu-divider { height: 1px; background: #eee; margin: 10px 0; }
+
+        .lang-flags-container { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; margin-top: 15px; padding: 0 10px; }
+        .lang-flag { width: 38px; height: 38px; border-radius: 50%; background-color: rgba(255, 255, 255, 0.05); display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); border: 2px solid transparent; filter: grayscale(60%) opacity(0.5); overflow: hidden; }
+        .lang-flag img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .lang-flag.active { border-color: #aaa; filter: grayscale(0%) opacity(1); box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); transform: scale(1.1); }
+
+        /* 页面专属样式 */
+        .container { padding: 15px; }
+        .req-card { background: var(--surface); border-radius: 12px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 15px; display: flex; flex-direction: column; gap: 12px; }
+        .req-card-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px dashed #eee; padding-bottom: 10px; }
+        .req-user { display: flex; align-items: center; gap: 10px; }
+        .req-avatar { width: 36px; height: 36px; border-radius: 50%; background: #f0f2f5; display: flex; justify-content: center; align-items: center; color: var(--text-muted); font-weight: bold; }
+        .req-avatar .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary-blue); display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; object-fit:cover; }
+        .req-user-info h4 { margin: 0; font-size: 1rem; color: var(--text-main); display: flex; align-items: center; gap: 6px; }
+        .req-dept { font-size: 0.75rem; background: #f0f2f5; padding: 2px 6px; border-radius: 4px; color: #666; font-weight: normal; }
+        .req-time { font-size: 0.75rem; color: #aaa; }
+        .req-card-body p { margin: 0 0 5px 0; font-size: 0.9rem; line-height: 1.4; }
+        .req-note { color: #95a5a6; font-size: 0.85rem; display: flex; align-items: flex-start; gap: 4px; margin-top: 8px !important; background: #fafafa; padding: 8px; border-radius: 6px;}
+        .req-qty-box { display: flex; justify-content: space-between; align-items: center; background: #fff0f0; padding: 10px 15px; border-radius: 8px; border: 1px solid #fadbd8; }
+        .req-qty-label { font-size: 0.85rem; color: var(--danger-red); font-weight: bold;}
+        .req-qty-num { font-size: 1.5rem; font-weight: bold; color: var(--danger-red); line-height: 1;}
+        .req-actions { display: flex; gap: 10px; margin-top: 5px; }
+        .req-actions button { flex: 1; height: 44px; border-radius: 8px; font-size: 1rem; border: none; display: flex; align-items: center; justify-content: center; gap: 5px; font-weight: bold; }
+        .btn-approve { background: var(--primary-green); color: white; }
+        .btn-reject { background: white; border: 1px solid #ccc !important; color: var(--text-muted); }
+
+        .custom-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; align-items: flex-end; justify-content: center; backdrop-filter: blur(2px); }
+        .custom-modal-content { background: white; width: 100%; border-radius: 20px 20px 0 0; padding: 25px 20px 40px 20px; box-sizing: border-box; animation: slideUp 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .close-modal { position: absolute; right: 20px; top: 20px; font-size: 1.5rem; color: #999; }
+        .shake-animation { animation: shakeError 0.4s ease-in-out; }
+        @keyframes shakeError { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-4px); } 40%, 80% { transform: translateX(4px); } }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2><i class="material-icons" style="color: var(--primary-blue);">inbox</i> {{ t('mobile_approve.page_title', lang) }}</h2>
+        <div class="avatar-btn" onclick="toggleMobileMenu()">
+            <img class="user-avatar" src="/static/avatars/{{ user.username }}.jpg"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <i class="material-icons" style="display:none; color:#777; font-size: 20px;">person</i>
+        </div>
+    </div>
+
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="toggleMobileMenu()"></div>
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="menu-header-box">
+            <div class="avatar-large">
+                <div class="avatar-btn" onclick="toggleMobileMenu()">
+                    <img class="user-avatar" src="/static/avatars/{{ user.username }}.jpg"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <i class="material-icons" style="display:none; color:#777; font-size: 20px;">person</i>
+                </div>
+            </div>
+            <div class="menu-user-info">
+                <h3>{{ user.full_name or user.username }}</h3>
+            </div>
+        </div>
+        <div class="menu-nav">
+            <div>
+                <a href="/mobile/approve" class="menu-item active">
+                    <i class="material-icons">inbox</i> {{ t('mobile.approve_page', lang) }}
+                </a>
+                <a href="/mobile/audit_inventory" class="menu-item">
+                    <i class="material-icons">inventory_2</i> {{ t('mobile.inventory_audit', lang) }}
+                </a>
+                <a href="/mobile/audit_asset" class="menu-item">
+                    <i class="material-icons">fact_check</i> {{ t('mobile.asset_audit', lang) }}
+                </a>
+                <a href="/mobile/upload" class="menu-item">
+                    <i class="material-icons">linked_camera</i> {{ t('mobile.image_upload', lang) }}
+                </a>
+                <div class="menu-divider"></div>
+                <div class="lang-flags-container">
+                    <a href="/api/switch_lang/zh" class="lang-flag {% if request.state.lang == 'zh' %}active{% endif %}" title="中文">
+                        <img src="/static/flags/cn.svg" alt="ZH">
+                    </a>
+                    <a href="/api/switch_lang/en" class="lang-flag {% if request.state.lang == 'en' %}active{% endif %}" title="English">
+                        <img src="/static/flags/us.svg" alt="EN">
+                    </a>
+                    <a href="/api/switch_lang/jp" class="lang-flag {% if request.state.lang == 'jp' %}active{% endif %}" title="日本語">
+                        <img src="/static/flags/jp.svg" alt="JP">
+                    </a>
+                    <a href="/api/switch_lang/vn" class="lang-flag {% if request.state.lang == 'vn' %}active{% endif %}" title="Tiếng Việt">
+                        <img src="/static/flags/vn.svg" alt="VN">
+                    </a>
+                </div>
+            </div>
+            <div>
+                <a href="/logout" class="menu-item" style="color: var(--danger-red);">
+                    <i class="material-icons" style="color: var(--danger-red);">logout</i> {{ t('mobile.logout', lang) }}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        {% if error %}
+        <div style="background: #fce8e6; color: var(--danger-red); padding: 12px 15px; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; border: 1px solid #fadbd8; font-size: 0.9rem;">
+            <i class="material-icons" style="font-size: 1.2rem;">error</i><strong>{{ error }}</strong>
+        </div>
+        {% endif %}
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 5px;">
+            <span style="font-size: 0.9rem; color: var(--text-muted);">{{ t('mobile_approve.approve_list', lang) }}</span>
+            <span style="background: #eef2f5; color: var(--primary-blue); padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.8rem;">
+                {{ t('mobile_approve.list_length', lang) | replace('{count}', req_data|length) }}
+            </span>
+        </div>
+
+        {% if req_data|length == 0 %}
+        <div style="text-align: center; padding: 80px 0; color: #bdc3c7;">
+            <i class="material-icons" style="font-size: 4rem; opacity: 0.3;">done_all</i>
+            <h3 style="margin-top: 15px; font-weight: normal; font-size: 1.1rem;">{{ t('mobile_approve.all_done', lang) }}</h3>
+        </div>
+        {% endif %}
+
+        <div class="list-container">
+            {% for data in req_data %}
+            <div class="req-card">
+                <div class="req-card-header">
+                    <div class="req-user">
+                        <div class="req-avatar">
+                            <img class="user-avatar" src="/static/avatars/{{ data.req.applicant_username }}.jpg"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            <i class="material-icons" style="display:none; color:#777; font-size: 20px;">person</i>
+                        </div>
+                        <div class="req-user-info">
+                            <h4>{{ data.req.applicant }} <span class="req-dept">{{ data.req.department }}</span></h4>
+                        </div>
+                    </div>
+                    <span class="req-time">{{ data.req.created_at[0:16] }}</span>
+                </div>
+                <div class="req-card-body">
+                    <p><strong>{{ data.req.pn_1 }}</strong></p>
+                    <p style="color: #666;">{{ data.req.item_name }}</p>
+                    <div class="req-note">
+                        <i class="material-icons" style="font-size: 1rem; margin-top: 2px;">chat_bubble_outline</i>
+                        <span>{{ data.req.note or t('queue.no_reason', lang) }}</span>
+                    </div>
+                </div>
+                <div class="req-qty-box">
+                    <span class="req-qty-label">{{ t('mobile_approve.req_qty', lang) }}</span>
+                    <span class="req-qty-num">{{ data.req.req_qty }}</span>
+                </div>
+                <div class="req-actions">
+                    <form action="/request_queue/reject/{{ data.req.id }}" method="post" style="flex: 1; margin: 0; display: flex;" onsubmit="return confirm('{{ t('queue.confirm_reject', lang) }}');">
+                        <button type="submit" class="btn-reject" style="width: 100%;">
+                            <i class="material-icons" style="font-size: 1.1rem;">block</i> {{ t('mobile_approve.reject', lang) }}
+                        </button>
+                    </form>
+                    <button class="btn-approve" onclick="openApproveModal('{{ data.req.id }}', '{{ data.req.pn_1 }}', '{{ data.req.item_name }}', {{ data.req.req_qty }}, {{ data.item.stock }}, '{{ data.item.location or '' }}')">
+                        <i class="material-icons" style="font-size: 1.1rem;">check_circle</i> {{ t('mobile_approve.approve', lang) }}
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="approveModal" class="custom-modal" onclick="if(event.target===this) closeApproveModal()">
+        <div class="custom-modal-content">
+            <span class="close-modal" onclick="closeApproveModal()">&times;</span>
+            <h3 style="margin-top: 0; color: var(--primary-green); border-bottom: 1px solid #eee; padding-bottom: 15px; display: flex; align-items: center; gap: 8px; font-size: 1.3rem;">
+                <i class="material-icons">place</i> <strong id="modalLocation"></strong>
+            </h3>
+            <form id="approveForm" method="post" onsubmit="return validateApproveForm(event)">
+                <div style="margin-bottom: 20px;">
+                    <div style="margin-bottom: 8px; font-size: 1.2rem; color: #666;">PN:<strong id="modalPn" style="color: #333;"></strong></div>
+                    <div style="margin-bottom: 8px; font-size: 1.2rem; color: #666;">{{ t('mobile_approve.name', lang) }}:<span id="modalName" style="color: #333; white-space: nowrap"></span></div>
+                    <div style="margin-bottom: 8px; font-size: 1.2rem; color: #666;">{{ t('mobile_approve.req_qty', lang) }}:<strong id="modalReqQty" style="color: #333;"></strong></div>
+                    <div style="margin-bottom: 8px; font-size: 1.2rem; color: #666;">{{ t('mobile_approve.stocking', lang) }}:<strong id="modalSysStock" style="color: #333;"></strong></div>
+                    <label style="display: block; font-weight: bold; color: var(--text-main); margin-bottom: 10px; font-size: 1rem;">
+                        {{ t('mobile_approve.real_stock', lang) }} <span style="color: red;">*</span>
+                    </label>
+                    <input type="number" id="realStock" name="real_stock" required min="0" step="1"
+                           style="width: 100%; height: 50px; font-size: 1.5rem; text-align: center; border: 2px solid var(--danger-red); border-radius: 8px; outline: none; box-sizing: border-box;">
+                </div>
+                <div id="approveError" style="display: none; background: #fce8e6; color: #d93025; padding: 12px; border-radius: 8px; font-size: 0.9rem; margin-bottom: 20px; align-items: center; gap: 8px; border: 1px solid #fadbd8;">
+                    <i class="material-icons" style="font-size: 1.2rem;">error_outline</i>
+                    <span id="approveErrorText"></span>
+                </div>
+                <button type="submit" style="width: 100%; height: 50px; background: var(--primary-green); color: white; font-size: 1.1rem; font-weight: bold; border-radius: 8px; border: none;">
+                    {{ t('mobile_approve.submit', lang) }}
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 🌟 统一抽屉控制 JS
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const overlay = document.getElementById('mobileMenuOverlay');
+            if (menu.classList.contains('open')) {
+                menu.classList.remove('open');
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.display = 'none', 300);
+            } else {
+                overlay.style.display = 'block';
+                setTimeout(() => {
+                    overlay.style.opacity = '1';
+                    menu.classList.add('open');
+                }, 10);
+            }
+        }
+
+        // ==========================================
+        // 原有校验逻辑保留...
+        // （直接把你原本写的 validateApproveForm 粘贴在这里）
+        // ==========================================
+        const QUEUE_I18N = {
+            stock_insufficient: "{{ t('mobile_approve.stock_insufficient', lang) }}"
+        };
+
+        let currentReqQty = 0;
+
+        window.openApproveModal = function(reqId, pn, name, reqQty, sysStock, location) {
+            document.getElementById('approveForm').action = '/request_queue/approve/' + reqId;
+            document.getElementById('modalPn').innerText = pn;
+            document.getElementById('modalName').innerText = name;
+            document.getElementById('modalSysStock').innerText = sysStock;
+            document.getElementById('modalReqQty').innerText = reqQty;
+            document.getElementById('modalLocation').innerText = location || 'Unallocated';
+            currentReqQty = parseInt(reqQty);
+
+            // 重置状态
+            let stockInput = document.getElementById('realStock');
+            stockInput.value = '';
+            stockInput.style.backgroundColor = 'transparent';
+            document.getElementById('approveError').style.display = 'none';
+            document.getElementById('approveForm').classList.remove('shake-animation');
+
+            document.getElementById('approveModal').style.display = 'flex';
+            setTimeout(() => stockInput.focus(), 300);
+        };
+
+        window.closeApproveModal = function() {
+            document.getElementById('approveModal').style.display = 'none';
+        };
+
+        window.validateApproveForm = function(event) {
+            let realStock = parseInt(document.getElementById('realStock').value) || 0;
+            let form = document.getElementById('approveForm');
+            let errorBox = document.getElementById('approveError');
+            let errorText = document.getElementById('approveErrorText');
+            let stockInput = document.getElementById('realStock');
+
+            if (realStock < currentReqQty) {
+                event.preventDefault();
+                errorText.innerText = QUEUE_I18N.stock_insufficient
+                                        .replace('{realStock}', realStock)
+                                        .replace('{reqQty}', currentReqQty);
+
+                errorBox.style.display = 'flex';
+                stockInput.style.backgroundColor = '#fadbd8';
+
+                form.classList.remove('shake-animation');
+                void form.offsetWidth;
+                form.classList.add('shake-animation');
+                return false;
+            }
+            return true;
+        };
+
+        // 清除错误样式
+        document.addEventListener('DOMContentLoaded', () => {
+            const realStockInput = document.getElementById('realStock');
+            if (realStockInput) {
+                realStockInput.addEventListener('input', () => {
+                    document.getElementById('approveError').style.display = 'none';
+                    realStockInput.style.backgroundColor = 'transparent';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

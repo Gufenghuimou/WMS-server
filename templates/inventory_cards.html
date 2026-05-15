@@ -37,7 +37,7 @@
                 </div>
             </div>
 
-            <div style="height: 120px; border-radius: 8px; margin-bottom: 15px; overflow: hidden; border: 1px dashed #ddd; background: #f8f9fa;">
+            <div class="img-container" style="height: 120px; border-radius: 8px; margin-bottom: 15px; overflow: hidden; border: 1px dashed #ddd; background: #f8f9fa;">
                 {% if item.has_image %}
                     <img class="card-item-img" data-itemid="{{ item.id }}" src="/static/item_images/{{ item.id }}.jpg?t={{ range(1, 99999) | random }}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 {% endif %}
@@ -51,10 +51,22 @@
             <div class="detail-row"><span>{{ t('card.location', lang) }}</span><span>{{ item.location or '-' }}</span></div>
             <div class="detail-row"><span>{{ t('card.usage_1y', lang) }}</span><span>{{ item.usage_1y or 0 }}</span></div>
             <div class="detail-row"><span>{{ t('card.warning_level', lang) }}</span><span>{{ item.warning_level or 0 }}</span></div>
-            <div class="detail-row" style="border-bottom: none;"><span>{{ t('card.remarks', lang) }}</span><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px;" title="{{ item.remarks }}">{{ item.remarks or '-' }}</span></div>
+            <div class="detail-row" style="border-bottom: none;"><span>{{ t('card.remarks', lang) }}</span><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ item.remarks }}">{{ item.remarks or '-' }}</span></div>
 
             <div class="card-actions">
-                {% if user.role in ['admin', 'operator'] %}
+                {% if user.role == 'superadmin' %}
+                <button class="btn-action btn-request" style="background: var(--primary-blue); color: white;"
+                        onclick="openRequestModal('{{ item.id }}', '{{ item.pn_1 }}', '{{ item.name }}', {{ item.stock }})">{{ t('card.request', lang) }}
+                </button>
+                <button class="btn-action btn-edit" onclick="openEditModal(this)"
+                    data-id="{{ item.id }}" data-pn1="{{ item.pn_1 }}" data-name="{{ item.name }}"
+                    data-stock="{{ item.stock }}" data-pn2="{{ item.pn_2 or '' }}"
+                    data-desc1="{{ item.description_1 or '' }}" data-desc2="{{ item.description_2 or '' }}"
+                    data-loc="{{ item.location or '' }}" data-remarks="{{ item.remarks or '' }}">
+                    {{ t('card.edit', lang) }}
+                </button>
+                <button class="btn-action btn-out" onclick="openOutModal('{{ item.id }}', '{{ item.pn_1 }}', '{{ item.name }}', {{ item.stock }}, '{{ item.location or '' }}')">{{ t('card.outbound', lang) }}</button>
+                {% elif user.role == 'admin' %}
                 <button class="btn-action btn-edit" onclick="openEditModal(this)"
                     data-id="{{ item.id }}" data-pn1="{{ item.pn_1 }}" data-name="{{ item.name }}"
                     data-stock="{{ item.stock }}" data-pn2="{{ item.pn_2 or '' }}"
@@ -64,10 +76,10 @@
                 </button>
                 <button class="btn-action btn-out" onclick="openOutModal('{{ item.id }}', '{{ item.pn_1 }}', '{{ item.name }}', {{ item.stock }}, '{{ item.location or '' }}')">{{ t('card.outbound', lang) }}</button>
                 {% else %}
-                    <button class="btn-action btn-request" style="background: var(--primary-blue); color: white;"
-                            onclick="openRequestModal('{{ item.id }}', '{{ item.pn_1 }}', '{{ item.name }}', {{ item.stock }})">
-                        <i class="material-icons" style="font-size: 1.1rem; margin-right: 4px;">pan_tool</i> {{ t('card.request', lang) }}
-                    </button>
+                <button class="btn-action btn-request" style="background: var(--primary-blue); color: white;"
+                        onclick="openRequestModal('{{ item.id }}', '{{ item.pn_1 }}', '{{ item.name }}', {{ item.stock }})">
+                    <i class="material-icons" style="font-size: 1.1rem; margin-right: 4px;">pan_tool</i> {{ t('card.request', lang) }}
+                </button>
                 {% endif %}
             </div>
         </div>
@@ -163,11 +175,31 @@
             </div>
             <div style="display: flex; gap: 8px;">
                 <div class="form-group-modal" style="flex: 1;"><label>{{ t('card.applicant', lang) }}</label><input type="text" name="applicant" value="{{ user.full_name or user.username }}" readonly style="background: #f5f5f5;"></div>
-                <div class="form-group-modal" style="flex: 1;"><label>{{ t('card.dept', lang) }}<span style="color: red;">*</span></label><input type="text" id="reqDept" name="department" required></div>
+                <div class="form-group-modal" style="flex: 1;"><label>{{ t('card.dept', lang) }}<span style="color: red;">*</span></label><input type="text" id="reqDept" name="department" required autocomplete="on"></div>
             </div>
-            <div class="form-group-modal"><label>{{ t('card.req_reason', lang) }}</label><input type="text" id="reqNote" name="note" placeholder="{{ t('card.req_reason_ph', lang) }}"></div>
+            <div class="form-group-modal"><label>{{ t('card.req_reason', lang) }}</label><input type="text" id="reqNote" name="note"></div>
             <button type="submit" class="modal-btn" id="btnSubmitReq" style="margin-top: auto; width: 100%; background: var(--primary-blue); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">{{ t('card.send_req', lang) }}</button>
         </form>
+    </div>
+</div>
+
+<div id="cropModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 600px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 15px;">
+            <h3 style="margin: 0; color: var(--primary-blue); font-size: 1.1rem;">
+                <i class="material-icons" style="vertical-align: middle;">crop</i> 剪裁物料图片
+            </h3>
+            <i class="material-icons" style="cursor: pointer; color: #999;" onclick="closeCropModal()">close</i>
+        </div>
+
+        <div style="width: 100%; max-height: 50vh; margin-bottom: 15px; background: #eee; border-radius: 8px; overflow: hidden;">
+            <img id="cropImageTarget" style="max-width: 100%; display: block;">
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button type="button" onclick="closeCropModal()" style="padding: 8px 20px; border-radius: 6px; border: none; background: #95a5a6; color: white; cursor: pointer;">取消</button>
+            <button type="button" onclick="confirmCrop()" style="padding: 8px 20px; border-radius: 6px; border: none; background: var(--primary-blue); color: white; font-weight: bold; cursor: pointer;">确认裁剪</button>
+        </div>
     </div>
 </div>
 

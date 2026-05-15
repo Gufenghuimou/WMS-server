@@ -3,7 +3,8 @@ from fastapi import Request
 from sqlmodel import Session, select, func
 
 from database import engine
-from models import OutboundRequest
+from models import OutboundRequest, AssetRequest
+
 
 async def inject_global_template_data(request: Request, call_next):
     lang = request.session.get("lang", "zh")
@@ -13,10 +14,13 @@ async def inject_global_template_data(request: Request, call_next):
         return await call_next(request)
     try:
         with Session(engine) as session:
-            count = session.exec(
+            count_consumable = session.exec(
                 select(func.count(OutboundRequest.id)).where(OutboundRequest.status == 'Pending')
             ).one()
-            request.state.pending_count = count
+            count_asset = session.exec(
+                select(func.count(AssetRequest.id)).where(AssetRequest.status == 'Pending')
+            ).one()
+            request.state.pending_count = count_consumable + count_asset
     except Exception as e:
         request.state.pending_count = 0
 

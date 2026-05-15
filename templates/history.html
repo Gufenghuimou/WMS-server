@@ -31,8 +31,8 @@
         </thead>
         <tbody>
             {% for log in logs %}
-            {% set is_undone = '已撤销' in (log.note or '') %}
-            {% set is_undo_log = '撤销记录' in (log.note or '') %}
+            {% set is_undone = '已撤销' in (log.note or '')  or 'Undone' in (log.note or '') %}
+            {% set is_undo_log = '撤销记录' in (log.note or '')  or 'Undo Record' in (log.note or '') %}
 
             <tr class="{% if is_undone %}tr-undone{% endif %}"
                 data-search="{{ log.pn_1 | lower }} {{ log.applicant | lower }} {{ log.department | lower }} {{ log.note | lower }}">
@@ -48,7 +48,7 @@
                     {{ log.note or '-' }}
                 </td>
                 <td style="text-align: center;">
-                    {% if not is_undone and not is_undo_log and log.note != 'Imported Log' and log.note != 'Scrapped' and user.role == 'admin' %}
+                    {% if not is_undone and not is_undo_log and log.note != 'Imported Log' and log.note != 'Scrapped' and user.role in ['superadmin','admin'] %}
                     <form action="/undo/{{ log.id }}" method="post" style="margin: 0;" onsubmit="return confirm('{{ t('history.confirm_undo', lang) }}');">
                         <button type="submit" class="btn-undo">{{ t('history.undo', lang) }}</button>
                     </form>

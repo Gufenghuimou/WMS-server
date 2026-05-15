@@ -89,6 +89,21 @@ td {
     padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;
 }  /* 蓝：建档 */
 
+.color-correction {
+    color: #8e44ad; font-weight: 600; background-color: rgba(142, 68, 173, 0.1);
+    padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;
+}
+
+.color-stopped {
+    color: #ff532e; font-weight: 600; background: rgba(255, 83, 46, 0.1);
+    padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;
+}
+
+.color-enable {
+    color: #9ACD32; font-weight: 600; background: rgba(154, 205, 50, 0.1);
+    padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;
+}
+
 .searchable-hidden {
     display: none !important;
 }

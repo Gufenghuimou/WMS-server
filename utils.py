@@ -73,7 +73,7 @@ def get_printer_config():
                 return json.load(f)
         except:
             pass
-    return {'ip': '10.171.7.203', 'port': 6101}
+    return {'ip': '10.171.4.203', 'port': 6101}
 
 def save_printer_config(ip: str, port: int):
     with open(PRINTER_CONFIG_FILE, 'w', encoding='utf-8') as f:

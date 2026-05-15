@@ -16,7 +16,7 @@
 
         <div class="avatar-upload-box">
             <div class="avatar-preview-circle">
-                <img id="setAvatarPreview" src="/static/avatars/{{ user.username }}.jpg?t={{ range(1, 9999) | random }}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://ui-avatars.com/api/?name={{ user.username }}&background=random'">
+                <img id="setAvatarPreview" src="/static/avatars/{{ user.username }}.jpg?t={{ range(1, 9999) | random }}" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
             </div>
             <div>
                 <h4 style="margin: 0 0 10px 0; color: var(--text-main);">{{ t('settings.avatar_label', lang) }}</h4>
@@ -28,13 +28,25 @@
         </div>
 
         <div class="form-group-main">
-            <label>{{ t('settings.username_label', lang) }}</label>
-            <input type="text" value="{{ user.username }}" disabled>
+            <div class="user-edit">
+                <label>{{ t('settings.username_label', lang) }}</label>
+                <input type="text" value="{{ user.username }}" disabled>
+            </div>
+            <div class="user-edit">
+                <label>{{ t('settings.full_name_label', lang) }}</label>
+                <input type="text" name="new_full_name" value="{{ user.full_name or '' }}" placeholder="{{ t('settings.full_name_placeholder', lang) }}">
+            </div>
         </div>
 
         <div class="form-group-main">
-            <label>{{ t('settings.full_name_label', lang) }}</label>
-            <input type="text" name="new_full_name" value="{{ user.full_name or '' }}" placeholder="{{ t('settings.full_name_placeholder', lang) }}">
+            <div class="user-edit">
+                <label>{{ t('settings.new_password_label', lang) }}</label>
+                <input type="password" name="new_password" autocomplete="new-password" placeholder="{{ t('settings.new_password_placeholder', lang) }}">
+            </div>
+            <div class="user-edit">
+                <label>{{ t('settings.confirm_password_label', lang) }}</label>
+                <input type="password" name="confirm_password" autocomplete="new-password" placeholder="{{ t('settings.confirm_password_placeholder', lang) }}">
+            </div>
         </div>
 
         <div class="security-box">
@@ -42,22 +54,12 @@
             <input type="password" name="old_password" required placeholder="{{ t('settings.old_password_placeholder', lang) }}">
         </div>
 
-        <div style="display: flex; gap: 20px;">
-            <div class="form-group-main" style="flex: 1;">
-                <label>{{ t('settings.new_password_label', lang) }}</label>
-                <input type="password" name="new_password" placeholder="{{ t('settings.new_password_placeholder', lang) }}">
-            </div>
-            <div class="form-group-main" style="flex: 1;">
-                <label>{{ t('settings.confirm_password_label', lang) }}</label>
-                <input type="password" name="confirm_password" placeholder="{{ t('settings.confirm_password_placeholder', lang) }}">
-            </div>
-        </div>
-
         <div id="settingsMsgBox" class="settings-msg"></div>
-
-        <button type="submit" id="submitBtn" class="btn-save">
-            {{ t('settings.save_btn', lang) }}
-        </button>
+        <div style="display: flex; gap: 15px;">
+            <button type="submit" id="submitBtn" class="btn-save">
+                {{ t('settings.save_btn', lang) }}
+            </button>
+        </div>
     </form>
 </div>
 {% endblock %}

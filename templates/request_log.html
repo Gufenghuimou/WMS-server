@@ -18,21 +18,32 @@
 
 {% block content %}
 <div class="log-container">
-    <div class="log-header">
-        {% if user.role in ['admin', 'operator'] %}
-        <h2> {{ t('log.title_all', lang) }} </h2>
-        {% else %}
-        <h2> {{ t('log.title_my', lang) }} </h2>
-        {% endif %}
+<!--    <div class="log-header">-->
+<!--        {% if user.role in ['superadmin', 'admin'] %}-->
+<!--        <h2><i class="material-icons" style="color: var(&#45;&#45;primary-blue);">history</i> {{ t('log.title_all', lang) }} </h2>-->
+<!--        {% else %}-->
+<!--        <h2><i class="material-icons" style="color: var(&#45;&#45;primary-blue);">history</i> {{ t('log.title_my', lang) }} </h2>-->
+<!--        {% endif %}-->
+<!--    </div>-->
+
+    <div class="log-tabs-container">
+        <div class="log-tab active" onclick="switchLogTab('consumable', this)">
+            <h3><i class="material-icons">inventory_2</i> Consumables</h3>
+            <span class="count-badge">{{ req_log|length }}</span>
+        </div>
+        <div class="log-tab inactive" onclick="switchLogTab('asset', this)">
+            <h3><i class="material-icons">devices</i> Assets</h3>
+            <span class="count-badge">{{ asset_req_log|length }}</span>
+        </div>
     </div>
 
-    {% if req_log|length == 0 %}
-    <div style="text-align: center; padding: 60px 0; color: #bdc3c7;">
-        <i class="material-icons" style="font-size: 4rem; opacity: 0.5;">inbox</i>
-        <h3 style="margin-top: 15px; font-weight: normal;">{{ t('log.empty', lang) }}</h3>
-    </div>
-    {% else %}
-    <div style="overflow-x: auto;">
+    <div id="tab-consumable" class="table-scroll-wrapper">
+        {% if req_log|length == 0 %}
+        <div style="text-align: center; padding: 60px 0; color: #bdc3c7; background: var(--surface); height: 100%;">
+            <i class="material-icons" style="font-size: 4rem; opacity: 0.5;">inbox</i>
+            <h3 style="margin-top: 15px; font-weight: normal;">{{ t('log.empty', lang) }}</h3>
+        </div>
+        {% else %}
         <table class="req-table" id="reqTable">
             <thead>
                 <tr>
@@ -41,7 +52,7 @@
                     <th style="min-width: 150px;">{{ t('log.th_name', lang) }}</th>
                     <th style="text-align: center;">{{ t('log.th_qty', lang) }}</th>
                     <th>{{ t('log.th_dept', lang) }}</th>
-                    {% if user.role in ['admin', 'operator'] %}
+                    {% if user.role in ['superadmin', 'admin', 'operator'] %}
                     <th>{{ t('log.th_applicant', lang) }}</th>
                     {% endif %}
                     <th>{{ t('log.th_note', lang) }}</th>
@@ -57,7 +68,7 @@
                     <td style="text-align: center; font-size: 1.1rem; font-weight: bold;">{{ log.req_qty }}</td>
                     <td><span style="background: #f0f2f5; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem;">{{ log.department }}</span></td>
 
-                    {% if user.role in ['admin', 'operator'] %}
+                    {% if user.role in ['superadmin', 'admin', 'operator'] %}
                     <td style="color: #34495e; font-weight: 500;">{{ log.applicant }}</td>
                     {% endif %}
 
@@ -79,8 +90,79 @@
                 {% endfor %}
             </tbody>
         </table>
+        {% endif %}
     </div>
-    {% endif %}
+
+    <div id="tab-asset" class="table-scroll-wrapper" style="display: none;">
+        {% if asset_req_log|length == 0 %}
+        <div style="text-align: center; padding: 60px 0; color: #bdc3c7; background: var(--surface); height: 100%;">
+            <i class="material-icons" style="font-size: 4rem; opacity: 0.5;">inbox</i>
+            <h3 style="margin-top: 15px; font-weight: normal;">No Asset Requests Found</h3>
+        </div>
+        {% else %}
+        <table class="req-table" id="assetTable">
+            <thead>
+                <tr>
+                    <th style="width: 150px;">{{ t('log.th_time', lang) }}</th>
+                    <th>Type</th>
+                    <th>PN / SN</th>
+                    <th style="min-width: 150px;">{{ t('log.th_name', lang) }}</th>
+                    <th style="text-align: center;">{{ t('log.th_qty', lang) }}</th>
+                    <th>{{ t('log.th_dept', lang) }}</th>
+                    {% if user.role in ['superadmin', 'admin', 'operator'] %}
+                    <th>{{ t('log.th_applicant', lang) }}</th>
+                    {% endif %}
+                    <th>{{ t('log.th_note', lang) }}</th>
+                    <th style="text-align: center;">{{ t('log.th_status', lang) }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in asset_req_log %}
+                <tr>
+                    <td style="color: #7f8c8d; font-size: 0.85rem;">{{ log.created_at }}</td>
+                    <td>
+                        {% if log.matter == 'require' %}
+                            <span class="asset-badge badge-require"><i class="material-icons" style="font-size:14px;">add_shopping_cart</i> Require</span>
+                        {% elif log.matter == 'return' %}
+                            <span class="asset-badge badge-return"><i class="material-icons" style="font-size:14px;">assignment_return</i> Return</span>
+                        {% else %}
+                            <span class="asset-badge badge-broken"><i class="material-icons" style="font-size:14px;">build</i> Broken</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span style="font-weight: bold; color: var(--primary-blue);">{{ log.pn_1 }}</span>
+                        {% if log.ctrl_no %}
+                        <br><span style="font-size: 0.8rem; font-family: monospace; color: #7f8c8d; background: #eee; padding: 2px 4px; border-radius: 4px;">{{ log.ctrl_no }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ log.asset_name or '-' }}</td>
+                    <td style="text-align: center; font-size: 1.1rem; font-weight: bold;">{{ log.req_qty }}</td>
+                    <td><span style="background: #f0f2f5; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem;">{{ log.department }}</span></td>
+
+                    {% if user.role in ['superadmin', 'admin', 'operator'] %}
+                    <td style="color: #34495e; font-weight: 500;">{{ log.applicant }}</td>
+                    {% endif %}
+
+                    <td style="color: #7f8c8d; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ log.note }}">
+                        {{ log.note or '-' }}
+                    </td>
+                    <td style="text-align: center;">
+                        {% if log.status == 'Pending' %}
+                            <span class="status-badge status-pending"><i class="material-icons" style="font-size: 0.9rem;">schedule</i> {{ t('log.status_pending', lang) }}</span>
+                        {% elif log.status == 'Approved' %}
+                            <span class="status-badge status-approved"><i class="material-icons" style="font-size: 0.9rem;">check_circle</i> {{ t('log.status_approved', lang) }}</span>
+                        {% elif log.status == 'Rejected' %}
+                            <span class="status-badge status-rejected"><i class="material-icons" style="font-size: 0.9rem;">cancel</i> {{ t('log.status_rejected', lang) }}</span>
+                        {% else %}
+                            <span class="status-badge" style="background:#eee; color:#666;">{{ log.status }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}
 

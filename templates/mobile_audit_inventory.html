@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%23121212'/%3E%3Cpolygon points='50,22 75,36.5 75,65.5 50,80 25,65.5 25,36.5' fill='none' stroke='%233498db' stroke-width='5' stroke-linejoin='round'/%3E%3Cpolygon points='50,38 55,41 50,44 45,41' fill='%233498db'/%3E%3Cpolygon points='46,48 54,48 54,66 50,68.5 46,66' fill='%23ffffff'/%3E%3C/svg%3E">
+    <title>{{ t('mobile_audit_inv.page_title', lang) }} - {{ t('title.base', lang) }}</title>
+    <style>
+        @font-face {
+            font-family: 'Material Icons';
+            font-style: normal;
+            font-weight: 400;
+            src: url('/static/fonts/material-icons.woff2') format('woff2');
+        }
+        .material-icons {
+            font-family: "Material Icons"; font-weight: normal; font-style: normal;
+            font-size: 24px; display: inline-block; line-height: 1; text-transform: none;
+            letter-spacing: normal; word-wrap: normal; white-space: nowrap; direction: ltr;
+            -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* 🌟 全局统一设计语言 */
+        :root {
+            --primary-blue: #3498db;
+            --primary-green: #1db954;
+            --danger-red: #e74c3c;
+            --warning-orange: #f39c12;
+            --bg-color: #f5f6fa;
+            --surface: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border: #dcdde1;
+        }
+
+        body {
+            margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-main);
+            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* 🌟 统一顶部导航栏 & 抽屉菜单 */
+        .header { background-color: var(--surface); padding: 12px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+        .header h2 { margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 8px; color: var(--text-main); }
+        .avatar-btn { width: 38px; height: 38px; border-radius: 50%; background: transparent; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); }
+        .avatar-btn .user-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--primary-blue); display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; object-fit:cover; }
+
+        .mobile-menu-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; opacity: 0; transition: opacity 0.3s; backdrop-filter: blur(2px); }
+        .mobile-menu { position: fixed; top: 0; right: -280px; width: 260px; height: 100vh; background: var(--surface); z-index: 1001; transition: right 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: -5px 0 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+        .mobile-menu.open { right: 0; }
+        .menu-header-box { padding: 30px 20px 20px 20px; background: #f8f9fa; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 15px; }
+        .menu-header-box .avatar-large { width: 50px; height: 50px; border-radius: 50%; background: var(--primary-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; }
+        .menu-header-box .avatar-large .user-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--primary-blue); display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; object-fit:cover; }
+        .menu-user-info h3 { margin: 0 0 5px 0; font-size: 1.1rem; color: var(--text-main); }
+        .menu-user-info p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+        .menu-nav { flex: 1; padding: 15px 0; overflow-y: auto; display: flex; flex-direction: column; justify-content: space-between; }
+        .menu-item { display: flex; align-items: center; gap: 15px; padding: 15px 25px; color: var(--text-main); text-decoration: none; font-size: 1.05rem; transition: 0.2s; }
+        .menu-item:active { background: #f0f2f5; }
+        .menu-item i { color: var(--text-muted); }
+        .menu-item.active { color: var(--primary-blue); background: #eef2f5; border-right: 4px solid var(--primary-blue); font-weight: bold; }
+        .menu-item.active i { color: var(--primary-blue); }
+        .menu-divider { height: 1px; background: #eee; margin: 10px 0; }
+
+        .lang-flags-container { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; margin-top: 15px; padding: 0 10px; }
+        .lang-flag { width: 38px; height: 38px; border-radius: 50%; background-color: rgba(255, 255, 255, 0.05); display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); border: 2px solid transparent; filter: grayscale(60%) opacity(0.5); overflow: hidden; }
+        .lang-flag img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .lang-flag.active { border-color: #aaa; filter: grayscale(0%) opacity(1); box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); transform: scale(1.1); }
+
+        /* 🌟 扫码控制台 & 操作栏 */
+        .container { padding: 15px; padding-bottom: 80px; }
+        .action-row { display: flex; gap: 10px; margin-bottom: 15px; }
+        .action-btn { flex: 1; height: 40px; border-radius: 8px; border: none; display: flex; justify-content: center; align-items: center; gap: 5px; font-weight: bold; font-size: 0.9rem; color: white; }
+        .btn-reset { background: white; border: 1px solid #ccc !important; color: var(--text-muted); }
+        .btn-export { background: var(--warning-orange); text-decoration: none; }
+
+        .scan-card { background: var(--surface); border-radius: 12px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; position: sticky; top: 70px; z-index: 40; border: 2px solid transparent; transition: 0.3s; }
+        .input-group { margin-bottom: 12px; position: relative; }
+        .input-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; font-weight: bold; }
+        .input-box { display: flex; background: #fcfcfc; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+        .input-box input { flex: 1; padding: 12px 15px; border: none; font-size: 1.05rem; background: transparent; outline: none; width: 100%;}
+        .scan-icon-btn { background: white; border: none; padding: 0 15px; color: var(--primary-blue); border-left: 1px solid #eee; display: flex; align-items: center; justify-content: center; }
+        .scan-icon-btn:active { background: #f0f2f5; }
+        .scan-result-box { padding: 10px; background: #f8f9fa; border-radius: 8px; font-size: 0.9rem; text-align: center; min-height: 20px; transition: 0.3s; }
+
+        /* 🌟 折叠面板与卡片 (消耗品专属形态) */
+        .location-block { background: var(--surface); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-bottom: 15px; overflow: hidden; }
+        .location-header { padding: 15px; background: #fdfdfd; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f0f0f0; }
+        .location-header h3 { margin: 0; font-size: 1.05rem; color: var(--text-main); display: flex; align-items: center; gap: 5px; }
+        .location-body { padding: 10px; display: block; }
+        .location-block.collapsed .location-body { display: none; }
+        .location-block.collapsed .location-header { border-bottom: none; }
+        .collapse-icon { transition: transform 0.3s; color: #ccc; }
+        .location-block.collapsed .collapse-icon { transform: rotate(-90deg); }
+
+        .loc-badge { background: #eef2f5; color: #666; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold;}
+        .loc-badge.all-done { background: #e6f4ea; color: var(--primary-green); }
+        /* 消耗品表单卡片 */
+        .audit-form { display: block; border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 15px; background: #fafafa; transition: background 0.3s, box-shadow 0.3s; }
+        .audit-form:last-child { margin-bottom: 0; }
+        .highlight-flash { border-color: var(--primary-blue) !important; box-shadow: 0 0 15px rgba(52, 152, 219, 0.4); background: #f0f8ff; }
+
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed #e0e0e0; }
+        .item-title { margin: 0; font-size: 1.1rem; font-family: monospace; font-weight: bold; color: var(--primary-blue); }
+        .item-name { font-size: 0.9rem; color: var(--text-main); margin: 4px 0 0 0; font-weight: bold; }
+        .item-pn2 { font-size: 0.75rem; color: #999; margin: 2px 0 0 0; }
+
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+        .status-pending { background: #fce8e6; color: var(--danger-red); }
+        .status-matched { background: #e6f4ea; color: var(--primary-green); }
+        .status-mismatched { background: #fef5e5; color: var(--warning-orange); }
+
+        .form-row { display: flex; align-items: center; margin-bottom: 10px; gap: 10px; }
+        .form-row:last-child { margin-bottom: 0; }
+        .form-row label { flex: 0 0 75px; font-size: 0.85rem; color: #666; font-weight: bold; }
+        .form-row input { flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 1rem; background: #fff; width: 100%; box-sizing: border-box; }
+        .form-row input:focus { border-color: var(--primary-blue); outline: none; }
+
+        /* 数字输入框特别强化 */
+        .qty-input { text-align: center; font-size: 1.2rem !important; font-weight: bold; color: var(--primary-blue); }
+
+        .card-footer { display: flex; justify-content: flex-end; margin-top: 15px; }
+        .btn-save { background: var(--primary-blue); color: white; border: none; padding: 10px 25px; border-radius: 20px; font-size: 0.95rem; font-weight: bold; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+
+        /* 扫码全屏 Modal */
+        #scannerModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:9999; flex-direction:column; align-items:center; justify-content:center; padding:20px; }
+        #reader { width: 100%; border-radius: 8px; overflow: hidden; background: #000; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2><i class="material-icons" style="color: var(--primary-blue);">inventory_2</i> {{ t('mobile_audit_inv.page_title', lang) }}</h2>
+        <div class="avatar-btn" onclick="toggleMobileMenu()">
+            <div class="avatar-btn" onclick="toggleMobileMenu()">
+                <img class="user-avatar" src="/static/avatars/{{ user.username }}.jpg"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <i class="material-icons" style="display:none; color:#777; font-size: 20px;">person</i>
+            </div>
+        </div>
+    </div>
+
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="toggleMobileMenu()"></div>
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="menu-header-box">
+            <div class="avatar-large">
+                <div class="avatar-btn" onclick="toggleMobileMenu()">
+                    <img class="user-avatar" src="/static/avatars/{{ user.username }}.jpg"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <i class="material-icons" style="display:none; color:#777; font-size: 20px;">person</i>
+                </div>
+            </div>
+            <div class="menu-user-info">
+                <h3>{{ user.full_name or user.username }}</h3>
+            </div>
+        </div>
+        <div class="menu-nav">
+            <div>
+                <a href="/mobile/approve" class="menu-item">
+                    <i class="material-icons">inbox</i> {{ t('mobile.approve_page', lang) }}
+                </a>
+                <a href="/mobile/audit_inventory" class="menu-item active">
+                    <i class="material-icons">inventory_2</i> {{ t('mobile.inventory_audit', lang) }}
+                </a>
+                <a href="/mobile/audit_asset" class="menu-item">
+                    <i class="material-icons">fact_check</i> {{ t('mobile.asset_audit', lang) }}
+                </a>
+                <a href="/mobile/upload" class="menu-item">
+                    <i class="material-icons">linked_camera</i> {{ t('mobile.image_upload', lang) }}
+                </a>
+                <div class="menu-divider"></div>
+                <div class="lang-flags-container">
+                    <a href="/api/switch_lang/zh" class="lang-flag {% if request.state.lang == 'zh' %}active{% endif %}" title="中文">
+                        <img src="/static/flags/cn.svg" alt="ZH">
+                    </a>
+                    <a href="/api/switch_lang/en" class="lang-flag {% if request.state.lang == 'en' %}active{% endif %}" title="English">
+                        <img src="/static/flags/us.svg" alt="EN">
+                    </a>
+                    <a href="/api/switch_lang/jp" class="lang-flag {% if request.state.lang == 'jp' %}active{% endif %}" title="日本語">
+                        <img src="/static/flags/jp.svg" alt="JP">
+                    </a>
+                    <a href="/api/switch_lang/vn" class="lang-flag {% if request.state.lang == 'vn' %}active{% endif %}" title="Tiếng Việt">
+                        <img src="/static/flags/vn.svg" alt="VN">
+                    </a>
+                </div>
+            </div>
+            <div>
+                <a href="/logout" class="menu-item" style="color: var(--danger-red);">
+                    <i class="material-icons" style="color: var(--danger-red);">logout</i> {{ t('mobile.logout', lang) }}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <div class="action-row">
+            <form action="/audit/start" method="post" style="flex:1; margin:0;" onsubmit="return confirm('{{ t('audit.confirm_start', lang) }}');">
+                <button type="submit" class="action-btn btn-reset" style="width: 100%;">
+                    <i class="material-icons" style="font-size: 1.1rem;">sync</i> {{ t('mobile_audit_inv.reset', lang) }}
+                </button>
+            </form>
+        </div>
+
+        <div class="scan-card" id="scanCardBox">
+            <div class="input-group" style="margin-bottom: 0;">
+                <label>{{ t('mobile_audit_inv.scan_input', lang) }}</label>
+                <div class="input-box">
+                    <input type="text" id="scanInput" placeholder="{{ t('mobile_audit_inv.ph_scan_input', lang) }}" autocomplete="off">
+                    <button class="scan-icon-btn" onclick="startScanner()">
+                        <i class="material-icons">qr_code_scanner</i>
+                    </button>
+                </div>
+            </div>
+            <div class="scan-result-box" id="scanResultBox" style="margin-top: 10px;">
+                <span style="color: #999;"><i class="material-icons" style="vertical-align: bottom; font-size: 1.2rem;">barcode_reader</i> {{ t('mobile_audit_inv.scanner_idle', lang) }}.</span>
+            </div>
+        </div>
+
+        <div id="auditListWrapper">
+            {% for loc, items in grouped.items() %}
+            {% set is_all_done = (items | rejectattr('status', 'equalto', 'Pending') | list | length) == items|length %}
+            <div class="location-block {% if is_all_done %}collapsed{% endif %}" data-loc="{{ (loc or '') | lower }}">
+                <div class="location-header" onclick="this.parentElement.classList.toggle('collapsed')">
+                    <h3>
+                        <i class="material-icons collapse-icon">expand_more</i>
+                        <i class="material-icons" style="font-size: 1.2rem; color: #888;">place</i> {{ loc }}
+                    </h3>
+                    <span class="loc-badge {% if is_all_done %}all-done{% endif %}">
+                        {{ t('mobile_audit_inv.loc_counting', lang) | replace('{count}', items|length) }}
+                    </span>
+                </div>
+
+                <div class="location-body">
+                    {% for item in items %}
+                    <form class="audit-form" id="auditForm_{{ item.id }}" action="/audit/submit/{{ item.id }}" method="post" data-pn1="{{ item.pn_1 | lower }}" data-pn2="{{ (item.pn_2 or '') | lower }}">
+                        <div class="item-header">
+                            <div>
+                                <h4 class="item-title">{{ item.pn_1 }}</h4>
+                                <p class="item-name">{{ item.name }}</p>
+                                {% if item.pn_2 %}
+                                <p class="item-pn2">PN2: {{ item.pn_2 }}</p>
+                                {% endif %}
+                            </div>
+                            <span id="status-{{ item.id }}" class="status-badge status-{{ item.status | lower | default('pending') }}">
+                                {{ item.status or t('audit.status_uncounted', lang) }}
+                            </span>
+                        </div>
+
+                        <div class="form-row">
+                            <label>{{ t('mobile_audit_inv.expected_stock', lang) }}</label>
+                            <div style="flex: 1; padding: 8px 0; font-weight: bold; color: #666;">{{ item.expected_stock }}</div>
+                        </div>
+
+                        <div class="form-row">
+                            <label style="color: var(--primary-blue);">{{ t('mobile_audit_inv.real_stock', lang) }}</label>
+                            <input type="number" name="actual_stock" class="qty-input" value="{{ item.actual_stock if item.actual_stock is not none else item.expected_stock }}">
+                        </div>
+
+                        <div class="form-row">
+                            <label>{{ t('mobile_audit_inv.real_loc', lang) }}</label>
+                            <input type="text" name="actual_location" value="{{ item.actual_location or item.expected_location }}">
+                        </div>
+
+                        <div class="form-row">
+                            <label>{{ t('mobile_audit_inv.audit_note', lang) }}</label>
+                            <input type="text" name="remarks" value="{{ item.remarks or '' }}" placeholder="{{ t('mobile_audit_inv.ph_audit_note', lang) }}">
+                        </div>
+
+                        <div class="card-footer">
+                            <button type="submit" class="btn-save" id="btn-{{ item.id }}">
+                                <i class="material-icons" style="font-size: 1.1rem;">save</i> {{ t('mobile_audit_inv.save_audit', lang) }}
+                            </button>
+                        </div>
+                    </form>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="scannerModal">
+        <div style="color: white; margin-bottom: 15px; font-size: 1.1rem; font-weight: bold;">{{ t('mobile_audit_inv.scanner_info', lang) }}</div>
+        <div id="reader"></div>
+        <button onclick="stopScanner()" style="margin-top:20px; padding:12px 24px; background:#fff; color:#333; border-radius:8px; border:none; font-size:1rem; font-weight:bold;">关闭摄像头</button>
+    </div>
+
+    <script src="/static/js/html5-qrcode.min.js"></script>
+    <script>
+        const AUDIT_I18N = {
+            net_error: "{{ t('mobile_audit_inv.net_error', lang) }}",
+            no_result_found: "{{ t('mobile_audit_inv.no_result_found', lang) }}",
+            saving: "{{ t('mobile_audit_inv.saving', lang) }}",
+        };
+
+        // 🌟 统一抽屉控制
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const overlay = document.getElementById('mobileMenuOverlay');
+            if (menu.classList.contains('open')) {
+                menu.classList.remove('open');
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.display = 'none', 300);
+            } else {
+                overlay.style.display = 'block';
+                setTimeout(() => {
+                    overlay.style.opacity = '1';
+                    menu.classList.add('open');
+                }, 10);
+            }
+        }
+
+        const scanInput = document.getElementById('scanInput');
+        const resultBox = document.getElementById('scanResultBox');
+
+        // ==========================================
+        // 🌟 智能寻址与快速定位引擎 (适配卡片 UI)
+        // ==========================================
+        function doScanSearch(term) {
+            term = term.trim().toLowerCase();
+            if (!term) return;
+
+            // 1. 尝试匹配库位 (Location)
+            let targetBlock = document.querySelector(`.location-block[data-loc="${term}"]`);
+
+            if (targetBlock) {
+                // 收起所有，展开目标
+                document.querySelectorAll('.location-block').forEach(b => b.classList.add('collapsed'));
+                targetBlock.classList.remove('collapsed');
+
+                requestAnimationFrame(() => {
+                    let y = targetBlock.getBoundingClientRect().top + window.scrollY - 150;
+                    window.scrollTo({top: y, behavior: 'smooth'});
+
+                    let header = targetBlock.querySelector('.location-header');
+                    header.style.transition = 'background 0.3s';
+                    header.style.background = '#e8f4f8';
+                    setTimeout(() => header.style.background = '#fdfdfd', 1000);
+                });
+
+                resultBox.style.background = '#e6f4ea';
+                resultBox.innerHTML = `<div style="font-size: 1.1rem; color: #1e8e3e; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: bold;"><i class="material-icons">place</i> 定位库位: ${term.toUpperCase()}</div>`;
+                scanInput.value = ''; return;
+            }
+
+            // 2. 尝试匹配物料号 (PN1 / PN2)
+            let targetForm = document.querySelector(`form[data-pn1="${term}"]`) || document.querySelector(`form[data-pn2="${term}"]`);
+
+            if (targetForm) {
+                let block = targetForm.closest('.location-block');
+                let locName = block ? block.getAttribute('data-loc').toUpperCase() : 'Unknow';
+
+                if (block) {
+                    document.querySelectorAll('.location-block').forEach(b => b.classList.add('collapsed'));
+                    block.classList.remove('collapsed');
+                }
+
+                requestAnimationFrame(() => {
+                    let y = targetForm.getBoundingClientRect().top + window.scrollY - 180;
+                    window.scrollTo({top: y, behavior: 'smooth'});
+
+                    // 卡片呼吸高亮动画
+                    targetForm.classList.remove('highlight-flash');
+                    void targetForm.offsetWidth;
+                    targetForm.classList.add('highlight-flash');
+                    setTimeout(() => targetForm.classList.remove('highlight-flash'), 1500);
+
+                    // 自动唤起数字键盘，光标移到最后面
+                    let qtyInput = targetForm.querySelector('input[name="actual_stock"]');
+                    if (qtyInput) {
+                        setTimeout(() => {
+                            qtyInput.focus();
+                            let val = qtyInput.value;
+                            qtyInput.value = ''; qtyInput.value = val;
+                        }, 400); // 留点时间给弹窗和滚动
+                    }
+                });
+
+                resultBox.style.background = '#e6f4ea';
+                resultBox.innerHTML = `<div style="font-size: 1.1rem; color: #333; font-weight: normal; display: flex; justify-content: center; gap: 15px;"><span style="font-weight: bold;">[${locName}]</span> <span style="font-weight: bold;">P/N: <strong style="color:var(--primary-blue);">${term.toUpperCase()}</strong></span></div>`;
+            } else {
+                // 3. 未找到
+                resultBox.style.background = '#fce8e6';
+                resultBox.innerHTML = `<div style="font-size: 1.1rem; color: #d93025; font-weight: bold;">${AUDIT_I18N.no_result_found}: ${term.toUpperCase()}</div>`;
+            }
+
+            scanInput.value = '';
+        }
+
+        // 绑定键盘回车
+        scanInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                doScanSearch(this.value);
+            }
+        });
+
+        // ==========================================
+        // 🌟 无感 AJAX 提交表单 (兼容手机版卡片)
+        // ==========================================
+        document.addEventListener('submit', async function(e) {
+            const form = e.target;
+            if (form.classList.contains('audit-form')) {
+                e.preventDefault();
+
+                let btn = form.querySelector('.btn-save');
+                let oldHtml = btn.innerHTML;
+                btn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite;">autorenew</i> ${AUDIT_I18N.saving}`;
+                btn.disabled = true;
+
+                try {
+                    let formData = new FormData(form);
+                    let response = await fetch(form.action, { method: 'POST', body: formData });
+                    let result = await response.json();
+
+                    if (result.status === 'success') {
+                        let itemId = result.data.id;
+                        let statusBadge = document.getElementById(`status-${itemId}`);
+
+                        if (statusBadge) {
+                            statusBadge.innerText = result.data.status;
+                            statusBadge.className = `status-badge status-${result.data.status.toLowerCase()}`;
+                        }
+
+                        // 保存成功，给卡片一个绿光反馈
+                        form.style.transition = 'background-color 0.4s';
+                        form.style.backgroundColor = result.data.status === 'Matched' ? '#e6f4ea' : '#fce8e6';
+                        setTimeout(() => form.style.backgroundColor = '#fafafa', 800);
+
+                        // 让输入框失去焦点，收起手机软键盘
+                        document.activeElement.blur();
+
+                    } else {
+                        alert(result.message);
+                    }
+                } catch(err) {
+                    alert(`${AUDIT_I18N.net_error}`);
+                } finally {
+                    btn.innerHTML = oldHtml;
+                    btn.disabled = false;
+                }
+            }
+        });
+
+        // ==========================================
+        // 🌟 手机摄像头扫码控制
+        // ==========================================
+        let html5QrCode = null;
+        let isProcessingScan = false;
+
+        async function startScanner() {
+            if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+                alert("扫码功能需要 HTTPS 环境。"); return;
+            }
+
+            document.getElementById('scannerModal').style.display = 'flex';
+            if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
+            const config = { fps: 10, qrbox: { width: 300, height: 100 }, aspectRatio: 1.0 };
+
+            try {
+                if (!html5QrCode.isScanning) {
+                    await html5QrCode.start(
+                        { facingMode: "environment" }, config,
+                        async (decodedText) => {
+                            if (isProcessingScan) return;
+                            isProcessingScan = true;
+                            if (navigator.vibrate) navigator.vibrate(100);
+
+                            stopScanner();
+
+                            // 扫到码后，将结果交给寻址引擎
+                            doScanSearch(decodedText);
+                        }
+                    );
+                }
+            } catch (err) {
+                console.error("摄像头启动失败", err);
+                alert("无法启动摄像头，请检查权限。");
+                stopScanner();
+            }
+        }
+
+        function stopScanner() {
+            document.getElementById('scannerModal').style.display = 'none';
+            isProcessingScan = false;
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => html5QrCode.clear()).catch(e => console.warn(e));
+            }
+        }
+    </script>
+</body>
+</html>
