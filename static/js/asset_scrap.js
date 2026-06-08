@@ -78,7 +78,7 @@ window.addAssetToTable = function(item, isFromFetch = false) {
     tr.className = 'scrap-item';
     tr.id = 'row-' + val;
     tr.innerHTML = `
-        <td style="font-weight: bold;">
+        <td style="font-weight: bold; font-size: 1.15rem">
             <i class="material-icons" style="font-size: 18px; color: var(--danger-red); vertical-align: middle; margin-right: 8px;">qr_code</i>
             ${val}
         </td>
