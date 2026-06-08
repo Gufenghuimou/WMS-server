@@ -163,6 +163,7 @@ window.fetchStoppedAssets = async function(event) {
         let result = await res.json();
 
         if (result.status === 'success') {
+            showToast(result.message, 'success');
             let assets = result.data;
             let addedCount = 0;
 
@@ -180,6 +181,7 @@ window.fetchStoppedAssets = async function(event) {
                                 .replace('{added}', addedCount);
             alert(successMsg);
         } else {
+            showToast(result.message, 'error');
             alert(result.message);
         }
     } catch (e) {
@@ -214,6 +216,7 @@ window.removeAsset = async function(val, btnElement){
         let result = await res.json();
 
         if (result.status === 'success') {
+            showToast(result.message, 'success');
             assetSet.delete(val);
             const tr = btnElement.closest('.scrap-item');
             if (tr) tr.remove();
@@ -222,6 +225,7 @@ window.removeAsset = async function(val, btnElement){
             window.updateUI();
             if (scanInput) scanInput.focus();
         } else {
+            showToast(result.message, 'error');
             alert(result.message);
         }
     } catch (e) {

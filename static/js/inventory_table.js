@@ -65,9 +65,9 @@ window.autoSave = async function(itemId) {
         let result = await response.json();
 
         if (result.status === 'success') {
-            // 触发一个极短的“绿光闪烁”特效，给用户心理上的“保存成功”确认感
+            showToast(result.message, "success");
             tr.classList.remove('row-saved');
-            void tr.offsetWidth; // 触发重绘
+            void tr.offsetWidth;
             tr.classList.add('row-saved');
         }
     } catch (err) {
@@ -257,6 +257,7 @@ document.querySelector(`#advancedTable tbody`).addEventListener('click', (e) => 
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
+                    showToast(data.message, "success")
                     detailInner.querySelectorAll('.detail-input').forEach(input => {
                         input.dataset.originalValue = input.value;
                     });

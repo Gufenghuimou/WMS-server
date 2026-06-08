@@ -276,11 +276,13 @@ async def view_inventory_table(request: Request, current_user: dict = Depends(ge
     return templates.TemplateResponse(request,"inventory_table.html", {"items": items, "user": current_user, "active_page": "inventory_table", "alarm_count": alarm_count})
 
 @router.post("/api/update_advanced/{item_id}")
-async def update_advanced(item_id: int,
+async def update_advanced(request: Request,
+                          item_id: int,
                           warning_level: int = Form(0),
                           is_mva: str = Form(False),
                           current_user: dict = Depends(get_current_user)
 ):
+    lang = request.state.lang
     with Session(engine) as session:
         item = session.get(InventoryItem, item_id)
         if item:
@@ -288,7 +290,7 @@ async def update_advanced(item_id: int,
             item.is_mva = (is_mva.lower() == 'true')
             session.add(item)
             session.commit()
-    return {'status': 'success'}
+    return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 @router.get("/all/export")
 def export_all(request: Request, current_user: dict = Depends(get_current_user)):

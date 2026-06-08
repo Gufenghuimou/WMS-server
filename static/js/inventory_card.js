@@ -353,6 +353,7 @@ window.submitRequest = async function(event) {
         if (data.status === 'success') {
             btn.innerHTML = `<i class="material-icons">check</i> ${CARD_I18N.req_sent}`;
             btn.style.background = '#1db954';
+            showToast(data.message, 'success');
 
             setTimeout(() => {
                 unflipCard();
@@ -361,6 +362,7 @@ window.submitRequest = async function(event) {
                 btn.style.background = 'var(--primary-blue)';
             }, 1200);
         } else {
+            showToast(data.message, 'error');
             alert(CARD_I18N.req_fail + data.message);
             btn.disabled = false;
             btn.innerHTML = CARD_I18N.send_req;
@@ -465,6 +467,7 @@ window.confirmCrop = function() {
         .then(data => {
             if(data.status === 'success') {
                 closeCropModal();
+                showToast(data.message, 'success');
                 let freshUrl = data.url + '?t=' + new Date().getTime();
 
                 let imgPreview = document.getElementById('editImagePreview');
@@ -557,6 +560,7 @@ document.addEventListener('submit', async function(e) {
             const data = result.data;
             const itemId = data.id;
 
+            showToast(result.message, 'success');
             window.unflipCard();
 
             let targetCard = document.querySelector(`.item-card[data-id="${itemId}"]`);

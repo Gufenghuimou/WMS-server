@@ -176,6 +176,7 @@ document.addEventListener('submit', async function(e) {
             let result = await response.json();
 
             if (result.status === 'success') {
+                showToast(result.message, "success");
                 let itemId = result.data.id;
                 let statusBadge = document.getElementById(`status-${itemId}`);
                 let row = document.getElementById(`row-${itemId}`);
@@ -200,6 +201,7 @@ document.addEventListener('submit', async function(e) {
                 if(scanInput) scanInput.focus();
 
             } else {
+                showToast(result.message, "error");
                 alert(result.message);
             }
         } catch(err) {

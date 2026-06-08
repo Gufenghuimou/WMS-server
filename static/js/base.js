@@ -1,3 +1,25 @@
+// 全局toast提示
+window.showToast = function(message, type = 'success') {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast-card toast-${type}`;
+    const icon = type === 'success' ? 'check_circle' : 'error';
+
+    toast.innerHTML = `<i class="material-icons" style="font-size: 1.2rem;">${icon}</i> <span>${message}</span>`;
+
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.animation = 'toastFadeOut 0.4s ease-in forwards';
+        setTimeout(() => { toast.remove(); }, 400);
+    }, 3000);
+};
+
 // --- 🌟 升级版：从服务器动态加载地图数据 ---
 let racks = [];
 

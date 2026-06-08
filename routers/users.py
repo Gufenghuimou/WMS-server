@@ -24,9 +24,9 @@ async def login_page(request: Request):
         return RedirectResponse(url="/mobile/login")
     return templates.TemplateResponse(request, "login.html", {})
 
-@router.get("/mobile/login", response_class=HTMLResponse)
-async def mobile_login(request: Request):
-    return templates.TemplateResponse(request, "mobile_login.html", {})
+# @router.get("/mobile/login", response_class=HTMLResponse)
+# async def mobile_login(request: Request):
+#     return templates.TemplateResponse(request, "mobile_login.html", {})
 
 @router.post("/login")
 async def process_login(request: Request, username: str = Form(...), password: str = Form(...)):
