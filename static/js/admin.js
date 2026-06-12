@@ -38,7 +38,7 @@ function drawEditor() {
     for (let y = 0; y <= editorCanvas.height; y += GRID_SIZE) { eCtx.moveTo(0, y); eCtx.lineTo(editorCanvas.width, y); }
     eCtx.strokeStyle = "#e2e8f0"; eCtx.lineWidth = 1; eCtx.stroke();
 
-    eCtx.font = '12px "Roboto Mono", monospace';
+    eCtx.font = 'bold 16px "Roboto Mono", monospace';
     eCtx.textAlign = 'center'; eCtx.textBaseline = 'middle';
 
     editorRacks.forEach(r => {
@@ -55,6 +55,9 @@ function drawEditor() {
 
         eCtx.fillRect(r.x, r.y, r.w, r.h);
         eCtx.strokeRect(r.x, r.y, r.w, r.h);
+
+         eCtx.font = 'bold 16px "Roboto Mono", monospace';
+        eCtx.textAlign = 'center'; eCtx.textBaseline = 'middle';
 
         eCtx.fillStyle = getContrastYIQ(bgColor);
         eCtx.fillText(r.name, r.x + r.w/2, r.y + r.h/2);
@@ -229,6 +232,16 @@ document.addEventListener('DOMContentLoaded', () => {
         btnDel = document.getElementById('btnDelete');
         btnDup = document.getElementById('btnDuplicate');
         paletteBox = document.getElementById('colorPalette');
+
+        if (pName) {
+            pName.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    window.updateSelectedRack();
+                    pName.blur();
+                }
+            });
+        }
 
         fetch('/api/layout').then(res => res.json()).then(data => {
             if(Array.isArray(data)) editorRacks = data;

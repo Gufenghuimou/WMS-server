@@ -81,7 +81,7 @@ window.drawWarehouseMap = function(targetRack = null) {
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        ctx.font = 'bold 12px "Roboto Mono", monospace'; // 字号稍微加大加粗
+        ctx.font = 'bold 16px "Roboto Mono", monospace'; // 字号稍微加大加粗
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
@@ -562,6 +562,9 @@ window.toggleChat = function() {
         panel.style.display = 'flex';
         badge.style.display = 'none';
         badge.innerText = '0';
+
+        if (lastMsgId > 0) { localStorage.setItem('chat_last_read_id', lastMsgId); }
+
         fetchChatHistory(); // 立即加载历史记录
         scrollToBottom();
         document.getElementById('chatInput').focus();
@@ -591,8 +594,12 @@ async function fetchChatHistory() {
 
                 // 如果面板没打开，则显示小红点
                 if (document.getElementById('chatPanel').style.display !== 'flex') {
-                    document.getElementById('chatUnreadBadge').style.display = 'flex';
+                    let lastReadId = parseInt(localStorage.getItem('chat_last_read_id')) || 0;
+                    if (maxId > lastReadId) {
+                        document.getElementById('chatUnreadBadge').style.display = 'flex';
+                    }
                 } else {
+                    localStorage.setItem('chat_last_read_id', maxId);
                     scrollToBottom();
                 }
             }

@@ -211,13 +211,14 @@ async def approve_request(
 
 @router.post("/request_queue/asset_approve/{req_id}")
 async def approve_asset_request(request: Request, req_id: int, target_location: str = Form(None), ctrl_nos: str=Form(None), current_user: dict = Depends(get_current_user)):
+    lang = request.state.lang
     with Session(engine) as session:
         req = session.get(AssetRequest, req_id)
         if not req or req.status != 'Pending':
-            return RedirectResponse(url= "/request_queue", status_code=303)
+            return {'status': 'error', 'message': "Request invalid or already processed"}
         asset = session.exec(select(AssetItem).where(AssetItem.ctrl_no == req.ctrl_no)).first() if req.ctrl_no else None
         if req.matter in ['return', 'broken'] and not asset:
-            return RedirectResponse(url= "/request_queue", status_code=303)
+            return {'status': 'error', 'message': 'Target asset not found in database'}
         if req.matter == 'return':
             conditions = [AssetItem.pn_1 == asset.pn_1]
             sibling = session.exec(select(AssetItem).where(AssetItem.is_stock == True, AssetItem.id != asset.id, or_(*conditions))).first()
@@ -237,6 +238,7 @@ async def approve_asset_request(request: Request, req_id: int, target_location: 
         elif req.matter == 'broken':
             asset.location = 'NG Area'
             asset.is_stock = True
+            asset.is_stop = True
             log = AssetLog(
                 ctrl_no=asset.ctrl_no,
                 pn_1=asset.pn_1,
@@ -249,19 +251,23 @@ async def approve_asset_request(request: Request, req_id: int, target_location: 
             session.add(log)
         elif req.matter == 'require':
             if not ctrl_nos:
-                return RedirectResponse(url= "/request_queue", status_code=303)
+                return {'status': 'error', 'message': 'Please scan at least one SN'}
             ctrl_no_list = [c.strip() for c in ctrl_nos.split(',') if c.strip()]
+            if len(set(ctrl_no_list)) != len(ctrl_no_list):
+                return {'status': 'error', 'message': 'Security Reject: Duplicate SNs detected'}
             if len(ctrl_no_list) != req.req_qty:
-                return RedirectResponse(url= "/request_queue", status_code=303)
+                return {'status': 'error', 'message': 'Security Reject: Qty mismatch'}
             assets_to_dispatch = []
             for c in ctrl_no_list:
                 ast = session.exec(select(AssetItem).where(AssetItem.ctrl_no == c)).first()
                 if not ast:
-                    return RedirectResponse(url= "/request_queue", status_code=303)
+                    return {'status': 'error', 'message': t_lang("queue.check_not_found", lang, c=c)}
                 if ast.pn_1 != req.pn_1:
-                    return RedirectResponse(url= "/request_queue", status_code=303)
+                    return {'status': 'error', 'message': t_lang("queue.check_wrong_pn", lang, c=c, pn=req.pn_1)}
                 if not ast.is_stock:
-                    return RedirectResponse(url= "/request_queue", status_code=303)
+                    return {'status': 'error', 'message': t_lang("queue.check_illegal", lang, c=c)}
+                if ast.is_stop:
+                    return {'status': 'error', 'message': t_lang("queue.check_stop", lang, c=c)}
                 assets_to_dispatch.append(ast)
 
             for ast in assets_to_dispatch:
@@ -282,7 +288,7 @@ async def approve_asset_request(request: Request, req_id: int, target_location: 
         req.status = 'Approved'
         session.add(req)
         session.commit()
-    return RedirectResponse(url= "/request_queue", status_code=303)
+    return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 
 @router.post('/request_queue/reject/{req_id}')

@@ -108,7 +108,7 @@
         <div class="bottom-bar-header">
 
             <div class="expand-trigger" onclick="toggleMapExpansion()" id="mapHeader">
-                <i class="material-icons" id="expandIcon" style="color: var(--status); transition: 0.3s;">keyboard_arrow_up</i>
+                <i class="material-icons" id="expandIcon" style="color: var(--primary-green); transition: 0.3s;">keyboard_arrow_up</i>
                 <div>
                     <h5 style="margin: 0; color: #fff;">{{ t('base.warehouse_map', lang) }}</h5>
                     <p id="mapSubtitle" style="margin: 0; font-size: 0.8rem; color: #aaa;">{{ t('base.map_btn', lang) }}</p>
@@ -118,9 +118,9 @@
             <div style="background: rgba(255,255,255,0.08); padding: 6px 18px; border-radius: 20px; font-size: 0.85rem; color: #e0e0e0; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
 
                 {% if active_page == 'inventory' %}
-                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">inventory_2</i>
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">inventory_2</i>
                     {{ t('status.inventory_cards', lang) }}:
-                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         {{ items|length if items is defined else '--' }}
                     </span>
 
@@ -132,89 +132,89 @@
                     </span>
 
                 {% elif active_page == 'request_queue' %}
-                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">pending_actions</i>
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">pending_actions</i>
                     {{ t('status.request_queue', lang, count='') }}:
-                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         {{ request.state.pending_count|default(0) }}
                     </span>
 
                 {% elif active_page == 'request_log' %}
-                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">done_all</i>
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">done_all</i>
                     {{ t('status.request_log', lang) }}:
-                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         {{ processed_count|default(0) }}
                     </span>
 
                 {% elif active_page == 'stock_in' %}
-                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">playlist_add_check</i>
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">playlist_add_check</i>
                     {{ t('status.stock_in', lang) }}:
-                    <span id="stockinCountDisplay" style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                    <span id="stockinCountDisplay" style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         0
                     </span>
 
                 {% elif active_page == 'history' %}
-                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">history</i>
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">history</i>
                     {{ t('status.history', lang) }}:
-                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         {{ logs|length if logs is defined else '--' }}
                     </span>
 
                 {% elif active_page == 'audit' %}
-                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">fact_check</i>
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">fact_check</i>
                     {{ t('status.audit', lang) }}:
-                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         {{ progress|default(0) }}% ({{ completed|default(0) }}/{{ total|default(0) }})
                     </span>
 
                 {% elif active_page == 'asset' %}
-                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">category</i>
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">category</i>
                     {{ t('status.asset_1', lang) }}:
-                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         {{ asset_categories_count|default(0) }}
                     </span>
-                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status); margin-left: 15px;">devices</i>
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green); margin-left: 15px;">devices</i>
                     {{ t('status.asset_2', lang, count='') }}:
-                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         {{ asset_total_count|default(0) }}
                     </span>
 
                 {% elif active_page == 'asset_stock_in' %}
-                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">app_registration</i>
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">app_registration</i>
                     {{ t('status.asset_stock_in', lang) }}:
-                    <span id="assetStockinCountDisplay" style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                    <span id="assetStockinCountDisplay" style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         0
                     </span>
 
                 {% elif active_page == 'asset_history' %}
-                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">manage_history</i>
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">manage_history</i>
                     {{ t('status.asset_history', lang) }}:
-                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         {{ logs|length if logs is defined else '--' }}
                     </span>
 
                 {% elif active_page == 'asset_audit' %}
-                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">barcode_reader</i>
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">barcode_reader</i>
                     {{ t('status.asset_audit', lang) }}:
-                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         {{ progress|default(0) }}% ({{ completed|default(0) }}/{{ total|default(0) }})
                     </span>
 
                 {% elif active_page == 'asset_scrap' %}
-                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">delete_sweep</i>
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">delete_sweep</i>
                     {{ t('status.asset_scrap', lang) }}:
-                    <span id="scrapCountDisplay" style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                    <span id="scrapCountDisplay" style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         {{ draft_records|length if draft_records is defined else 0 }}
                     </span>
 
                 {% elif active_page == 'backend' %}
-                    <i class="material-icons" style="font-size: 1.45rem; color: var(--status);">group</i>
+                    <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">group</i>
                     {{ t('status.admin', lang) }}:
-                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--status); margin-left: 4px;">
+                    <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         {{ users|length if users is defined else '--' }}
                     </span>
 
                 {% else %}
-                    <i class="material-icons" style="font-size: 1.1rem; color: var(--status);">check_circle</i>
+                    <i class="material-icons" style="font-size: 1.1rem; color: var(--primary-green);">check_circle</i>
                     {{ t('status.base', lang) }}
                 {% endif %}
             </div>

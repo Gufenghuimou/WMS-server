@@ -9,9 +9,14 @@
 {% endblock %}
 
 {% block top_actions %}
-<a href="/asset/export" class="btn-primary">
-    <i class="material-icons">download</i> {{ t('asset_view.export_btn', lang) }}
-</a>
+<div style="display: flex; align-items: center; gap: 15px;">
+    <a href="/asset/export" class="btn-primary">
+        <i class="material-icons">download</i> {{ t('asset_view.export_btn', lang) }}
+    </a>
+    <a href="/asset/export_summary" class="btn-primary" style="background-color: var(--primary-green);">
+        <i class="material-icons">download</i> {{ t('asset_view.export_summary', lang) }}
+    </a>
+</div>
 {% endblock %}
 
 {% block content %}
@@ -93,9 +98,31 @@
                         </div>
 
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; border-top: 1px dashed #eee; padding-top: 5px;">
-                            <div class="tags">
-                                {% if first.is_consign %}<span class="badge-tag" style="background:#e8f4fd; color:#2196f3; border-color:#90caf9;">{{ t('asset_view.tag_consign', lang) }}</span>{% endif %}
-                                {% if first.is_csc %}<span class="badge-tag" style="background:#fdf2e8; color:#ff9800; border-color:#ffcc80;">{{ t('asset_view.tag_csc', lang) }}</span>{% endif %}
+                            {% set total_qty = group | length %}
+                            {% set used_qty = group | rejectattr('is_stock') | list | length %}
+                            {% set broken_qty = group | selectattr('is_stop') | list | length %}
+                            {% set good_qty = total_qty - used_qty - broken_qty %}
+
+                            <div id="chart-container-{{ pn1|replace(' ', '-')|replace('/', '-') }}" style="flex: 1; margin-right: 20px; display: flex; flex-direction: column; justify-content: center;">
+
+                                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: bold; margin-bottom: 5px; line-height: 1;">
+                                    <span style="color: #1db954;">{{ t('asset_view.stocking', lang) }}: {{ good_qty }}</span>
+                                    <span style="color: #95a5a6;">{{ t('asset_view.stopped', lang) }}: {{ broken_qty }}</span>
+                                    <span style="color: #e74c3c;">{{ t('asset_view.using', lang) }}: {{ used_qty }}</span>
+                                </div>
+
+                                <div style="width: 100%; height: 6px; background: #ecf0f1; border-radius: 4px; display: flex; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">
+                                    {% if good_qty > 0 %}
+                                        <div style="width: {{ (good_qty/total_qty)*100 }}%; background: rgba(29, 185, 84, 0.5); transition: 0.3s;" title="{{ t('asset_view.stocking', lang) }}: {{ good_qty }}"></div>
+                                    {% endif %}
+                                    {% if broken_qty > 0 %}
+                                        <div style="width: {{ (broken_qty/total_qty)*100 }}%; background: #95a5a6; transition: 0.3s;" title="{{ t('asset_view.stopped', lang) }}: {{ broken_qty }}"></div>
+                                    {% endif %}
+                                    {% if used_qty > 0 %}
+                                        <div style="width: {{ (used_qty/total_qty)*100 }}%; background: rgba(231, 76, 60, 0.5); transition: 0.3s;" title="{{ t('asset_view.using', lang) }}: {{ used_qty }}"></div>
+                                    {% endif %}
+                                </div>
+
                             </div>
                             {% if user.role in ['superadmin', 'admin'] %}
                             <button type="button" class="btn-primary" style="height: 26px; font-size: 0.75rem; padding: 0 10px; border-radius: 6px; background: transparent; color: var(--text-muted); border: 1px solid #ccc; box-shadow: none;"
@@ -105,7 +132,7 @@
                             {% else %}
                             <button type="button" class="btn-primary" style="height: 26px; font-size: 0.75rem; padding: 0 10px; border-radius: 6px; background: transparent; color: var(--primary-blue); border: 1px solid var(--primary-blue); box-shadow: none;"
                                     onclick="flipToEdit(event, 'card-{{ pn1|replace(' ', '-')|replace('/', '-') }}')">
-                                <i class="material-icons" style="font-size: 0.9rem;">add_shopping_cart</i> Require
+                                <i class="material-icons" style="font-size: 0.9rem;">add_shopping_cart</i> {{ t('asset_view.btn_require', lang) }}
                             </button>
                             {% endif %}
                         </div>
@@ -114,7 +141,9 @@
 
                 <div class="card-back" onclick="event.stopPropagation();">
                     <div style="width: 130px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                        {% if user.role in ['superadmin', 'admin'] %}
                         <label style="font-size:0.75rem; color:#888; text-align:center;">{{ t('asset_view.click_to_change_img', lang) }}</label>
+                        {% endif %}
                         <div style="position:relative; cursor:pointer;" onclick="document.getElementById('edit-upload-{{first.id}}').click();">
 
                             <img id="edit-preview-{{first.id}}" class="card-img" style="{% if not first.has_image %}display:none;{% endif %} width:130px; height:130px; border-radius:8px; object-fit:cover; border: 1px solid #ddd;"
@@ -127,7 +156,9 @@
 
                             <div style="position:absolute; bottom:5px; right:5px; background:rgba(0,0,0,0.5); color:#fff; border-radius:50%; width:24px; height:24px; display:flex; justify-content:center; align-items:center;"><i class="material-icons" style="font-size: 14px;">photo_camera</i></div>
                         </div>
+                        {% if user.role in ['superadmin', 'admin'] %}
                         <input type="file" id="edit-upload-{{first.id}}" style="display:none;" accept="image/*" onchange="uploadCardImage(this, '{{first.pn_1}}', '{{first.id}}')">
+                        {% endif %}
                     </div>
 
                     {% if user.role in ['superadmin', 'admin'] %}
@@ -156,17 +187,17 @@
                         <div class="edit-form-grid" style="grid-template-columns: 1fr 1fr;">
                             <div style="grid-column: span 2; margin-bottom: 5px;">
                                 <h4 style="margin: 0; color: var(--primary-blue); font-size: 1.1rem; display: flex; align-items: center; gap: 5px;">
-                                    <i class="material-icons">add_shopping_cart</i> Submit Requirement
+                                    <i class="material-icons">add_shopping_cart</i> {{ t('asset_view.submit_requirement', lang) }}
                                 </h4>
                             </div>
 
-                            <div><label class="edit-label">Require Qty <span style="color:red;">*</span></label><input type="number" name="req_qty" class="edit-input" min="1" required></div>
-                            <div><label class="edit-label">Department <span style="color:red;">*</span></label><input type="text" name="department" class="edit-input" required></div>
-                            <div style="grid-column: span 2;"><label class="edit-label">Note (Optional)</label><input type="text" name="note" class="edit-input" placeholder="Reasons..."></div>
+                            <div><label class="edit-label">{{ t('asset_view.required_qty', lang) }} <span style="color:red;">*</span></label><input type="number" name="req_qty" class="edit-input" min="1" required></div>
+                            <div><label class="edit-label">{{ t('asset_view.target_location', lang) }} <span style="color:red;">*</span></label><input type="text" name="department" class="edit-input" required></div>
+                            <div style="grid-column: span 2;"><label class="edit-label">{{ t('asset_view.note', lang) }}</label><input type="text" name="note" class="edit-input"></div>
 
                             <div style="display: flex; gap: 8px; grid-column: span 2; align-items: end; justify-content: flex-end; margin-top: 15px;">
-                                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #333; box-shadow: none;" onclick="cancelEdit(event, 'card-{{ pn1|replace(' ', '-')|replace('/', '-') }}')">{{ t('asset_view.btn_cancel', lang) }}</button>
-                                <button type="submit" class="btn-primary" style="background: var(--primary-blue);">Submit Request</button>
+                                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #333; box-shadow: none;" onclick="cancelEdit(event, 'card-{{ pn1|replace(' ', '-')|replace('/', '-') }}')">{{ t('asset_view.btn_cancel_modal', lang) }}</button>
+                                <button type="submit" class="btn-primary" style="background: var(--primary-blue);">{{ t('asset_view.btn_submit', lang) }}</button>
                             </div>
                         </div>
                     </form>
@@ -213,16 +244,16 @@
         <form id="toggleForm" method="post" action="">
             <div style="margin-bottom: 20px;">
                 <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('asset_view.modal_toggle_lbl', lang) }}</label>
-                <input type="text" name="target_loc" id="locInput" autocomplete="off" placeholder="{{ t('asset_view.modal_toggle_ph', lang) }}"
-                       style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; outline: none;">
+                <input type="text" name="target_loc" id="locInput" autocomplete="off" placeholder=""
+                       style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; outline: none;" value="">
             </div>
             <div id="toggleUserFields" style="display: none; margin-bottom: 20px;">
                 <input type="hidden" name="matter" id="toggleMatter" value="return">
                 <input type="hidden" name="req_qty" value="1">
-                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">Department <span style="color:red;">*</span></label>
+                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('asset_view.location', lang) }} <span style="color:red;">*</span></label>
                 <input type="text" name="department" id="toggleDept" class="edit-input" style="width: 100%; margin-bottom: 10px;">
 
-                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">Note (Optional)</label>
+                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('asset_view.note', lang) }}</label>
                 <input type="text" name="note" id="toggleNote" class="edit-input" style="width: 100%;">
             </div>
 
@@ -239,8 +270,12 @@
         <div id="stopModalIcon" style="margin-bottom: 15px;"></div>
         <h3 id="stopModalTitle" style="margin-top:0; color:var(--text-main);">{{ t('asset_view.modal_stop_title', lang) }}</h3>
         <p id="stopModalText" style="font-size: 0.95rem; color: #666; margin-bottom: 25px; line-height: 1.5;"></p>
-
         <form id="stopForm" method="post" action="">
+            <div id="locReuseContainer" style="margin-bottom: 20px; display: none;">
+                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('asset_view.modal_toggle_lbl', lang) }}</label>
+                <input type="text" name="target_loc" id="locReuse" autocomplete="off" placeholder=""
+                       style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; outline: none;" value="">
+            </div>
             <div id="raisonRadio" style="display: flex; justify-content: center; gap: 30px; margin-bottom: 20px;">
                 <div>
                     <input id="no-use" type="radio" name="is_no_use" value="true" required>
@@ -254,10 +289,10 @@
             <div id="stopUserFields" style="display: none; margin-bottom: 20px; text-align: left;">
                 <input type="hidden" name="matter" value="broken">
                 <input type="hidden" name="req_qty" value="1">
-                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">Department <span style="color:red;">*</span></label>
+                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('asset_view.location', lang) }}<span style="color:red;">*</span></label>
                 <input type="text" name="department" id="stopDept" class="edit-input" style="width: 100%; margin-bottom: 10px;">
 
-                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">Note (Optional)</label>
+                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('asset_view.note', lang) }}</label>
                 <input type="text" name="note" id="stopNote" class="edit-input" style="width: 100%;">
             </div>
             <div style="display: flex; justify-content: center; gap: 15px;">
@@ -292,7 +327,13 @@
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 6px;">
-                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">PO Type</label>
+                <div style="display: flex; gap: 6px; align-items: flex-end;">
+                    <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">PO Type</label>
+                    <label style="display: flex; align-items: flex-end; gap: 2px; font-size: 0.85rem; color: #e67e22; cursor: pointer; user-select: none;">
+                        <input type="checkbox" name="apply_po_to_all" id="applyPoToAllCheckbox" value="true" style="cursor: pointer; width: 16px; height: 16px; accent-color: #e67e22; margin-bottom: 0">
+                        全部应用
+                    </label>
+                </div>
                 <select id="editPoType" class="edit-input" name="po_type" style="width: 140px;">
                     <option value=""></option>
                     <option value="common">Common</option>
@@ -362,7 +403,16 @@
         unnamed: "{{ t('asset_view.unnamed', lang) }}",
         category_lbl: "{{ t('asset_view.category_lbl', lang) }}",
         dest_lbl: "{{ t('asset_view.dest_lbl', lang) }}",
-        desc_lbl: "{{ t('asset_view.desc_lbl', lang) }}"
+        desc_lbl: "{{ t('asset_view.desc_lbl', lang) }}",
+        stocking: "{{ t('asset_view.stocking', lang) }}",
+        stopped: "{{ t('asset_view.stopped', lang) }}",
+        using: "{{ t('asset_view.using', lang) }}",
+        request_return_title: "{{ t('asset_view.request_return_title', lang) }}",
+        request_return: "{{ t('asset_view.request_return', lang) }}",
+        report_broken_title: "{{ t('asset_view.report_broken_title', lang) }}",
+        report_broken: "{{ t('asset_view.report_broken', lang) }}",
+        btn_submit: "{{ t('asset_view.btn_submit', lang) }}",
+        no_actions: "{{ t('asset_view.no_actions', lang) }}",
     };
 </script>
 <script src="/static/js/asset.js"></script>

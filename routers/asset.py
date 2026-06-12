@@ -14,6 +14,7 @@ from database import engine
 from models import AssetItem, AssetLog, AssetScrapRecord, AssetAuditRecord, User
 from dependencies import get_current_user, require_admin
 from core import templates, t_lang
+from routers import request
 from utils import zpl_print_task, generate_next_seq
 
 router = APIRouter(tags=["Assets"])
@@ -101,7 +102,7 @@ async def asset_out(
             'data': {
                 'id': item.id,
                 'is_stock': item.is_stock,
-                'location': item.location
+                'location': item.location,
             },
             'message': t_lang("do.success", lang)}
 
@@ -153,16 +154,24 @@ async def asset_edit_item(
         location: str = Form(...),
         first_in_date: str = Form(""),
         po_type: str = Form(""),
+        apply_po_to_all: Optional[str] = Form(None)
 ):
     lang = request.state.lang
     with Session(engine) as session:
         statement = select(AssetItem).where(AssetItem.id == item_id)
         item = session.exec(statement).first()
+        batch_po_type_returned = None
         if item:
             item.ctrl_no = ctrl_no
             item.location = location
             item.first_in_date = first_in_date
             item.po_type = po_type
+            if apply_po_to_all == "true":
+                batch_po_type_returned = po_type
+                siblings = session.exec(select(AssetItem).where(AssetItem.pn_1 == item.pn_1)).all()
+                for sib in siblings:
+                    sib.po_type = po_type
+                    session.add(sib)
             session.add(item)
             session.commit()
             session.refresh(item)
@@ -173,6 +182,8 @@ async def asset_edit_item(
                     'location': item.location,
                     'first_in_date': item.first_in_date,
                     'po_type': item.po_type,
+                    'pn_1': item.pn_1,
+                    'batch_po_type': batch_po_type_returned
                 },
                 'message': t_lang("do.success", lang)}
 
@@ -194,7 +205,8 @@ async def asset_upload_image(item_pn_1: str, file: UploadFile = File(...), curre
 async def asset_stop(
         request: Request,
         item_id: int,
-        is_no_use: str = Form(...),
+        is_no_use: str = Form(None),
+        target_loc: str = Form(""),
         current_user: dict = Depends(get_current_user)
 ):
     lang = request.state.lang
@@ -204,8 +216,13 @@ async def asset_stop(
             return {'status': 'error', 'message': t_lang("do.not_exist", lang)}
         item.is_stop = not item.is_stop
         item.is_stock = True
-        item.is_no_use = (is_no_use.lower() == 'true')
-        action_note = 'Stopped' if item.is_stop else 'Enable'
+        item.is_no_use = (is_no_use.lower() == 'true') if is_no_use is not None else False
+        if item.is_stop:
+            item.location = 'NG Area' if not item.is_no_use else item.location
+            action_note = 'Stopped'
+        else:
+            item.location = target_loc.strip() if target_loc.strip() else item.location
+            action_note = 'Enable'
         session.add(item)
         log = AssetLog(
             ctrl_no = item.ctrl_no,
@@ -213,7 +230,7 @@ async def asset_stop(
             pn_2 = item.pn_2,
             name = item.name,
             status = item.is_stock,
-            target_loc = '',
+            target_loc = item.location,
             note = action_note
         )
         session.add(log)
@@ -224,7 +241,8 @@ async def asset_stop(
             'data': {
                 'id': item.id,
                 'is_stop': item.is_stop,
-                'is_no_use': item.is_no_use
+                'is_no_use': item.is_no_use,
+                'location': item.location,
             },
             'message': t_lang("do.success", lang)}
 
@@ -305,6 +323,69 @@ def asset_export(request: Request, current_user: dict = Depends(get_current_user
             'Content-Disposition': f'attachment; filename="Asset_details_{datetime.now().strftime("%Y%m%d")}.xlsx"'
         }
         return StreamingResponse(output, headers=headers, media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+@router.get("/asset/export_summary")
+def asset_export_summary(request: Request, current_user: dict = Depends(get_current_user)):
+    with Session(engine) as session:
+        all_assets = session.exec(select(AssetItem)).all()
+        grouped_assets = defaultdict(list)
+        for item in all_assets:
+            grouped_assets[item.pn_1].append(item)
+
+        completed_audit = session.exec(select(AssetAuditRecord).where(AssetAuditRecord.status == 'Completed')).all()
+        audit_counts = defaultdict(int)
+        for r in completed_audit:
+            audit_counts[r.pn_1] += 1
+
+        data = []
+        for pn, items in grouped_assets.items():
+            first_item = items[0]
+            total_qty = len(items)
+
+            common_qty = sum(1 for i in items if str(i.po_type).lower() == 'common')
+            reimburse_qty = sum(1 for i in items if str(i.po_type).lower() == 'reimburse')
+            consign_qty = sum(1 for i in items if str(i.po_type).lower() == 'consign')
+
+            stock_qty = sum(1 for i in items if i.is_stock)
+            broken_qty = sum(1 for i in items if i.is_stop)
+            good_qty = stock_qty - broken_qty
+            used_qty = sum(1 for i in items if not i.is_stock)
+
+            audit_qty = audit_counts[pn]
+
+            data.append({
+                "PN": pn,
+                "Equipment Name": first_item.name or "",
+                "Equipment Name(Chinese)": first_item.description_2 or "",
+                "PO: Common": common_qty,
+                "PO: Reimburse": reimburse_qty,
+                "PO: Consign": consign_qty,
+                "总账数量": total_qty,
+                "盘点数量": audit_qty,
+                "在库总数": stock_qty,
+                "在库良品": good_qty,
+                "在库废品": broken_qty,
+                "现场总数": used_qty
+            })
+
+        df = pd.DataFrame(data)
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Summary')
+            worksheet = writer.sheets['Summary']
+            for idx, col in enumerate(df.columns):
+                max_len = max(df[col].astype(str).map(len).max(), len(col)) + 4
+                worksheet.column_dimensions[chr(65 + idx)].width = max_len
+        output.seek(0)
+
+        headers = {
+            'Content-Disposition': f'attachment; filename="Asset_Summary_{datetime.now().strftime("%Y%m%d")}.xlsx"'
+        }
+        return StreamingResponse(
+            output,
+            headers=headers,
+            media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
 
 # -----------------------------资产登记--------------------------#
 

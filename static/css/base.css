@@ -7,7 +7,7 @@
     --primary: #5d8c8a;       /* 核心点缀色  */
     --primary-blue: #3498db;  /* 核心点缀色  */
     --surface: #ffffff;       /* 卡片背景 */
-    --status: #1db954;        /* 状态指示 */
+    --primary-green: #1db954;        /* 状态指示 */
     --danger-red: #e74c3c;    /* 危险/警告红 */
     --text-main: #2c3e50;     /* 主要深色文字 */
     --text-muted: #7f8c8d;    /* 次要灰色文字 */
@@ -147,7 +147,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 0 20px;
+    padding: 0;
     color: var(--text-light);
     z-index: 9999;
     position: fixed;
@@ -161,11 +161,11 @@ body {
 
 /* 🌟 展开后的底部栏 */
 .bottom-bar.expanded {
-    height: 90vh !important;
+    height: 100% !important;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    padding-top: 0px;
+    padding-top: 0;
 }
 
 /* 🌟 新增：标题区域的锁定样式 */
@@ -174,7 +174,7 @@ body {
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    height: 80px; /* 锁定高度与未拉起时一致 */
+    height: 80px;
     flex-shrink: 0;
     padding: 0 20px;
     box-sizing: border-box;
@@ -218,7 +218,8 @@ body {
     height: auto;
     width: calc(100% - 40px);
     opacity: 1;
-    margin: 20px;
+    margin: 0 0 10px 10px;
+    overflow: scroll;
     pointer-events: auto;
 }
 
@@ -676,7 +677,7 @@ body.is-loading .nav-item {
 
     /* 3. 抵消抽屉展开时的高度萎缩 (原本是 90vh) */
     .bottom-bar.expanded {
-        height: calc(90vh / 0.67) !important;
+        height: calc(100vh / 0.67) !important;
     }
 
     /* 4. 补偿二维码 / 操作弹窗的深色遮罩层 */
@@ -726,6 +727,10 @@ body.is-loading .nav-item {
     .log-container {
         height: calc((100vh / 0.67) - 195px) !important;
     }
+    /* 13. 补偿 left-panel */
+    .left-panel {
+        width: calc(36vw / 0.67) !important;
+    }
 }
 
 /* ==========================================
@@ -733,7 +738,7 @@ body.is-loading .nav-item {
    ========================================== */
 .chat-widget {
     position: fixed;
-    bottom: 90px;
+    bottom: 60px;
     right: 30px;
     z-index: 9999;
     /*display: flex;*/
@@ -968,7 +973,7 @@ body.is-loading .nav-item {
     animation: toastSlideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
-.toast-success { background: var(--status, #1db954); }
+.toast-success { background: var(--primary-green, #1db954); }
 .toast-error { background: var(--danger-red, #e74c3c); }
 
 @keyframes toastSlideUp {

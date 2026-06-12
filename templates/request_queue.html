@@ -18,11 +18,11 @@
 
     <div class="queue-headers-container">
         <div class="queue-header-tab active" onclick="switchQueueTab('consumable', this)">
-            <h2><i class="material-icons">inventory_2</i> Consumables</h2>
+            <h2><i class="material-icons">inventory_2</i> {{ t('queue.consumables', lang) }}</h2>
             <span class="count-badge">{{ req_data|length }}</span>
         </div>
         <div class="queue-header-tab inactive" onclick="switchQueueTab('asset', this)">
-            <h2><i class="material-icons">devices</i> Assets</h2>
+            <h2><i class="material-icons">devices</i> {{ t('queue.assets', lang) }}</h2>
             <span class="count-badge">{{ asset_req_data|length }}</span>
         </div>
     </div>
@@ -79,7 +79,7 @@
         {% if asset_req_data|length == 0 %}
         <div style="text-align: center; padding: 60px 0; color: #bdc3c7;">
             <i class="material-icons" style="font-size: 4rem; opacity: 0.5;">done_all</i>
-            <h3 style="margin-top: 15px; font-weight: normal;">No Pending Asset Requests</h3>
+            <h3 style="margin-top: 15px; font-weight: normal;">{{ t('queue.no_pending', lang) }}</h3>
         </div>
         {% endif %}
 
@@ -92,43 +92,51 @@
 
             <div class="req-info">
                 <h4>
-                    {{ data.req.applicant }} <span style="font-size: 0.8rem; background: #f0f2f5; padding: 2px 6px; border-radius: 4px; color: #666; font-weight: normal;">{{ data.req.department }}</span>
+                    {{ data.req.applicant }}
                     <span style="font-size: 0.8rem; color: #aaa; margin-left: auto;">{{ data.req.created_at }}</span>
                 </h4>
 
-                {% if data.req.matter == 'require' %}
-                    <span class="asset-badge badge-require"><i class="material-icons" style="font-size:14px;">add_shopping_cart</i> Require</span>
-                {% elif data.req.matter == 'return' %}
-                    <span class="asset-badge badge-return"><i class="material-icons" style="font-size:14px;">assignment_return</i> Return</span>
-                {% else %}
-                    <span class="asset-badge badge-broken"><i class="material-icons" style="font-size:14px;">build</i> Broken</span>
-                {% endif %}
+
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    {% if data.req.ctrl_no %}
+                    <span class="font-monospace" style="font-size: 1.4rem; font-weight: bold; color: #7f8c8d;">{{ data.req.ctrl_no }}</span>
+                    {% else %}
+                    <span class="font-monospace" style="font-size: 1.4rem; font-weight: bold; color: #7f8c8d;"> </span>
+                    {% endif %}
+                    {% if data.req.matter == 'require' %}
+                        <span class="asset-badge badge-require"><i class="material-icons" style="font-size:14px;">add_shopping_cart</i> Require</span>
+                    {% elif data.req.matter == 'return' %}
+                        <span class="asset-badge badge-return"><i class="material-icons" style="font-size:14px;">assignment_return</i> Return</span>
+                    {% else %}
+                        <span class="asset-badge badge-broken"><i class="material-icons" style="font-size:14px;">build</i> Broken</span>
+                    {% endif %}
+                </div>
 
                 <p><strong>{{ data.req.pn_1 }}</strong> | {{ data.req.asset_name }}</p>
-                {% if data.req.ctrl_no %}
-                <p style="font-size: 0.85rem; color: #7f8c8d; font-family: monospace;">SN: {{ data.req.ctrl_no }}</p>
-                {% endif %}
 
-                <p style="color: #95a5a6; margin-top: 5px;">
-                    <i class="material-icons" style="font-size: 0.9rem; vertical-align: middle;">chat_bubble_outline</i>
-                    {{ data.req.note or t('queue.no_reason', lang) }}
-                </p>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span style="color: #95a5a6; margin-top: 5px;">
+                        <i class="material-icons" style="font-size: 0.9rem; vertical-align: middle;">chat_bubble_outline</i>
+                        {{ data.req.note or t('queue.no_reason', lang) }}
+                    </span>
+                    <span style="font-size: 1.05rem; font-weight: bold; color: var(--text-main); cursor: pointer;" onclick="openFooterMap('{{ data.req.department }}')"><i class="material-icons" style="vertical-align: bottom;">place</i>{{ data.req.department }}</span>
+                </div>
             </div>
 
             <div class="req-qty">
-                <span class="req-qty-label">Qty</span>
+                <span class="req-qty-label">{{ t('queue.req_qty_label', lang) }}</span>
                 {{ data.req.req_qty }}
             </div>
 
             <div class="req-actions">
                 <button class="btn-primary" style="background: #1db954; height: 40px; padding: 0 15px;"
                         onclick="openAssetApproveModal('{{ data.req.id }}', '{{ data.req.matter }}', '{{ data.req.pn_1 }}', '{{ data.req.req_qty }}', '{{ data.req.ctrl_no or '' }}')">
-                    <i class="material-icons">check_circle</i> Approve
+                    <i class="material-icons">check_circle</i> {{ t('queue.approve', lang) }}
                 </button>
 
                 <form action="/request_queue/asset_reject/{{ data.req.id }}" method="post" style="margin: 0;" onsubmit="return confirm('Reject this asset request?');">
                     <button type="submit" class="btn-primary" style="background: white; border: 1px solid #ccc; color: #7f8c8d; height: 40px; padding: 0 15px;">
-                        <i class="material-icons">block</i> Reject
+                        <i class="material-icons">block</i> {{ t('queue.reject', lang) }}
                     </button>
                 </form>
             </div>
@@ -141,7 +149,7 @@
 <div id="approveModal" class="custom-modal">
     <div class="custom-modal-content">
         <span class="close-modal" onclick="closeApproveModal()">&times;</span>
-        <h3 style="margin-top: 0; color: var(--status); border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; align-items: center; gap: 10px; font-size: 1.5rem;">
+        <h3 style="margin-top: 0; color: var(--primary-green); border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; align-items: center; gap: 10px; font-size: 1.5rem;">
             <i class="material-icons" style="vertical-align: middle;">place</i>
             <strong id="modalLocation"></strong>
         </h3>
@@ -186,16 +194,16 @@
         <span class="close-modal" onclick="closeAssetApproveModal()">&times;</span>
         <h3 id="assetModalTitle" style="margin-top: 0; display: flex; align-items: center; gap: 10px; font-size: 1.5rem;"></h3>
 
-        <form id="assetApproveForm" method="post" action="">
-            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee;">
-                <div style="margin-bottom: 8px; font-size: 1.2rem; color: #666;">PN: <strong id="assetModalPn" style="color: #333;"></strong></div>
-                <div id="assetModalCtrlNoBox" style="margin-bottom: 8px; font-size: 0.9rem; color: #666;">SN: <strong id="assetModalCtrlNo" style="font-family: monospace; color: #333;"></strong></div>
+        <form id="assetApproveForm" method="post" action="" style="width: 100%;">
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee; display: flex; align-items: center; flex-direction: column; gap: 5px;">
+                <div style="margin-bottom: 8px; font-size: 0.95rem; color: #666;"><strong id="assetModalPn" style="color: #333;"></strong></div>
+                <div id="assetModalCtrlNoBox" style="margin-bottom: 8px; font-size: 1.4rem; color: #666;"><strong id="assetModalCtrlNo" class="font-monospace"></strong></div>
             </div>
 
             <div id="assetDynamicInput" style="margin-bottom: 15px;"></div>
 
             <button type="submit" class="btn-primary" style="width: 100%; height: 42px; background: #1db954; font-size: 1.1rem; border-radius: 6px;">
-                Confirm Approval
+                {{ t('queue.confirm_approve', lang) }}
             </button>
         </form>
     </div>
@@ -206,7 +214,17 @@
 {% block extra_js %}
 <script>
     const QUEUE_I18N = {
-        stock_insufficient: "{{ t('queue.stock_insufficient', lang) }}"
+        stock_insufficient: "{{ t('queue.stock_insufficient', lang) }}",
+        dispatch_asset: "{{ t('queue.dispatch_asset', lang) }}",
+        scan_area_label: "{{ t('queue.scan_area_label', lang) }}",
+        scab_area_note: "{{ t('queue.scab_area_note', lang) }}",
+        scan_short: "{{ t('queue.scan_short', lang) }}",
+        scan_repeated: "{{ t('queue.scan_repeated', lang) }}",
+        confirm_return: "{{ t('queue.confirm_return', lang) }}",
+        target_location: "{{ t('queue.target_location', lang) }}",
+        target_location_ph: "{{ t('queue.target_location_ph', lang) }}",
+        confirm_broken: "{{ t('queue.confirm_broken', lang) }}",
+        broken_note: "{{ t('queue.broken_note', lang) }}",
     };
 </script>
 <script src="/static/js/request_queue.js"></script>

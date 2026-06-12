@@ -7,6 +7,9 @@ window.switchAssetType = function(groupId) {
     let tbody = document.getElementById('dynamicDetailTbody');
     let groupData = window.ASSET_DATA[groupId];
 
+    let activeSibling = groupData.items.find(i => i.is_stock && i.location && i.location.toLowerCase() !== 'none' && i.location !== '-');
+    let siblingLoc = activeSibling ? activeSibling.location.replace(/'/g, '\\').replace(/"/g, "&quot;") : '';
+
     if (!groupData || !groupData.items || groupData.items.length === 0) {
         tbody.innerHTML = `
             <tr>
@@ -33,7 +36,12 @@ window.switchAssetType = function(groupId) {
         let safeLoc = rawLoc.replace(/'/g, "\\'").replace(/"/g, "&quot;");
         let rackName = "";
         if (rawLoc && rawLoc !== '-' && rawLoc.toLowerCase() !== 'none') {
-            rackName = rawLoc.split('-')[0].toUpperCase().replace(/'/g, "\\'").replace(/"/g, "&quot;")
+            if (rawLoc.includes('-')) {
+                rackName = rawLoc.split('-')[0].toUpperCase();
+            } else {
+                rackName = rawLoc;
+            }
+            rackName = rackName.replace(/'/g, "\\'").replace(/"/g, "&quot;")
         }
         let safeDate = item.first_in_date ? item.first_in_date.replace(/'/g,"\\'"): '';
         let safePoType = item.po_type ? String(item.po_type).replace(/'/g, "\\'") : '';
@@ -52,7 +60,7 @@ window.switchAssetType = function(groupId) {
             let btn1Bg = !item.is_stock ? '#1db954' : '#f39c12';
             let btn1Icon = item.is_stock ? 'output' : 'login';
             let btn1Text = item.is_stock ? ASSET_I18N.btn_take_out : ASSET_I18N.btn_return_in;
-            let btn1 = `<button type="button" class="btn-primary btn-sm" title=" ${btn1Text}" style="background-color: ${btn1Bg}; ${disabledStyle};" onclick="openToggleModal(${item.id}, '${isStockStr}')"><i class="material-icons" style="margin-top: 2px;">${btn1Icon}</i></button>`;
+            let btn1 = `<button type="button" class="btn-primary btn-sm" title=" ${btn1Text}" style="background-color: ${btn1Bg}; ${disabledStyle};" onclick="openToggleModal(${item.id}, '${isStockStr}', '${safeCtrl}', false, '', '${siblingLoc}')"><i class="material-icons" style="margin-top: 2px;">${btn1Icon}</i></button>`;
 
             let btn2 = `<button type="button" class="btn-primary btn-sm" title="${ASSET_I18N.btn_edit}" style="background-color: #ccc; color: #333; ${disabledStyle}" onclick="openItemEditModal(${item.id}, '${safeCtrl}', '${safeLoc}', '${safeDate}', '${safePoType}')"><i class="material-icons" style="margin-top: 2px;">edit_note</i></button>`;
 
@@ -63,16 +71,16 @@ window.switchAssetType = function(groupId) {
                 let btn3Bg = item.is_stop ? '#95a5a6' : 'var(--danger-red)';
                 let btn3Icon = item.is_stop ? 'settings_backup_restore' : 'do_not_disturb';
                 let btn3Text = item.is_stop ? ASSET_I18N.btn_reuse : ASSET_I18N.btn_stop;
-                btn3 = `<button type="button" class="btn-primary btn-sm" title="${btn3Text}" style="background-color: ${btn3Bg};" onclick="openStopConfirmModal(${item.id}, '${safeCtrl}', '${isStopStr}')"><i class="material-icons" style="margin-top: 2px;">${btn3Icon}</i></button>`;
+                btn3 = `<button type="button" class="btn-primary btn-sm" title="${btn3Text}" style="background-color: ${btn3Bg};" onclick="openStopConfirmModal(${item.id}, '${safeCtrl}', '${isStopStr}', false, '${siblingLoc}')"><i class="material-icons" style="margin-top: 2px;">${btn3Icon}</i></button>`;
             }
             btnGroupHtml = btn1 + btn2 + btn3;
         } else {
             if (!item.is_stock && !item.is_stop) {
-                let btn4 = `<button type="button" class="btn-primary btn-sm" title="Request Return" style="background-color: #1db954;" onclick="openToggleModal(${item.id}, 'False', '${safeCtrl}', true)"><i class="material-icons" style="margin-top: 2px;">assignment_return</i></button>`;
-                let btn5 = `<button type="button" class="btn-primary btn-sm" title="Report Broken" style="background-color: var(--danger-red);" onclick="openStopConfirmModal(${item.id}, '${safeCtrl}', 'False', true)"><i class="material-icons" style="margin-top: 2px;">build</i></button>`;
+                let btn4 = `<button type="button" class="btn-primary btn-sm" title="${ASSET_I18N.request_return_title}" style="background-color: #1db954;" onclick="openToggleModal(${item.id}, 'False', '${safeCtrl}', true, '${rackName}', '')"><i class="material-icons" style="margin-top: 2px;">assignment_return</i></button>`;
+                let btn5 = `<button type="button" class="btn-primary btn-sm" title="${ASSET_I18N.report_broken_title}" style="background-color: var(--danger-red);" onclick="openStopConfirmModal(${item.id}, '${safeCtrl}', 'False', true, '${rackName}')"><i class="material-icons" style="margin-top: 2px;">build</i></button>`;
                 btnGroupHtml = btn4 + btn5;
             } else {
-                btnGroupHtml = `<span style="font-size:0.8rem; color:#aaa;">No Actions</span>`;
+                btnGroupHtml = `<span style="font-size:0.8rem; color:#aaa;">${ASSET_I18N.no_actions}</span>`;
             }
         }
 
@@ -116,7 +124,7 @@ window.switchAssetType = function(groupId) {
 };
 
 // Modals Control
-window.openToggleModal = function(itemId, isStockStr, ctrlNo, isUserRequest = false) {
+window.openToggleModal = function(itemId, isStockStr, ctrlNo, isUserRequest = false, defaultRack = '', originalLoc = '') {
     const modal = document.getElementById('toggleModal');
     const form = document.getElementById('toggleForm');
     const hintBox = document.getElementById('toggleHintBox');
@@ -124,29 +132,35 @@ window.openToggleModal = function(itemId, isStockStr, ctrlNo, isUserRequest = fa
     const title = document.getElementById('toggleTitle');
     const adminLocBox = locInput.parentElement;
     const userFieldsBox = document.getElementById('toggleUserFields');
+    const toggleDeptInput = document.getElementById('toggleDept');
 
     if (isUserRequest) {
         form.action = `/api/request_asset/${ctrlNo}`;
-        title.innerHTML = `<i class="material-icons" style="color:#1db954;">assignment_return</i> Request Return`;
-        hintBox.innerHTML = `Submit a return request for asset <strong>${ctrlNo}</strong>.`;
+        title.innerHTML = `<i class="material-icons" style="color:#1db954;">assignment_return</i> ${ASSET_I18N.request_return_title}`;
+        hintBox.innerHTML = `${ASSET_I18N.request_return} <strong>${ctrlNo}</strong>.`;
         adminLocBox.style.display = 'none';
         locInput.required = false;
         userFieldsBox.style.display = 'block';
-        document.getElementById('toggleDept').required = true;
+        toggleDeptInput.required = true;
+        toggleDeptInput.value = defaultRack;
+        toggleDeptInput.placeholder = defaultRack;
     } else {
         form.action = `/asset_out/${itemId}`;
         adminLocBox.style.display = 'block';
         userFieldsBox.style.display = 'none';
-        document.getElementById('toggleDept').required = false;
+        toggleDeptInput.required = false;
+        toggleDeptInput.value = '';
         if (isStockStr === 'True') {
             title.innerHTML = `<i class="material-icons" style="color:#f39c12;">output</i> ${ASSET_I18N.toggle_out_title}`;
             hintBox.innerHTML = ASSET_I18N.toggle_out_hint;
             locInput.placeholder = ASSET_I18N.toggle_out_ph;
+            locInput.value = '';
             locInput.required = true;
         } else {
             title.innerHTML = `<i class="material-icons" style="color:#1db954;">keyboard_return</i> ${ASSET_I18N.toggle_in_title}`;
             hintBox.innerHTML = ASSET_I18N.toggle_in_hint;
-            locInput.placeholder = ASSET_I18N.toggle_in_ph;
+            locInput.placeholder = originalLoc ? originalLoc : ASSET_I18N.toggle_in_ph;
+            locInput.value = originalLoc;
             locInput.required = false;
         }
     }
@@ -158,35 +172,45 @@ window.closeToggleModal = function() {
     document.getElementById('toggleModal').style.display = 'none';
 };
 
-window.openStopConfirmModal = function(itemId, ctrlNo, isStopStr, isUserRequest = false) {
+window.openStopConfirmModal = function(itemId, ctrlNo, isStopStr, isUserRequest = false, defaultRack = '') {
     const modal = document.getElementById('stopConfirmModal');
     const form = document.getElementById('stopForm');
     const title = document.getElementById('stopModalTitle');
     const text = document.getElementById('stopModalText');
     const icon = document.getElementById('stopModalIcon');
+    const locReuseContainer = document.getElementById('locReuseContainer');
+    const locReuse = document.getElementById('locReuse');
     const submitBtn = document.getElementById('stopSubmitBtn');
     const radio = document.getElementById('raisonRadio')
     const userFieldsBox = document.getElementById('stopUserFields');
+    const stopDeptInput = document.getElementById('stopDept');
 
     if (isUserRequest) {
         form.action = `/api/request_asset/${ctrlNo}`;
         icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red);">build</i>';
-        title.innerText = "Report Broken Asset";
-        text.innerHTML = `Submit a broken report for asset <strong>${ctrlNo}</strong>`;
+        title.innerText = `${ASSET_I18N.report_broken_title}`;
+        text.innerHTML = `${ASSET_I18N.report_broken} <strong>${ctrlNo}</strong>`;
         radio.style.display = 'none';
         radio.querySelectorAll('input').forEach(input => {input.required = false;});
         userFieldsBox.style.display = 'block';
-        document.getElementById('stopDept').required = true;
+        stopDeptInput.required = true;
+        stopDeptInput.value = defaultRack;
+        stopDeptInput.placeholder = defaultRack;
         submitBtn.style.backgroundColor = 'var(--danger-red)';
-        submitBtn.innerHTML = '<i class="material-icons">send</i> Submit';
+        submitBtn.innerHTML = `<i class="material-icons">send</i> ${ASSET_I18N.btn_submit}`;
     } else {
         form.action = `/api/asset_stop_toggle/${itemId}`;
         userFieldsBox.style.display = 'none';
-        document.getElementById('stopDept').required = false;
+        stopDeptInput.required = false;
+        stopDeptInput.value = '';
         if (isStopStr === 'True') {
             icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: #1db954;">settings_backup_restore</i>';
             title.innerText = ASSET_I18N.stop_reuse_title;
             text.innerHTML = ASSET_I18N.stop_reuse_text.replace('{ctrlNo}', ctrlNo);
+            locReuseContainer.style.display = 'block';
+            locReuse.placeholder = defaultRack;
+            locReuse.required = true;
+            locReuse.value = defaultRack;
             radio.style.display = 'none';
             radio.querySelectorAll('input').forEach(i => i.required = false);
             submitBtn.style.backgroundColor = '#1db954';
@@ -195,6 +219,9 @@ window.openStopConfirmModal = function(itemId, ctrlNo, isStopStr, isUserRequest 
             icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red);">do_not_disturb_on</i>';
             title.innerText = ASSET_I18N.stop_freeze_title;
             text.innerHTML = ASSET_I18N.stop_freeze_text.replace('{ctrlNo}', ctrlNo);
+            locReuseContainer.style.display = 'none';
+            locReuse.placeholder = '';
+            locReuse.value = '';
             radio.style.display = 'flex';
             radio.querySelectorAll('input').forEach(i => i.required = true);
             submitBtn.style.backgroundColor = 'var(--danger-red)';
@@ -218,6 +245,7 @@ window.openItemEditModal = function(itemId, ctrlNo, location, dateStr, poType) {
     document.getElementById('editLocation').value = (location === 'None' || !location) ? '' : location;
     document.getElementById('editDate').value = (dateStr === 'None' || !dateStr) ? '' : dateStr;
     document.getElementById('editPoType').value = (poType === 'None' || !poType) ? '' : poType;
+    document.getElementById('applyPoToAllCheckbox').checked= false;
 
     modal.style.display = 'flex';
 };
@@ -435,9 +463,16 @@ document.addEventListener('submit', async function(e) {
                     updateCardFrontUI(card, result.data);
                 }
             } else {
-                updateLocalAssetItem(result.data);
+                let updatedGroupId = updateLocalAssetItem(result.data);
+                if (updatedGroupId) { window.updateMiniChartUI(updatedGroupId); }
+                if (result.data && result.data.batch_po_type !== null && result.data.batch_po_type !== undefined && result.data.pn_1) {
+                    let groupId = result.data.pn_1.replace(/ /g, '-').replace(/\//g, '-');
+                    let group = window.ASSET_DATA[groupId];
+                    if (group && group.items) {
+                        group.items.forEach(i => i.po_type = result.data.batch_po_type);
+                    }
+                }
             }
-
             let activeCard = document.querySelector('.asset-card.active');
             if (activeCard) {
                 let groupId = activeCard.id.replace('card-', '');
@@ -459,7 +494,7 @@ document.addEventListener('submit', async function(e) {
 
 // Memory Update
 function updateLocalAssetItem(updatedItem) {
-    if (!updatedItem || !updatedItem.id) return;
+    if (!updatedItem || !updatedItem.id) return null;
 
     for (let groupId in window.ASSET_DATA) {
         let group = window.ASSET_DATA[groupId];
@@ -467,7 +502,7 @@ function updateLocalAssetItem(updatedItem) {
 
         if (itemIndex !== -1) {
             Object.assign(group.items[itemIndex], updatedItem);
-            return;
+            return groupId;
         }
     }
 }
@@ -491,4 +526,30 @@ function updateCardFrontUI(cardElement, data) {
         if (data.use_for !== undefined) descDivs[1].innerText = `${ASSET_I18N.dest_lbl} ${data.use_for || '-'}`;
         if (data.description_2 !== undefined) descDivs[2].innerText = `${ASSET_I18N.desc_lbl} ${data.description_2 || '-'}`;
     }
+}
+
+// 条形图渲染
+window.updateMiniChartUI = function (groupId) {
+    let group = window.ASSET_DATA[groupId];
+    let container = document.getElementById('chart-container-' + groupId);
+    if (!group || !group.items || !container) return;
+    let total_qty = group.items.length;
+    let broken_qty = group.items.filter(i => i.is_stop).length;
+    let used_qty = group.items.filter(i => !i.is_stock && !i.is_stop).length;
+    let good_qty = group.items.filter(i => i.is_stock && !i.is_stop).length;
+    let used_pct = total_qty > 0 ? (used_qty / total_qty) * 100 : 0;
+    let good_pct = total_qty > 0 ? (good_qty / total_qty) * 100 : 0;
+    let broken_pct = total_qty > 0 ? (broken_qty / total_qty) * 100 : 0;
+    container.innerHTML = `
+        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: bold; margin-bottom: 5px; line-height: 1;">
+            <span style="color: #1db954;">${ASSET_I18N.stocking}: ${ good_qty }</span>
+            <span style="color: #95a5a6;">${ASSET_I18N.stopped}: ${ broken_qty }</span>
+            <span style="color: #e74c3c;">${ASSET_I18N.using}: ${ used_qty }</span>
+        </div>
+        <div style="width: 100%; height: 6px; background: #ecf0f1; border-radius: 4px; display: flex; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">        
+            ${good_qty > 0 ? `<div style="width: ${good_pct}%; background: rgba(29, 185, 84, 0.5); transition: 0.3s;" title="${ASSET_I18N.stocking}: ${ good_qty }"></div>` : ''}
+            ${broken_qty > 0 ? `<div style="width: ${broken_pct}%; background: #95a5a6; transition: 0.3s;" title="${ASSET_I18N.stopped}: ${ broken_qty }"></div>` : ''}
+            ${used_qty > 0 ? `<div style="width: ${used_pct}%; background: rgba(231, 76, 60, 0.5); transition: 0.3s;" title="${ASSET_I18N.using}: ${ used_qty }"></div>` : ''}
+        </div>
+    `
 }
