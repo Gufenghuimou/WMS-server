@@ -281,14 +281,15 @@ document.querySelector(`#advancedTable tbody`).addEventListener('click', (e) => 
     if (scrapBtn) {
         const detailRow = scrapBtn.closest('.detail-row');
         const itemId = detailRow.getAttribute('data-id');
-        if (confirm(TABLE_I18N.scrap_warn)) {
-            let form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '/delete/' + itemId;
-            form.style.display = 'none';
-            document.body.appendChild(form);
-            form.submit();
-        }
+        openScrapModal(itemId);
+        // if (confirm(TABLE_I18N.scrap_warn)) {
+        //     let form = document.createElement('form');
+        //     form.method = 'POST';
+        //     form.action = '/delete/' + itemId;
+        //     form.style.display = 'none';
+        //     document.body.appendChild(form);
+        //     form.submit();
+        // }
     }
 
     if (locationBtn) {
@@ -305,3 +306,114 @@ document.querySelector(`#advancedTable tbody`).addEventListener('click', (e) => 
         }
     }
 });
+
+
+// 定义滑动报废变量
+let isDraggingSlider = false;
+let startX = 0;
+let maxDrag = 0;
+const ZOOM_LEVEL = 0.67;
+
+// 滑动删除
+
+window.openScrapModal = function(itemId) {
+    const modal = document.getElementById('scrapModal');
+    const form = document.getElementById('scrapForm');
+
+    form.action = `/delete/${itemId}`
+
+    resetSlider();
+    modal.style.display = 'flex';
+
+    const handle = document.getElementById('sliderHandle');
+    const container = document.getElementById('sliderContainer');
+    maxDrag = container.clientWidth - handle.clientWidth - 6;
+
+    handle.onmousedown = startSlide;
+}
+
+window.closeScrapModal = function() {
+    document.getElementById('scrapModal').style.display = 'none';
+    resetSlider();
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeScrapModal();
+    }
+});
+
+// scrapModal 滑动控制
+
+function resetSlider(animate = false) {
+    const container = document.getElementById('sliderContainer');
+    const handle = document.getElementById('sliderHandle');
+    const bg = document.getElementById('sliderBg');
+    const text = document.getElementById('sliderText');
+
+    container.classList.remove('unlocked');
+    text.innerText = '滑动以确认';
+
+    if (animate) {
+        handle.style.transition = 'left 0.3s ease';
+        bg.style.transition = 'width 0.3s ease';
+    }
+
+    handle.style.left = '3px';
+    bg.style.width = '0';
+}
+
+function unlockSuccess() {
+    isDraggingSlider = false;
+    document.onmousemove = null;
+
+    const container = document.getElementById('sliderContainer');
+    container.classList.add('unlocked');
+    document.getElementById('sliderText').innerText = '释放以报废';
+
+    setTimeout(() => {
+        document.getElementById('scrapForm').submit();
+    }, 200);
+}
+
+function updateSliderPosition(x) {
+    const handle = document.getElementById('sliderHandle');
+    const bg = document.getElementById('sliderBg');
+    handle.style.left = (x + 3) + 'px';
+    bg.style.width = (x + 25) + 'px';
+}
+
+function onSlide(e) {
+    if (!isDraggingSlider) return;
+    let moveX = (e.clientX - startX) / ZOOM_LEVEL;
+
+    if (moveX < 0) moveX = 0;
+    if (moveX > maxDrag) moveX = maxDrag;
+
+    updateSliderPosition(moveX);
+
+    if (moveX >= maxDrag * 0.98) {
+        unlockSuccess();
+    }
+}
+
+function startSlide(e) {
+    isDraggingSlider = true;
+    startX = e.clientX;
+    document.onmousemove = onSlide;
+    document.onmouseup = stopSlide;
+
+    document.getElementById('sliderHandle').style.transition = 'none';
+    document.getElementById('sliderBg').style.transition = 'none';
+}
+
+function stopSlide(e) {
+    if (!isDraggingSlider) return;
+    isDraggingSlider = false;
+    document.onmousemove = null;
+    document.onmouseup = null;
+
+    if (!document.getElementById('sliderContainer').classList.contains('unlocked')) {
+        resetSlider(true);
+    }
+}

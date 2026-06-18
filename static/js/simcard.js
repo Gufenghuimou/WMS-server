@@ -261,8 +261,6 @@ function stopSlide(e) {
     }
 }
 
-
-
 // AJAX
 
 document.addEventListener('submit', async function(e){
