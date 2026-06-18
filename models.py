@@ -169,3 +169,26 @@ class MonthlyProduction(SQLModel, table=True):
     last_updated: datetime = Field(default_factory=datetime.now)
 
     model: Optional[ModelTable] = Relationship(back_populates="productions")
+
+class PhysicalSimCard(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    icc_id: str
+    carrier: Optional[str] = None
+    phone_number: str
+    is_active: bool = Field(default=False)
+    is_stock: bool = Field(default=False)
+    location: Optional[str] = None
+    direct_user: Optional[str] = None
+    project: Optional[str] = None
+    note: Optional[str] = None
+
+class PhysicalSimCardLog(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    date: str = Field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d"))
+    icc_id: str
+    phone_number: str
+    target_loc: Optional[str] = None
+    target_user: Optional[str] = None
+    target_project: Optional[str] = None
+    action: str
+

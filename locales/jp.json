@@ -17,6 +17,9 @@
     "history": "履歴",
     "audit": "棚卸デスク",
     "mobile_quick_upload": "モバイル同期",
+    "simcard": "実SIM",
+    "simcard_stock_in": "実SIM入庫",
+    "simcard_history": "実SIM履歴",
     "reprint": "ラベル再印刷"
   },
   "status": {
@@ -38,8 +41,10 @@
   },
   "base": {
     "loading": "システム読み込み中...",
+    "request": "申請",
     "inventory": "消耗品",
     "asset": "固定資産",
+    "simcard": "実SIM",
     "system": "システム",
     "logout": "ログアウト",
     "warehouse_map": "リアルタイム倉庫マップ",
@@ -354,7 +359,7 @@
     "th_action": "操作",
     "clear_row_title": "行をクリア",
     "confirm_clear_all": "入力した内容をすべてクリアしますか？",
-    "err_duplicate": "送信失敗: 重複する PN1 または PN2 が見つかりました！赤くハイライトされた部分を修正またはクリアしてください。",
+    "err_duplicate": "送信失敗: 重複なデーターが見つかりました！赤くハイライトされた部分を修正またはクリアしてください。",
     "err_miss_pn1": "送信失敗: 第 {row} 行に【PN1】がありません！",
     "err_miss_name": "送信失敗: 第 {row} 行に【品名】がありません！",
     "err_miss_qty": "送信失敗: 第 {row} 行に【入庫数】がありません！",
@@ -585,6 +590,39 @@
     "err_miss_name": "送信失敗: 第 {row} 行に【品名】がありません！",
     "err_empty_submit": "最低でも1行入力してから送信してください！",
     "err_query_fail": "検索失敗:"
+  },
+  "simcard": {
+    "usable": "利用可能",
+    "stopped": "利用停止",
+    "using": "使用中",
+    "carrier": "キャリア",
+    "number": "電話番号",
+    "location": "ロケーション",
+    "direct_user": "直接ユーザー",
+    "project": "プロジェクト",
+    "status": "ステータス",
+    "note": "備考",
+    "action": "操作",
+    "simcard_disable": "SIMカード無効化",
+    "simcard_enable": "SIMカード有効化",
+    "disable_notice": "このSIMカードを無効化してもよろしいですか？自動的に在庫状態に変更されます。",
+    "enable_notice": "このSIMカードは有効化され、在庫に追加されます。",
+    "btn_disable": "無効化",
+    "btn_enable": "有効化"
+  },
+  "simcard_stock_in": {
+    "th_carrier": "キャリア",
+    "th_number": "電話番号",
+    "th_note": "備考",
+    "th_action": "操作"
+  },
+  "simcard_history": {
+    "date": "日時",
+    "number": "電話番号",
+    "target_loc": "移動先ロケーション",
+    "target_user": "対象ユーザー",
+    "target_proj": "対象プロジェクト",
+    "action": "備考"
   },
   "reprint": {
     "config_title": "Zebra ネットワークプリンター設定",

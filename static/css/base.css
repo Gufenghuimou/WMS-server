@@ -4,7 +4,7 @@
     --bg-main: #d8d7da;       /* 主显示区背景 */
     --text-light: #b3b3b3;    /* 侧边栏未选中文字 */
     --text-white: #ffffff;    /* 侧边栏高亮文字 */
-    --primary: #5d8c8a;       /* 核心点缀色  */
+    --primary: #01847F;       /* 核心点缀色  */
     --primary-blue: #3498db;  /* 核心点缀色  */
     --surface: #ffffff;       /* 卡片背景 */
     --primary-green: #1db954;        /* 状态指示 */
@@ -118,6 +118,7 @@ body {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     padding-right: 5px;
 }
 .nav-menu::-webkit-scrollbar { width: 4px; }

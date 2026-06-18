@@ -1,7 +1,3 @@
-// ==========================================
-// 🌟 历史记录专用：性能优化版全局搜索 (防抖 + DOM 缓存)
-// ==========================================
-
 document.addEventListener('DOMContentLoaded', () => {
     // 1. 页面加载时，缓存所有数据行的文字
     document.querySelectorAll('tbody tr').forEach(row => {
@@ -21,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
             searchTimeout = setTimeout(() => {
                 // 优化：如果搜索框空了，直接全部显示
                 if (term === "") {
-                    document.querySelectorAll('tbody tr').forEach(row => row.style.display = '');
+                    document.querySelectorAll('tbody tr').forEach(row => { row.style.display = '' });
                     return;
                 }
 
@@ -36,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         row.style.display = 'none';
                     }
                 });
-            }, 250); // 250ms 黄金防抖时间
+            }, 250);
         });
     }
 });

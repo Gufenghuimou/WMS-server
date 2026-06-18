@@ -1,23 +1,20 @@
-// ==========================================
-// 🌟 极速前端表格排序引擎 (搜索无冲突版)
-// ==========================================
-let sortDirection = {}; // 记录每一列当前的排序方向
+// 表格排序 搜索无冲突版
+
+let sortDirection = {};
 
 window.sortTable = function(columnIndex, dataType) {
     const table = document.getElementById("advancedTable");
     const tbody = table.querySelector("tbody");
     const mainRows = Array.from(tbody.querySelectorAll(".main-row"));
 
-    // 切换排序方向
     const isAscending = sortDirection[columnIndex] !== 'asc';
     sortDirection[columnIndex] = isAscending ? 'asc' : 'desc';
 
-    // 刷新表头的 UI 图标
+    // 刷新表头的UI
     document.querySelectorAll('.sort-icon').forEach(icon => icon.innerText = 'unfold_more');
     const currentIcon = table.querySelectorAll('th')[columnIndex].querySelector('.sort-icon');
     if (currentIcon) currentIcon.innerText = isAscending ? 'expand_less' : 'expand_more';
 
-    // 核心排序逻辑
     mainRows.sort((a, b) => {
         // 💡 核心修复：使用 textContent 替代 innerText，无视搜索造成的 display:none
         let valA = a.children[columnIndex].getAttribute('data-sort') || a.children[columnIndex].textContent.trim();
@@ -42,9 +39,8 @@ window.sortTable = function(columnIndex, dataType) {
     });
 };
 
-// ==========================================
-// 🌟 无感静默保存引擎
-// ==========================================
+// 无感静默保存
+
 window.autoSave = async function(itemId) {
     const tr = document.getElementById(`row-${itemId}`);
     if (!tr) return;
@@ -75,9 +71,7 @@ window.autoSave = async function(itemId) {
     }
 };
 
-// ==========================================
-// 🌟 性能优化版全局搜索 (精准定位防冲突版)
-// ==========================================
+// 全局搜索
 
 document.addEventListener('DOMContentLoaded', () => {
     // 💡 优化 1：精确定位到 advancedTable，防止误伤页面内可能存在的其他表格
@@ -103,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const globalSearch = document.getElementById('globalSearch');
-    let searchTimeout; // 防抖计时器
+    let searchTimeout;
 
     if (globalSearch) {
         globalSearch.addEventListener('input', function(e) {

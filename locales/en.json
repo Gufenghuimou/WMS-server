@@ -17,6 +17,9 @@
     "history": "History Record",
     "audit": "Audit Desk",
     "mobile_quick_upload": "Mobile Sync",
+    "simcard": "SIM Card",
+    "simcard_stock_in": "SIM Card Inbound",
+    "simcard_history": "SIM Card Log",
     "reprint": "Label Reprint"
   },
   "status": {
@@ -38,8 +41,10 @@
   },
   "base": {
     "loading": "System loading...",
+    "request": "Request",
     "inventory": "Consumables",
     "asset": "Assets",
+    "simcard": "SIM Card",
     "system": "System",
     "logout": "Logout",
     "warehouse_map": "Real-time Warehouse Map",
@@ -354,7 +359,7 @@
     "th_action": "Action",
     "clear_row_title": "Clear Row",
     "confirm_clear_all": "Are you sure you want to clear all entered content?",
-    "err_duplicate": "Submission failed: Duplicate PN1 or PN2 detected! Check highlighted fields to modify or clear.",
+    "err_duplicate": "Submission failed: Duplicate data detected! Check highlighted fields to modify or clear.",
     "err_miss_pn1": "Submission failed: Row {row} missing [PN1]!",
     "err_miss_name": "Submission failed: Row {row} missing [Name]!",
     "err_miss_qty": "Submission failed: Row {row} missing [Inbound Qty]!",
@@ -585,6 +590,39 @@
     "err_miss_name": "Submit failed: Row {row} missing [Name]!",
     "err_empty_submit": "Please fill at least one row before submitting!",
     "err_query_fail": "Query failed:"
+  },
+  "simcard": {
+    "usable": "Usable",
+    "stopped": "Stopped",
+    "using": "Using",
+    "carrier": "Carrier",
+    "number": "Phone Number",
+    "location": "Location",
+    "direct_user": "Direct User",
+    "project": "Project",
+    "status": "Status",
+    "note": "Note",
+    "action": "Action",
+    "simcard_disable": "Disable SIM Card",
+    "simcard_enable": "Enable SIM Card",
+    "disable_notice": "Are you sure you want to disable this SIM card? It will automatically be changed to stocked status.",
+    "enable_notice": "This SIM card will be enabled and added to the inventory.",
+    "btn_disable": "Disable",
+    "btn_enable": "Enable"
+  },
+  "simcard_stock_in": {
+    "th_carrier": "Carrier",
+    "th_number": "Phone Number",
+    "th_note": "Note",
+    "th_action": "Action"
+  },
+  "simcard_history": {
+    "date": "Date",
+    "number": "Phone Number",
+    "target_loc": "Target Location",
+    "target_user": "Target User",
+    "target_proj": "Target Project",
+    "action": "Note"
   },
   "reprint": {
     "config_title": "Zebra Network Printer Config",

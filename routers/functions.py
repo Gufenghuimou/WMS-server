@@ -13,7 +13,7 @@ import uuid
 import utils
 
 from database import engine
-from models import User, ChatMessage, InventoryItem, AssetItem, OutboundRequest, AuditRecord, AssetAuditRecord
+from models import User, ChatMessage, InventoryItem, AssetItem, OutboundRequest, AuditRecord, AssetAuditRecord, PhysicalSimCard, PhysicalSimCardLog
 from dependencies import get_current_user, require_admin
 from core import templates, t_lang
 
@@ -66,6 +66,33 @@ def get_item_api(request: Request, pn_or_loc: str, current_user: dict = Depends(
         if item: return build_response(item, 'pn_1_Fuzzy')
         item = session.exec(select(AssetItem).where(AssetItem.pn_1.like(f'%{pn_or_loc}%'))).first()
         if item: return build_response(item, 'pn_1_Fuzzy')
+
+        return {'error': t_lang("do.not_exist", lang)}
+
+@router.get("/api/simcard/{icc_or_num}", response_model=None)
+def get_simcard_api(request: Request, icc_or_num: str, current_user: dict = Depends(get_current_user)):
+    lang = request.state.lang
+    with Session(engine) as session:
+        icc_or_num = icc_or_num.strip().upper()
+
+        def build_response(item_obj, match_type):
+            return {
+                'id': item_obj.id,
+                'icc_id': item_obj.icc_id,
+                'carrier': item_obj.carrier,
+                'phone_number': item_obj.phone_number,
+                'location': getattr(item_obj, 'location', ''),
+                'direct_user': getattr(item_obj, 'direct_user', ''),
+                'project': getattr(item_obj, 'project', ''),
+                'note': getattr(item_obj, 'note', ''),
+                'match_type': match_type
+            }
+        item = session.exec(select(PhysicalSimCard).where(PhysicalSimCard.icc_id == icc_or_num)).first()
+        if item: return build_response(item, 'icc_id')
+        item = session.exec(select(PhysicalSimCard).where(PhysicalSimCard.phone_number == icc_or_num)).first()
+        if item: return build_response(item, 'phone_number')
+        item = session.exec(select(PhysicalSimCard).where(PhysicalSimCard.location == icc_or_num)).first()
+        if item: return build_response(item, 'location')
 
         return {'error': t_lang("do.not_exist", lang)}
 

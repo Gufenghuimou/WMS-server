@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('title.simcard_history', lang) }} - {{ t('title.base', lang) }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/simcard_history.css">
+{% endblock %}
+
+{% block top_actions %}
+<div>
+    <a href="/simcard_history/export">
+        <button class="btn-primary" style="border-radius: 20px; gap: 8px;">
+            <i class="material-icons">file_download</i> {{ t('history.export', lang) }}
+        </button>
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="history-container">
+    <table >
+        <thead>
+            <tr>
+                <th style="width: 10%;"> {{ t('simcard_history.date', lang) }}</th>
+                <th style="width: 20%;"> ICCID</th>
+                <th style="width: 10%;"> {{ t('simcard_history.number', lang) }}</th>
+                <th style="width: 10%;"> {{ t('simcard_history.target_loc', lang) }}</th>
+                <th style="width: 10%;"> {{ t('simcard_history.target_user', lang) }}</th>
+                <th style="width: 10%;"> {{ t('simcard_history.target_proj', lang) }}</th>
+                <th style="width: 20%;"> {{ t('simcard_history.action', lang) }}</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for log in logs %}
+        <tr class="main-row" data-id="{{ log.id }}" id="row-{{ log.id }}">
+            <td>{{ log.date }}</td>
+            <td class="font-monospace icc-id">
+                {% if log.icc_id and log.icc_id | length > 5 %}
+                    {{ log.icc_id[:-5] }} {{ log.icc_id[-5:] }}
+                {% else %}
+                    {{ log.icc_id }}
+                {% endif %}
+            </td>
+            <td class="font-monospace phone_number">{{ log.phone_number }}</td>
+            <td>{{ log.target_loc }}</td>
+            <td>{{ log.target_user }}</td>
+            <td>{{ log.target_project }}</td>
+            <td>{{ log.action }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/simcard_history.js"></script>
+{% endblock %}

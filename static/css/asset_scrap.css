@@ -184,7 +184,7 @@
     font-size: 0.95rem;
     color: #7f8c8d;
     z-index: 2;
-    pointer-events: none; /* 防止文字干扰拖拽 */
+    pointer-events: none;
 }
 
 .slider-bg {
@@ -193,9 +193,9 @@
     top: 0;
     height: 100%;
     width: 0;
-    background-color: var(--danger-red, #d93025);
+    background-color: var(--danger-red);
     z-index: 1;
-    transition: none; /* 拖拽时不需要过渡 */
+    transition: none;
 }
 
 .slider-handle {
@@ -211,7 +211,7 @@
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    transition: transform 0.1s; /* 稍微顺滑一点 */
+    transition: transform 0.1s;
 }
 
 .slider-handle:active {
@@ -223,7 +223,6 @@
     font-size: 1.5rem;
 }
 
-/* 成功状态 */
 .slider-container.unlocked .slider-text {
     color: #fff;
     font-weight: bold;

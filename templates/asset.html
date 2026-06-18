@@ -80,7 +80,7 @@
                             <div class="card-info">
                                 <div style="display:flex; justify-content:space-between;">
                                     <h3 class="text-truncate font-monospace" style="margin: 0 0 4px 0; font-size: 1.5rem; font-weight: bold; color: var(--text-main); max-width: 300px;" title="{{ first.pn_1 }}">{{ first.pn_1 }} | {{ first.pn_2 or '' }}</h3>
-                                    <span style="font-size: 1.2rem; font-weight: bold; color: #2980b9; background: #eef2f5; padding: 2px 12px; border-radius: 10px;">{{ group|length }}</span>
+                                    <span style="font-size: 1.2rem; font-weight: bold; color: #2980b9; background: #eef2f5; padding: 2px 12px; border-radius: 10px; display: flex; align-items: center">{{ group|length }}</span>
                                 </div>
                                 <div class="text-truncate" style="font-size: 0.9rem; font-weight: 500;" title="{{ first.name }}">{{ first.name or t('asset_view.unnamed', lang) }}</div>
                             </div>

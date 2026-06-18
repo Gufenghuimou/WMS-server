@@ -37,7 +37,7 @@
                 </div>
             </div>
 
-            <div class="img-container" style="height: 120px; border-radius: 8px; margin-bottom: 15px; overflow: hidden; border: 1px dashed #ddd; background: #f8f9fa;">
+            <div class="img-container">
                 {% if item.has_image %}
                     <img class="card-item-img" data-itemid="{{ item.id }}" src="/static/item_images/{{ item.id }}.jpg?t={{ range(1, 99999) | random }}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 {% endif %}
@@ -48,7 +48,7 @@
 
             <div class="detail-row"><span>{{ t('card.category', lang) }}</span><span>{{ item.description_1 or '-' }}</span></div>
             <div class="detail-row"><span>{{ t('card.desc', lang) }}</span><span>{{ item.description_2 or '-' }}</span></div>
-            <div class="detail-row"><span>{{ t('card.location', lang) }}</span><span>{{ item.location or '-' }}</span></div>
+            <div class="detail-row"><span>{{ t('card.location', lang) }}</span><span style="color: var(--primary); cursor: pointer;" onclick="openFooterMap('{{ item.location.split('-')[0].upper() if item.location else '-' }}')"><i class="material-icons" style="font-size: 0.85rem; vertical-align: bottom;">place</i>{{ item.location or '-' }}</span></div>
             <div class="detail-row"><span>{{ t('card.usage_1y', lang) }}</span><span>{{ item.usage_1y or 0 }}</span></div>
             <div class="detail-row"><span>{{ t('card.warning_level', lang) }}</span><span>{{ item.warning_level or 0 }}</span></div>
             <div class="detail-row" style="border-bottom: none;"><span>{{ t('card.remarks', lang) }}</span><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ item.remarks }}">{{ item.remarks or '-' }}</span></div>
@@ -92,7 +92,7 @@
     <div id="outFormTemplate" style="display: none; height: 100%; flex-direction: column;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 10px;">
             <h3 style="margin: 0; color: var(--danger-red); font-size: 1.05rem;"><i class="material-icons" style="vertical-align: middle; font-size: 1.2rem;">outbox</i> {{ t('card.out_title', lang) }}</h3>
-            <i class="material-icons" style="cursor: pointer; color: #999; font-size: 1.2rem;" onclick="unflipCard()">close</i>
+            <span id="showLocation" style="font-size: 0.95rem; color: var(--primary); cursor: pointer;"></span>
         </div>
         <form id="outForm" method="post" onsubmit="return validateOutForm(event)" style="flex: 1; display: flex; flex-direction: column;">
             <div style="display: flex; gap: 8px;">
@@ -112,25 +112,29 @@
                 <i class="material-icons" style="font-size: 1.1rem;">error_outline</i>
                 <span id="outFormErrorText"></span>
             </div>
-
-            <button type="submit" class="modal-btn" style="margin-top: auto; width: 100%; background: var(--danger-red); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">{{ t('card.confirm_out', lang) }}</button>
+            <div style="display: flex; gap: 8px; margin-top: auto; padding-top: 8px;">
+                <button type="button" class="modal-btn btn-cancel" onclick="unflipCard()">{{ t('table.cancel_btn', lang) }}</button>
+                <button type="submit" class="modal-btn btn-out-confirm">{{ t('card.confirm_out', lang) }}</button>
+            </div>
         </form>
     </div>
 
     <div id="editFormTemplate" style="display: none; height: 100%; flex-direction: column;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 8px;">
             <h3 style="margin: 0; color: var(--primary-blue); font-size: 1.05rem;"><i class="material-icons" style="vertical-align: middle; font-size: 1.2rem;">edit</i> {{ t('card.edit_title', lang) }}</h3>
-            <i class="material-icons" style="cursor: pointer; color: #999; font-size: 1.2rem;" onclick="unflipCard()">close</i>
+            <button type="button" id="deleteBtn" title="{{ t('card.scrap', lang) }}">
+                <i class="material-icons"  style="font-size: 0.95rem;">delete_forever</i>
+            </button>
         </div>
         <form id="editForm" method="post" style="flex: 1; display: flex; flex-direction: column;">
-            <div style="display: flex; gap: 10px; margin-bottom: 8px; align-items: center; background: #f8f9fa; padding: 6px; border-radius: 8px;">
-                <div style="width: 45px; height: 45px; border-radius: 6px; overflow: hidden; border: 1px solid #ddd; background: #fff; flex-shrink: 0; position: relative;">
+            <div class="img-edit-container">
+                <div class="img-edit-tray">
                     <img id="editImagePreview" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
                     <div id="editImagePlaceholder" style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; color: #ccc;"><i class="material-icons" style="font-size: 1.2rem;">insert_photo</i></div>
                 </div>
-                <div style="flex: 1;">
+                <div class="btn-upload">
                     <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
-                    <button type="button" onclick="document.getElementById('imageInput').click()" style="width: 100%; background: #e0e0e0; color: #333; border: none; padding: 4px 0; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold;">{{ t('card.recrop', lang) }}</button>
+                    <button type="button" onclick="document.getElementById('imageInput').click()" class="btn-primary" style="height: 26px; padding: 0 10px; background-color: var(--primary-blue);"><i class="material-icons" style="font-size: 1rem;">add_photo_alternate</i></button>
                 </div>
             </div>
 
@@ -150,8 +154,8 @@
             <div class="form-group-modal"><label>{{ t('card.remarks', lang) }}</label><input type="text" id="editRemarks" name="remarks"></div>
 
             <div style="display: flex; gap: 8px; margin-top: auto; padding-top: 8px;">
-                <button type="button" id="deleteBtn" class="modal-btn" style="flex: 1; background: #95a5a6; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">{{ t('card.scrap', lang) }}</button>
-                <button type="submit" class="modal-btn" style="flex: 2; background: var(--primary-blue); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">{{ t('card.save_changes', lang) }}</button>
+                <button type="button" class="modal-btn btn-cancel" onclick="unflipCard()">{{ t('table.cancel_btn', lang) }}</button>
+                <button type="submit" class="modal-btn btn-save" style="">{{ t('card.save_changes', lang) }}</button>
             </div>
         </form>
     </div>

@@ -43,6 +43,7 @@ import routers.inventory as inventory
 import routers.functions as functions
 import routers.production as production
 import routers.request as request
+import routers.simcard as sim_card
 
 app.include_router(users.router)
 app.include_router(asset.router)
@@ -50,6 +51,7 @@ app.include_router(inventory.router)
 app.include_router(functions.router)
 app.include_router(production.router)
 app.include_router(request.router)
+app.include_router(sim_card.router)
 
 # 本体
 if __name__ == "__main__":

@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('title.simcard', lang) }} - {{ t('title.base', lang) }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/simcard.css">
+{% endblock %}
+
+{% block top_actions %}
+    <div>
+        <a href="/simcard/export">
+            <button class="btn-primary" style="border-radius: 20px; gap: 8px;">
+                <i class="material-icons">download</i> {{ t('table.export_all', lang) }}
+            </button>
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="table-container">
+        <div class="table-header" style="display: flex; justify-content: space-between; gap: 15px;">
+            {% set total_qty = simcard_total_count %}
+            {% set using_qty = items | rejectattr('is_stock') | list | length %}
+            {% set stopped_qty = items | rejectattr('is_active') | list | length %}
+            {% set usable_qty = total_qty - using_qty - stopped_qty %}
+            <h2>{{ total_qty }}</h2>
+            <div style="display: flex; flex-direction: column; justify-content: space-between; width: 100%;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: bold; margin-bottom: 5px; line-height: 1; width: 100%;">
+                    <span style="color: #1db954;">{{ t('simcard.usable', lang) }}: {{ usable_qty }}</span>
+                    <span style="color: #95a5a6;">{{ t('simcard.stopped', lang) }}: {{ stopped_qty }}</span>
+                    <span style="color: #e74c3c;">{{ t('simcard.using', lang) }}: {{ using_qty }}</span>
+                </div>
+
+                <div style="width: 100%; height: 6px; background: #ecf0f1; border-radius: 4px; display: flex; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">
+                    {% if usable_qty > 0 %}
+                        <div style="width: {{ (usable_qty/total_qty)*100 }}%; background: rgba(29, 185, 84, 0.5); transition: 0.3s;" title="{{ t('simcard.usable', lang) }}: {{ usable_qty }}"></div>
+                    {% endif %}
+                    {% if stopped_qty > 0 %}
+                        <div style="width: {{ (stopped_qty/total_qty)*100 }}%; background: #95a5a6; transition: 0.3s;" title="{{ t('simcard.stopped', lang) }}: {{ stopped_qty }}"></div>
+                    {% endif %}
+                    {% if using_qty > 0 %}
+                        <div style="width: {{ (using_qty/total_qty)*100 }}%; background: rgba(231, 76, 60, 0.5); transition: 0.3s;" title="{{ t('simcard.using', lang) }}: {{ using_qty }}<"></div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+        <div class="table-scroll-wrapper">
+            <table class="adv-table" id="advancedTable">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(0, 'string')" style="width: 250px;"> ICCID <i class="material-icons sort-icon">unfold_more</i></th>
+                        <th onclick="sortTable(1, 'string')" style="width: 100px;"> {{ t('simcard.carrier', lang) }} <i class="material-icons sort-icon">unfold_more</i></th>
+                        <th style="width: 160px;"> {{ t('simcard.number', lang) }}</th>
+                        <th onclick="sortTable(3, 'string')" style="width: 150px;"> {{ t('simcard.location', lang) }} <i class="material-icons sort-icon">unfold_more</i></th>
+                        <th onclick="sortTable(4, 'string')" style="width: 150px;"> {{ t('simcard.direct_user', lang) }}<i class="material-icons sort-icon">unfold_more</i></th>
+                        <th onclick="sortTable(5, 'string')" style="width: 100px;"> {{ t('simcard.project', lang) }} <i class="material-icons sort-icon">unfold_more</i></th>
+                        <th style="width: 100px;"> {{ t('simcard.status', lang) }} </th>
+                        <th> {{ t('simcard.note', lang) }} </th>
+                        <th style="width: 150px;"> {{ t('simcard.action', lang) }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr class="main-row" data-id="{{ item.id }}" id="row-{{ item.id }}">
+                        <td class="font-monospace icc-id">
+                            {% if item.icc_id and item.icc_id|length > 5 %}
+                                {{ item.icc_id[:-5] }} {{ item.icc_id[-5:] }}
+                            {% else %}
+                                {{ item.icc_id }}
+                            {% endif %}
+                        </td>
+                        <td>{{ item.carrier }}</td>
+                        <td class="font-monospace phone_number">{{ item.phone_number }}</td>
+                        <td style="cursor: pointer; color: var(--primary); font-weight: 500; white-space: nowrap;" onclick="openFooterMap('{{ item.location }}')">
+                            <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.95rem;">
+                                <i class="material-icons" style="font-size: 1rem;">place</i>
+                                {{ item.location }}
+                            </span>
+                        </td>
+                        <td>{{ item.direct_user }}</td>
+                        <td>{{ item.project }}</td>
+                        <td>
+                            {% if item.is_active %}
+                                {% if item.is_stock %}
+                                <span style="background: rgba(29, 185, 84, 0.15); color: #158e40; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap">在库</span>
+                                {% else %}
+                                <span style="background: rgba(231, 76, 60, 0.15); color: #c0392b; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap">已借出</span>
+                                {% endif %}
+                            {% else %}
+                            <span style="background: rgba(149, 165, 166, 0.15); color: #7f8c8d; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; text-decoration: line-through; white-space: nowrap">停用</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.notes }}</td>
+                        <td class="action-buttons">
+                            {% if item.is_active %}
+                                {% if item.is_stock %}
+                                <button type="button" class="btn-primary btn-sm" title="Out" style="background-color: #1db954; color: #fff;"
+                                        onclick="openToggleModal({{ item.id }}, 'True')"><i class="material-icons" style="margin-top: 2px;">keyboard_return</i></button>
+                                {% else %}
+                                <button type="button" class="btn-primary btn-sm" title="Out" style="background-color: #f39c12; color: #fff;"
+                                        onclick="openToggleModal({{ item.id }}, 'False')"><i class="material-icons" style="margin-top: 2px;">output</i></button>
+                                {% endif %}
+                            {% else %}
+                            <button type="button" class="btn-primary btn-sm" title="Out" style="background-color: var(--danger-red); color: #fff;"
+                                    onclick="openScrapModal({{ item.id }}, 'False')"><i class="material-icons" style="margin-top: 2px;">delete</i></button>
+                            {% endif %}
+                            <button type="button" class="btn-primary btn-sm" title="Edit" style="background-color: #ccc; color: #333;"
+                                    onclick="openItemEditModal({{ item.id }}, '{{ item.icc_id }}', '{{ item.carrier }}', '{{ item.phone_number }}', '{{ item.location or '' }}', '{{ item.direct_user or '' }}', '{{ item.project or '' }}', '{{ item.note or '' }}')"><i class="material-icons" style="margin-top: 2px;">edit_note</i></button>
+                            {% if item.is_active %}
+                            <button type="button" class="btn-primary btn-sm" title="Active" style="background-color: #e74c3c; color: #fff;"
+                                    onclick="openActiveToggleModal({{ item.id }}, 'True')"><i class="material-icons" style="margin-top: 2px;">do_not_disturb</i></button>
+                            {% else %}
+                            <button type="button" class="btn-primary btn-sm" title="Active" style="background-color: #95a5a6; color: #fff;"
+                                    onclick="openActiveToggleModal({{ item.id }}, 'False')"><i class="material-icons" style="margin-top: 2px;">settings_backup_restore</i></button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="toggleModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3 id="toggleTitle" style="margin-top:0; color:var(--text-main); display:flex; align-items:center; gap:8px;">
+                <i class="material-icons" style="color:var(--primary);">swap_horiz</i> {{ t('asset_view.modal_toggle_title', lang) }}
+            </h3>
+            <p id="toggleHintBox" style="font-size: 0.85rem; color: #666; margin-bottom: 20px; line-height: 1.5; background:#f8f9fa; padding:10px; border-radius:8px; border-left:3px solid var(--primary);"></p>
+            <form id="toggleForm" method="post" action="">
+                <div id="toggleFields" style="margin-bottom: 20px;">
+                    <div class="form-row">
+                        <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('simcard_history.target_loc', lang) }}</label>
+                        <input type="text" name="target_loc" id="locInput" autocomplete="off" placeholder="" required>
+                    </div>
+                    <div class="form-row">
+                        <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('simcard_history.target_user', lang) }}</label>
+                        <input type="text" name="target_user" id="userInput" autocomplete="off" placeholder="">
+                    </div>
+                    <div class="form-row">
+                        <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('simcard_history.target_proj', lang) }}</label>
+                        <input type="text" name="target_project" id="projectInput" autocomplete="off" placeholder="">
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" class="btn-primary" style="background: #e0e0e0; color: #555; box-shadow: none;" onclick="closeToggleModal()">{{ t('asset_view.btn_cancel_modal', lang) }}</button>
+                    <button type="submit" class="btn-primary">{{ t('asset_view.btn_confirm_modal', lang) }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="itemEditModal" class="modal-overlay">
+        <div class="modal-box" style="width: auto; padding: 20px 30px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.15);">
+            <h4 style="margin: 0 0 15px 0; color: var(--text-main); font-size: 1rem; border-bottom: 1px solid #eee; padding-bottom: 8px;">
+                <i class="material-icons" style="font-size: 1.1rem; color: #3498db; vertical-align: middle;">edit_note</i>
+                {{ t('asset_view.modal_item_title', lang) }}
+            </h4>
+            <form id="itemEditForm" method="post" action="" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                <div style="grid-column: span 3;">
+                    <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">ICCID</label>
+                    <input type="text" name="icc_id" id="editIccid" class="name-input" required autocomplete="off">
+                </div>
+                <div>
+                    <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('simcard.carrier', lang) }}</label>
+                    <input type="text" name="carrier" id="editCarrier" class="name-input" required autocomplete="off">
+                </div>
+                <div style="grid-column: span 2;">
+                    <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('simcard.number', lang) }}</label>
+                    <input type="text" name="phone_number" id="editPhone" class="name-input" required autocomplete="off">
+                </div>
+                <div>
+                    <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('simcard.location', lang) }}</label>
+                    <input type="text" name="location" id="editLoc" class="name-input" autocomplete="off">
+                </div>
+                <div>
+                    <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('simcard.direct_user', lang) }}</label>
+                    <input type="text" name="direct_user" id="editUser" class="name-input" autocomplete="off">
+                </div>
+                <div>
+                    <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('simcard.project', lang) }}</label>
+                    <input type="text" name="project" id="editProject" class="name-input" autocomplete="off">
+                </div>
+                <div style="grid-column: span 3;">
+                    <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('simcard.note', lang) }}</label>
+                    <input type="text" name="note" id="editNote" class="name-input" autocomplete="off">
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; grid-column: span 3; margin-top: 10px;">
+                    <button type="button" class="btn-primary" style="background: #e0e0e0; color: #555; box-shadow: none;" onclick="closeItemEditModal()">{{ t('table.cancel_btn', lang) }}</button>
+                    <button type="submit" class="btn-primary" style="background: var(--primary-green)">{{ t('table.save_btn', lang) }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="activeToggleModal" class="modal-overlay">
+        <div class="modal-box" style="width: 380px; text-align: center; padding: 30px 25px;">
+            <div id="activeModalIcon" style="margin-bottom: 15px;"></div>
+            <h3 id="activeModalTitle" style="margin-top: 0; color: var(--text-main);"></h3>
+            <p id="activeModalText" style="font-size: 0.95rem; color: #666; margin-bottom: 25px; line-height: 1.5;"></p>
+            <form id="activeToggleForm" method="post" action="">
+                <div style="display: flex; justify-content: center; gap: 15px;">
+                    <button type="button" class="btn-primary" style="background: #e0e0e0; color: #555; box-shadow: none;" onclick="closeActiveToggleModal()">{{ t('table.cancel_btn', lang) }}</button>
+                    <button type="submit" id="activeSubmitBtn" class="btn-primary"></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="scrapModal" class="modal-overlay">
+        <div class="modal-box" style="width: 380px; text-align: center; padding: 30px 25px;">
+            <i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red); margin-bottom: 10px; width: auto; height: auto; line-height: 1;">report_problem</i>
+            <h3 style="margin-top: 0; color: #333; font-size: 1.3rem;">{{ t('asset_scrap.modal_title', lang) }}</h3>
+            <div style="background: #fce8e6; color: #c0392b; padding: 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 25px; text-align: left; line-height: 1.5;">
+                {{ t('asset_scrap.modal_warning', lang) | safe }}
+            </div>
+            <form id="scrapForm" method="post" action=""></form>
+            <div class="slider-container" id="sliderContainer">
+                <div class="slider-track" id="sliderTrack">
+                    <div class="slider-text" id="sliderText">{{ t('asset_scrap.slider_text', lang) }}</div>
+                    <div class="slider-bg" id="sliderBg"></div>
+                    <div class="slider-handle" id="sliderHandle">
+                        <i class="material-icons">double_arrow</i>
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 15px; justify-content: center; margin-top: 25px;">
+                <button type="button" class="btn-primary" style="background: #f1f3f4; color: #555; box-shadow: none;" onclick="closeScrapModal()">{{ t('asset_scrap.btn_think_again', lang) }}</button>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const ASSET_I18N = {
+        status_stop: "{{ t('asset_view.status_stop', lang) }}",
+        status_in_stock: "{{ t('asset_view.status_in_stock', lang) }}",
+        status_out_stock: "{{ t('asset_view.status_out_stock', lang) }}",
+        btn_take_out: "{{ t('asset_view.btn_take_out', lang) }}",
+        btn_return_in: "{{ t('asset_view.btn_return_in', lang) }}",
+        btn_edit: "{{ t('asset_view.btn_edit', lang) }}",
+        btn_stop_deny: `{{ t('asset_view.btn_stop_deny', lang) }}`,
+        btn_stop: "{{ t('asset_view.btn_stop', lang) }}",
+        btn_reuse: "{{ t('asset_view.btn_reuse', lang) }}",
+        loc_unassigned: "{{ t('asset_view.loc_unassigned', lang) }}",
+        no_detail_data: "{{ t('asset_view.no_detail_data', lang) }}",
+        toggle_out_title: "{{ t('asset_view.toggle_out_title', lang) }}",
+        toggle_out_hint: "{{ t('asset_view.toggle_out_hint', lang) }}",
+        toggle_out_ph: "{{ t('asset_view.toggle_out_ph', lang) }}",
+        toggle_in_title: "{{ t('asset_view.toggle_in_title', lang) }}",
+        toggle_in_hint: "{{ t('asset_view.toggle_in_hint', lang) }}",
+        toggle_in_ph: "{{ t('asset_view.toggle_in_ph', lang) }}",
+        stop_reuse_title: "{{ t('asset_view.stop_reuse_title', lang) }}",
+        stop_reuse_text: "{{ t('asset_view.stop_reuse_text', lang) }}",
+        stop_freeze_title: "{{ t('asset_view.stop_freeze_title', lang) }}",
+        stop_freeze_text: "{{ t('asset_view.stop_freeze_text', lang) }}",
+        upload_fail: "{{ t('asset_view.upload_fail', lang) }}",
+        upload_net_err: "{{ t('asset_view.upload_net_err', lang) }}",
+        btn_processing: "{{ t('asset_view.btn_processing', lang) }}",
+        backend_fail: "{{ t('asset_view.backend_fail', lang) }}",
+        net_req_fail: "{{ t('asset_view.net_req_fail', lang) }}",
+        unnamed: "{{ t('asset_view.unnamed', lang) }}",
+        category_lbl: "{{ t('asset_view.category_lbl', lang) }}",
+        dest_lbl: "{{ t('asset_view.dest_lbl', lang) }}",
+        desc_lbl: "{{ t('asset_view.desc_lbl', lang) }}",
+        stocking: "{{ t('asset_view.stocking', lang) }}",
+        stopped: "{{ t('asset_view.stopped', lang) }}",
+        using: "{{ t('asset_view.using', lang) }}",
+        request_return_title: "{{ t('asset_view.request_return_title', lang) }}",
+        request_return: "{{ t('asset_view.request_return', lang) }}",
+        report_broken_title: "{{ t('asset_view.report_broken_title', lang) }}",
+        report_broken: "{{ t('asset_view.report_broken', lang) }}",
+        btn_submit: "{{ t('asset_view.btn_submit', lang) }}",
+        no_actions: "{{ t('asset_view.no_actions', lang) }}",
+    };
+
+    const SIMCARD_I18N = {
+        simcard_disable: "{{ t('simcard.simcard_disable', lang) }}",
+        simcard_enable: "{{ t('simcard.simcard_enable', lang) }}",
+        disabled_notice: "{{ t('simcard.disable_notice', lang) }}",
+        enable_notice: "{{ t('simcard.disable_notice', lang) }}",
+        btn_disable: "{{ t('simcard.btn_disable', lang) }}",
+        btn_enable: "{{ t('simcard.btn_enable', lang) }}"
+    };
+</script>
+<script src="/static/js/simcard.js"></script>
+{% endblock %}

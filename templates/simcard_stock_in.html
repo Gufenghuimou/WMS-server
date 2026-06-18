@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('title.simcard_stock_in', lang) }} - {{ t('title.base', lang) }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/simcard_stock_in.css">
+{% endblock %}
+
+{% block top_actions %}
+    <div style="display: flex; gap: 15px;">
+        <button type="button" class="btn-primary" onclick="clearGrid()" style="background: transparent; color: var(--text-muted);">
+            <i class="material-icons" style="font-size: 1.2rem; margin-right: 5px;">delete</i> {{ t('stockin.clear_grid', lang) }}
+        </button>
+        <button type="submit" form="stockInForm" class="btn-primary">
+            <i class="material-icons" style="font-size: 1.2rem; margin-right: 5px;">save_alt</i> {{ t('stockin.confirm_submit', lang) }}
+        </button>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="stockin-container">
+    <span style="color: #7f8c8d; font-size: 0.9rem; margin-bottom: 15px; display: inline-block;">
+        {{ t('stockin.tips', lang) }}
+    </span>
+
+    <form id="stockInForm" action="/simcard_batch_submit" method="post">
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-long">ICCID<span class="required-star">*</span></th>
+                    <th class="col-mid">{{ t('simcard_stock_in.th_carrier', lang) }}<span class="required-star">*</span></th>
+                    <th class="col-mid">{{ t('simcard_stock_in.th_number', lang) }}<span class="required-star">*</span></th>
+                    <th class="col-long">{{ t('simcard_stock_in.th_note', lang) }}</th>
+                    <th class="col-short">{{ t('simcard_stock_in.th_action', lang) }}</th>
+                </tr>
+            </thead>
+            <tbody id="gridBody">
+                </tbody>
+        </table>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const STOCKIN_I18N = {
+        clear_row_title: "{{ t('stockin.clear_row_title', lang) }}",
+        confirm_clear_all: "{{ t('stockin.confirm_clear_all', lang) }}",
+        err_duplicate: "{{ t('stockin.err_duplicate', lang) }}",
+        err_miss_pn1: "{{ t('stockin.err_miss_pn1', lang) }}",
+        err_miss_name: "{{ t('stockin.err_miss_name', lang) }}",
+        err_miss_qty: "{{ t('stockin.err_miss_qty', lang) }}",
+        err_empty_submit: "{{ t('stockin.err_empty_submit', lang) }}",
+        query_fail: "{{ t('stockin.query_fail', lang) }}"
+    };
+</script>
+<script src="/static/js/simcard_stock_in.js"></script>
+{% endblock %}

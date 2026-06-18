@@ -118,8 +118,10 @@ async function triggerAutoComplete(inputElement) {
         let response = await fetch(`/api/item/${encodeURIComponent(pnVal)}`);
         let data = await response.json();
 
+        console.log(data);
+
         if (!data.error) {
-            if (data.matched_by === "pn_2") {
+            if (data.match_type === "pn_2") {
                 inputElement.value = data.pn_1;
                 inputElement.classList.add('correct-flash');
                 setTimeout(() => {

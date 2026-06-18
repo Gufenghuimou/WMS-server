@@ -17,6 +17,9 @@
     "history": "历史记录",
     "audit": "盘点工作台",
     "mobile_quick_upload": "手机同步",
+    "simcard": "实体电话卡",
+    "simcard_stock_in": "电话卡入库",
+    "simcard_history": "电话卡变动记录",
     "reprint": "标签补打"
   },
     "status": {
@@ -38,8 +41,10 @@
   },
   "base": {
     "loading": "系统加载中...",
+    "request": "申请",
     "inventory": "消耗品",
     "asset": "资产",
+    "simcard": "实体电话卡",
     "system": "系统",
     "logout": "退出登录",
     "warehouse_map": "库房实时指引图",
@@ -354,7 +359,7 @@
     "th_action": "操作",
     "clear_row_title": "清空此行",
     "confirm_clear_all": "确定要清空所有已输入的内容吗？",
-    "err_duplicate": "提交失败：发现重复的 PN1 或 PN2！请检查红色高亮部分并清空或修改。",
+    "err_duplicate": "提交失败：发现重复的数据！请检查红色高亮部分并清空或修改。",
     "err_miss_pn1": "提交失败：第 {row} 行缺少【PN1】！",
     "err_miss_name": "提交失败：第 {row} 行缺少【品名】！",
     "err_miss_qty": "提交失败：第 {row} 行缺少【入库数】！",
@@ -585,6 +590,39 @@
     "err_miss_name": "提交失败：第 {row} 行缺少【品名】！",
     "err_empty_submit": "请至少填写一行资产数据后再提交！",
     "err_query_fail": "查询通用库失败:"
+  },
+  "simcard": {
+    "usable": "可用",
+    "stopped": "停用",
+    "using": "使用中",
+    "carrier": "运营商",
+    "number": "电话号码",
+    "location": "库位",
+    "direct_user": "负责人",
+    "project": "工程别",
+    "status": "状态",
+    "note": "备注",
+    "action": "操作",
+    "simcard_disable": "停用电话卡",
+    "simcard_enable": "复用电话卡",
+    "disable_notice": "确定要停用这张电话卡吗？ 此卡会自动改为入库状态。",
+    "enable_notice": "此卡将会启用并加入到库存中。",
+    "btn_disable": "确定停用",
+    "btn_enable": "确定启用"
+  },
+  "simcard_stock_in": {
+    "th_carrier": "运营商",
+    "th_number": "电话号码",
+    "th_note": "备注",
+    "th_action": "操作"
+  },
+  "simcard_history": {
+    "date": "操作时间",
+    "number": "电话号码",
+    "target_loc": "出库到",
+    "target_user": "使用者",
+    "target_proj": "工程别",
+    "action": "备注说明"
   },
   "reprint": {
     "config_title": "网络斑马打印机配置",

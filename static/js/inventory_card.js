@@ -74,8 +74,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    grid.addEventListener('mouseenter', stopAutoPlay);
-    grid.addEventListener('mouseleave', startAutoPlay);
+    document.addEventListener('mouseenter', stopAutoPlay);
+    document.addEventListener('mouseleave', startAutoPlay);
 
     const sortSelect = document.getElementById('sortSelect');
     if (sortSelect) {
@@ -236,6 +236,16 @@ function clearBackFace() {
 window.openOutModal = function(id, pn1, name, stock, location) {
     unflipCard();
     clearBackFace();
+
+    let showLoc = document.getElementById('showLocation');
+    showLoc.innerHTML = `<i class="material-icons" style="color: var(--primary); font-size: 1.15rem; vertical-align: bottom">place</i> ${location}`;
+    showLoc.onclick = () => {
+        if (location && location.trim() !== '' && location !== '-' && location !== 'None') {
+            let locParts = location.split('-');
+            let rackName = locParts[0].toUpperCase();
+            if (window.openFooterMap) window.openFooterMap(rackName);
+        }
+    }
 
     document.getElementById('outForm').action = '/do_out/' + id;
     document.getElementById('outPn1').value = pn1;

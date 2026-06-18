@@ -16,6 +16,9 @@
     "stock_in": "Nhập kho nhanh",
     "history": "Lịch sử",
     "audit": "Bàn kiểm kê",
+    "simcard": "SIM vật lý",
+    "simcard_stock_in": "Nhập kho SIM",
+    "simcard_history": "Lịch sử đổi SIM",
     "mobile_quick_upload": "Đồng bộ ĐT",
     "reprint": "In lại Nhãn"
   },
@@ -38,8 +41,10 @@
   },
   "base": {
     "loading": "Đang tải hệ thống...",
+    "request": "Yêu cầu",
     "inventory": "Vật tư",
     "asset": "Tài sản",
+    "simcard": "SIM vật lý",
     "system": "Hệ thống",
     "logout": "Đăng xuất",
     "warehouse_map": "Sơ đồ Kho trực tiếp",
@@ -354,7 +359,7 @@
     "th_action": "Thao tác",
     "clear_row_title": "Xóa Dòng",
     "confirm_clear_all": "Xóa toàn bộ nội dung đã nhập?",
-    "err_duplicate": "Lỗi: Trùng mã PN1 hoặc PN2! Vui lòng xóa hoặc sửa vùng báo đỏ.",
+    "err_duplicate": "Lỗi: Trùng dữ liệu! Vui lòng xóa hoặc sửa vùng báo đỏ.",
     "err_miss_pn1": "Lỗi: Dòng {row} thiếu [PN1]!",
     "err_miss_name": "Lỗi: Dòng {row} thiếu [Tên]!",
     "err_miss_qty": "Lỗi: Dòng {row} thiếu [SL Nhập]!",
@@ -585,6 +590,39 @@
     "err_miss_name": "Lỗi: Dòng {row} thiếu [Tên]!",
     "err_empty_submit": "Vui lòng nhập ít nhất 1 dòng TS trước khi gửi!",
     "err_query_fail": "Lỗi tìm kiếm:"
+  },
+  "simcard": {
+    "usable": "Khả dụng",
+    "stopped": "Đã dừng",
+    "using": "Đang dùng",
+    "carrier": "Nhà mạng",
+    "number": "Số ĐT",
+    "location": "Vị trí",
+    "direct_user": "Người dùng",
+    "project": "Dự án",
+    "status": "Trạng thái",
+    "note": "Ghi chú",
+    "action": "Thao tác",
+    "simcard_disable": "Khóa SIM",
+    "simcard_enable": "Kích hoạt SIM",
+    "disable_notice": "Bạn muốn khóa SIM này? SIM sẽ tự động chuyển về trạng thái lưu kho.",
+    "enable_notice": "SIM sẽ được kích hoạt và thêm vào kho.",
+    "btn_disable": "Khóa",
+    "btn_enable": "Mở khóa"
+  },
+  "simcard_stock_in": {
+    "th_carrier": "Nhà mạng",
+    "th_number": "Số ĐT",
+    "th_note": "Ghi chú",
+    "th_action": "Thao tác"
+  },
+  "simcard_history": {
+    "date": "Ngày",
+    "number": "Số ĐT",
+    "target_loc": "Vị trí đích",
+    "target_user": "Người nhận",
+    "target_proj": "Dự án đích",
+    "action": "Ghi chú"
   },
   "reprint": {
     "config_title": "Cấu hình Máy in mạng Zebra",

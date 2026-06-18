@@ -463,7 +463,7 @@ async def asset_batch_submit(
             )
             session.add(log)
         session.commit()
-    return RedirectResponse(url= "/asset", status_code=303)
+    return RedirectResponse(url= "/asset_stock_in", status_code=303)
 
 # -----------------------------资产报废--------------------------#
 

@@ -1,4 +1,3 @@
-/* 🌟 列表页专用扁平化样式 */
 .history-container {
     background: var(--surface);
     border: 1px solid var(--border-color);
@@ -11,7 +10,6 @@
 .history-container::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 6px; }
 .history-container::-webkit-scrollbar-track { background: transparent; }
 
-/* 调整表格：去掉所有竖线，仅保留横向分割线 */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -56,17 +54,15 @@ td {
     text-overflow: ellipsis;
 }
 
-/* 状态颜色：YouTube 扁平风格 */
-.color-in { color: #0f9d58; font-weight: 600; }   /* 绿 */
-.color-out { color: #d93025; font-weight: 600; }  /* 红 */
-.color-adj { color: #1a73e8; font-weight: 600; }  /* 蓝 */
+.color-in { color: var(--primary-green); font-weight: 600; }
+.color-out { color: var(--danger-red); font-weight: 600; }
+.color-adj { color: var(--primary-blue); font-weight: 600; }
 
-/* 撤销状态视觉增强 */
+
 .tr-undone { background-color: #f9f9f9; color: #9aa0a6; }
 .note-undone { text-decoration: line-through; color: #9aa0a6; font-size: 0.85rem; }
 .note-undo-action { color: #e67e22; font-weight: 500; }
 
-/* 扁平化操作按钮 */
 .btn-undo {
     background-color: #fce8e6;
     color: #d93025;
@@ -83,5 +79,4 @@ td {
     background-color: #fad2cf;
 }
 
-/* 隐藏的辅助文本，用于搜索 */
 .searchable-hidden { display: none; }

@@ -1,13 +1,9 @@
-/* =========================================
-   🌟 1. 容器高度补偿与 Flex 排版 (防塌陷核心)
-   ========================================= */
+
 .history-container {
     background: var(--surface);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-
-    /* 开启 Flex 限制高度，为内部独立滚动创造条件 */
     max-height: calc(100vh - 195px);
     overflow-y: auto;
     overflow-x: hidden;
@@ -17,9 +13,7 @@
 .history-container::-webkit-scrollbar { width: 6px; height: 6px; }
 .history-container::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 6px; }
 .history-container::-webkit-scrollbar-track { background: transparent; }
-/* =========================================
-   🌟 2. 建立表格独立的滚动外壳
-   ========================================= */
+
 #historyTable {
     width: 100%;
     border-collapse: collapse;
@@ -27,9 +21,6 @@
     table-layout: fixed;
 }
 
-/* =========================================
-   🌟 3. 单元格样式
-   ========================================= */
 th {
     position: sticky;
     top: 0;
@@ -51,16 +42,15 @@ th {
 
 td {
     padding: 10px 15px;
-    border-bottom: 1px solid #f8f9fa; /* 稍微淡化底边线，更显现代感 */
+    border-bottom: 1px solid #f8f9fa;
     color: var(--text-main);
     vertical-align: middle;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    transition: background-color 0.2s; /* 悬浮过渡 */
+    transition: background-color 0.2s;
 }
 
-/* 表格行悬浮效果 */
 #historyTable tbody tr:hover td {
     background-color: #f8f9fa;
 }

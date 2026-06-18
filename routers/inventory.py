@@ -428,7 +428,7 @@ async def batch_submit(
                 )
                 session.add(log)
         session.commit()
-    return RedirectResponse(url= "/all", status_code=303)
+    return RedirectResponse(url= "/stock_in", status_code=303)
 
 # -----------------------------历史记录--------------------------#
 
