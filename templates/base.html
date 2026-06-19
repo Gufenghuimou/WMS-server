@@ -18,9 +18,9 @@
 
     <div id="screen-lock-overlay" style="display: none">
         <div class="lock-container" style="text-align: center;">
-            <i class="material-icons lock-icon" style="font-size: 3rem; color: #aaa;">lock_clock</i>
-            <h3 style="color: var(--text-main); margin-bottom: 5px;">{{ t('base.screen_locked', lang) }}</h3>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 30px;">已开启防误触保护</p>
+            <i class="material-icons lock-icon" id="lockIcon" style="font-size: 3rem; color: #aaa;">lock_clock</i>
+            <h3 id="lockTitle" style="color: var(--text-main); margin-bottom: 5px;">{{ t('base.screen_locked', lang) }}</h3>
+            <p id="lockHint" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 30px;">已开启防误触保护</p>
 
             <div class="slide-unlock-wrap" id="slideUnlockWrap">
                 <div class="slide-track-active" id="slideTrack"></div>
@@ -93,10 +93,10 @@
             <a href="/simcard" class="nav-item {% if active_page == 'simcard' %}active{% endif %}"><i class="material-icons">sim_card</i>{{ t('title.simcard', lang) }}</a>
             <a href="/simcard_stock_in" class="nav-item {% if active_page == 'simcard_stock_in' %}active{% endif %}"><i class="material-icons">add_box</i>{{ t('title.simcard_stock_in', lang) }}</a>
             <a href="/simcard_history" class="nav-item {% if active_page == 'simcard_history' %}active{% endif %}"><i class="material-icons">history</i>{{ t('title.simcard_history', lang) }}</a>
-                {% if user.role == 'superadmin' %}
-                <div class="nav-group-title" style="margin-top: 20px;">{{ t('base.system', lang) }}</div>
-                <a href="/backend" class="nav-item {% if active_page == 'backend' %}active{% endif %}"><i class="material-icons">admin_panel_settings</i>{{ t('title.admin', lang) }}</a>
-                {% endif %}
+            {% endif %}
+            {% if user.role == 'superadmin' %}
+            <div class="nav-group-title" style="margin-top: 20px;">{{ t('base.system', lang) }}</div>
+            <a href="/backend" class="nav-item {% if active_page == 'backend' %}active{% endif %}"><i class="material-icons">admin_panel_settings</i>{{ t('title.admin', lang) }}</a>
             {% endif %}
             {% if user.role == 'user' %}
             <a href="/all" class="nav-item {% if active_page == 'inventory' %}active{% endif %}"><i class="material-icons">inventory_2</i>{{ t('title.inventory_cards', lang) }}</a>

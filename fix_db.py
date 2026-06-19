@@ -3,8 +3,7 @@ import sqlite3
 # 连接到你的本地数据库
 conn = sqlite3.connect('inventory.db')
 # 删掉旧的草稿表
-conn.execute("DROP TABLE IF EXISTS physicalsimcardlog")
-conn.execute("DROP TABLE IF EXISTS physicalsimcard")
+conn.execute("DROP TABLE IF EXISTS user")
 conn.commit()
 conn.close()
 

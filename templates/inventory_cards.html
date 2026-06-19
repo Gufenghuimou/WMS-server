@@ -54,19 +54,7 @@
             <div class="detail-row" style="border-bottom: none;"><span>{{ t('card.remarks', lang) }}</span><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ item.remarks }}">{{ item.remarks or '-' }}</span></div>
 
             <div class="card-actions">
-                {% if user.role == 'superadmin' %}
-                <button class="btn-action btn-request" style="background: var(--primary-blue); color: white;"
-                        onclick="openRequestModal('{{ item.id }}', '{{ item.pn_1 }}', '{{ item.name }}', {{ item.stock }})">{{ t('card.request', lang) }}
-                </button>
-                <button class="btn-action btn-edit" onclick="openEditModal(this)"
-                    data-id="{{ item.id }}" data-pn1="{{ item.pn_1 }}" data-name="{{ item.name }}"
-                    data-stock="{{ item.stock }}" data-pn2="{{ item.pn_2 or '' }}"
-                    data-desc1="{{ item.description_1 or '' }}" data-desc2="{{ item.description_2 or '' }}"
-                    data-loc="{{ item.location or '' }}" data-remarks="{{ item.remarks or '' }}">
-                    {{ t('card.edit', lang) }}
-                </button>
-                <button class="btn-action btn-out" onclick="openOutModal('{{ item.id }}', '{{ item.pn_1 }}', '{{ item.name }}', {{ item.stock }}, '{{ item.location or '' }}')">{{ t('card.outbound', lang) }}</button>
-                {% elif user.role == 'admin' %}
+                {% if user.role in ['superadmin', 'admin'] %}
                 <button class="btn-action btn-edit" onclick="openEditModal(this)"
                     data-id="{{ item.id }}" data-pn1="{{ item.pn_1 }}" data-name="{{ item.name }}"
                     data-stock="{{ item.stock }}" data-pn2="{{ item.pn_2 or '' }}"

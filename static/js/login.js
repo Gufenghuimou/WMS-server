@@ -30,29 +30,43 @@ document.addEventListener('DOMContentLoaded', () => {
             errorBox.style.display = 'none';
             card.classList.remove('shake-animation');
 
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
+
             try {
                 const response = await fetch('/login', {
                     method: 'POST',
                     body: new FormData(loginForm),
-                    redirect: 'follow'
+                    redirect: 'follow',
+                    signal: controller.signal
                 });
 
-                const text = await response.text();
+                clearTimeout(timeoutId);
 
-                if (text.includes('error-msg') || response.url.includes('/login')) {
+                const text = await response.text();
+                const regex = /<div class="error-msg"[^>]*id="errorBox"[^>]*>(.*?)<\/div>/s;
+                const match = text.match(regex);
+
+                if (match && match[1].trim() !== "") {
+                    errorBox.innerText = match[1];
+                    errorBox.style.display = 'block';
+                    card.classList.remove('shake-animation');
+                    void card.offsetWidth;
+                    card.classList.add('shake-animation');
+                } else if (text.includes('error-msg') || response.url.includes('/login')) {
                     // ❌ 登录失败
-                    let errorText = "账号或密码错误，请重试";
+                    let errorText = "Wrong username or password, please try again.";
                     const match = text.match(/<div class="error-msg"[^>]*>(.*?)<\/div>/);
                     if (match && match[1]) errorText = match[1];
 
                     errorBox.innerText = errorText;
                     errorBox.style.display = 'block';
 
-                    void card.offsetWidth; // 触发重绘以重新播放动画
+                    void card.offsetWidth;
                     card.classList.add('shake-animation');
 
                     btn.disabled = false;
-                    btn.innerHTML = '登 录 系 统';
+                    btn.innerHTML = 'LOGIN';
                 } else {
                     // ✅ 登录成功
                     btn.innerHTML = '<i class="material-icons" style="font-size: 1.4rem;">check_circle</i> 验证通过';
@@ -66,11 +80,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     }, 500);
                 }
             } catch (err) {
-                errorBox.innerText = "网络请求失败，请检查服务器连接";
+                if (err.name === 'AbortError') {
+                    errorBox.innerText = 'Request timeout. Check server connection.';
+                } else {
+                    errorBox.innerText = "Network error. Check server connection.";
+                }
                 errorBox.style.display = 'block';
                 card.classList.add('shake-animation');
+            } finally {
+                clearTimeout(timeoutId);
                 btn.disabled = false;
-                btn.innerHTML = '登 录 系 统';
+                btn.innerHTML = 'LOGIN';
             }
         });
     }

@@ -109,6 +109,9 @@ class User(SQLModel, table=True):
     password_hash: str
     full_name: str
     role: str
+    last_login_ip: Optional[str] = Field(default=None)
+    last_active_time: Optional[datetime] = Field(default=None)
+    alert_message: Optional[str] = Field(default=None)
 
 class UserBookmark(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)

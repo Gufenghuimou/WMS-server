@@ -135,7 +135,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (!iccInput) continue;
 
-                let iccId = iccInput.value.trim();
+                iccInput.value = iccInput.value.replace(/\s+/g, '').trim();
+                let iccId = iccInput.value;
                 let carrier = carrierInput.value.trim();
                 let number = numberInput.value.trim();
 

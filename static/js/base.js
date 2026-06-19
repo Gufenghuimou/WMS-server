@@ -809,3 +809,57 @@ document.addEventListener('DOMContentLoaded', fetchChatHistory);
         window.addEventListener('touchend', handleDragEnd);
     }
 })();
+
+// superadmin 专属心跳检测
+
+document.addEventListener('DOMContentLoaded', function() {
+    const isSuperAdmin = window.CURRENT_USER && window.CURRENT_USER.role === 'superadmin';
+    if (isSuperAdmin) {
+        console.log("Superadmin登录, 开始心跳...")
+
+        setInterval(async () => {
+            try {
+                let response = await fetch('/api/heartbeat');
+                let data = await response.json();
+
+                if (data.status === 'alert') {
+                    window.takeoverLockScreen(data.message)
+                }
+            } catch (err) {
+                console.warn("Heartbeat request failed", err);
+            }
+        }, 30000);
+    }
+});
+
+// 重复登录 接管lockScreen 弹出提示
+
+window.takeoverLockScreen = function(message) {
+    const overlay = document.getElementById('screen-lock-overlay');
+    const icon = document.getElementById('lockIcon');
+    const title = document.getElementById('lockTitle');
+    const hint = document.getElementById('lockHint');
+    const slideWrap = document.getElementById('slideUnlockWrap');
+
+    overlay.style.display = 'flex';
+    icon.innerText = 'gpp_bad';
+    icon.style.color = '#e74c3c';
+    title.innerText = 'Security Alert';
+    title.style.color = '#e74c3c';
+    hint.innerText = message;
+    hint.style.color = '#333';
+    hint.style.fontWeight = 'bold';
+    slideWrap.style.display = 'none';
+    if (!document.getElementById('btnSecurityAck')) {
+        const btn = document.createElement('button');
+        btn.id = 'btnSecurityAck';
+        btn.innerText = 'Confirm';
+        btn.style.cssText = 'padding: 10px 30px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px;';
+        btn.onclick = () => {
+            overlay.style.display = 'none';
+            slideWrap.style.display = 'block'; // 恢复原样
+            btn.remove();
+        };
+        overlay.querySelector('.lock-container').appendChild(btn);
+    }
+};

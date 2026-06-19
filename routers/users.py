@@ -8,8 +8,11 @@ import os
 import hashlib
 from database import engine
 from models import User, UserBookmark
-from dependencies import get_current_user, require_admin, require_superadmin
+from dependencies import get_current_user, require_admin, require_superadmin, superadmin_logger
 from core import templates, t_lang
+from datetime import datetime, timedelta
+
+from dependencies import get_client_ip
 
 router = APIRouter(tags=['Functions'])
 
@@ -32,15 +35,37 @@ async def login_page(request: Request):
 async def process_login(request: Request, username: str = Form(...), password: str = Form(...)):
     lang = request.state.lang
     password_hash = hashlib.sha256(password.encode()).hexdigest()
+    client_ip = get_client_ip(request)
+    # client_ip = "192.168.1.100"
+
     with Session(engine) as session:
         user = session.exec(select(User).where(User.username == username, User.password_hash == password_hash)).first()
         if user:
+            if user.role == 'superadmin':
+                now = datetime.now()
+                is_active = user.last_active_time and (now - user.last_active_time < timedelta(minutes=30))
+                if user.last_login_ip and user.last_login_ip != client_ip and is_active:
+                    user.alert_message = f"Security Alert：IP {client_ip} is trying to access superadmin, has been blocked."
+                    session.add(user)
+                    session.commit()
+
+                    superadmin_logger.warning(f"Blocked login attempt from {client_ip}. Active session at {user.last_login_ip}", extra={"client_ip": client_ip, "username": user.username})
+                    error_msg = "This account is in use on another device to prevent data conflicts. Login is currently disabled. Please verify offline before trying again."
+                    return templates.TemplateResponse(request, "login.html", {"error": error_msg, "lang": lang, "is_security_alert": True})
+                user.last_login_ip = client_ip
+                user.last_active_time = now
+                user.alert_message = None
+                session.add(user)
+                session.commit()
+                superadmin_logger.info("Superadmin logged in successfully", extra={"client_ip": client_ip, "username": user.username})
+
             request.session["user"] = {
                 "id": user.id,
                 "username": user.username,
                 "full_name": user.full_name,
                 "role": user.role
             }
+
             return RedirectResponse(url="/all", status_code=303)
         else:
             error_msg = t_lang("login.error", lang)
@@ -57,6 +82,17 @@ async def admin_dashboard(request: Request, current_user:dict = Depends(require_
 
 @router.get("/logout")
 async def logout(request: Request):
+    user_data = request.session.get("user")
+    if user_data:
+        with Session(engine) as session:
+            user = session.get(User, user_data.get("id"))
+            if user:
+                user.last_login_ip = None
+                user.last_active_time = None
+                user.alert_message = None
+                session.add(user)
+                session.commit()
+
     request.session.clear()
     return RedirectResponse(url="/login", status_code=303)
 
@@ -187,4 +223,26 @@ async def reset_password(request: Request, target_username: str = Form(...), cur
         session.add(user)
         session.commit()
     return {"status": "success", "message": t_lang("admin.reset_password_success", lang, target_username=target_username)}
+
+@router.get("/api/heartbeat")
+async def superadmin_heartbeat(request: Request):
+    user_data = request.session.get("user")
+    if not user_data or user_data.get("role") != "superadmin":
+        return {'status': 'ignored'}
+    with Session(engine) as session:
+        user_id = user_data.get("id")
+        user = session.get(User, user_id)
+        if not user:
+            return {"status": "error"}
+        user.last_active_time = datetime.now()
+        alert = user.alert_message
+        if alert:
+            user.alert_message = None
+
+        session.add(user)
+        session.commit()
+
+        if alert:
+            return {"status": "alert", "message": alert}
+        return {"status": "ok"}
 

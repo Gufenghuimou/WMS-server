@@ -111,7 +111,7 @@ async def simcard_edit(
         item = session.exec(statement).first()
         if not item:
             return {'status': 'error', 'message': t_lang("do.not_exist", lang)}
-        item.icc_id = icc_id
+        item.icc_id = icc_id.replace(" ", "").strip()
         item.carrier = carrier
         item.phone_number = phone_number
         item.location = location
@@ -191,7 +191,7 @@ async def simcard_batch_submit(
 ):
     with Session(engine) as session:
         for i in range(len(icc_id)):
-            current_icc_id = icc_id[i].strip()
+            current_icc_id = icc_id[i].replace(" ", "").strip()
             if not current_icc_id:
                 continue
             new_simcard = PhysicalSimCard(
