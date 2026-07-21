@@ -90,7 +90,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (detailRow) {
             const template = detailRow.querySelector('.detail-template');
             if (template) {
-                 combinedText += " " + template.content.textContent.toLowerCase();
+                combinedText += " " + template.content.textContent.toLowerCase();
+                const inputs = template.content.querySelectorAll('input');
+                inputs.forEach(input => {
+                    const inputText = input.getAttribute('value') || "";
+                    combinedText += " " + inputText.toLowerCase();
+                });
             }
         }
         mainRow._cachedSearchText = combinedText;
