@@ -42,7 +42,7 @@ window.closeApproveModal = function() {
     document.getElementById('approveModal').style.display = 'none';
 };
 
-// 🌟 护城河：防止批准时库存依然不足
+// 防止批准时库存依然不足
 window.validateApproveForm = function(event) {
     let realStock = parseInt(document.getElementById('realStock').value) || 0;
     let form = document.getElementById('approveForm');
@@ -212,6 +212,66 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.disabled = false;
             submitBtn.innerHTML = originBtnText;
         }
+    });
+
+    const rejectForms = document.querySelectorAll('form[action*="reject"]');
+    rejectForms.forEach(form => {
+        form.addEventListener('submit', async function (e) {
+            if (e.defaultPrevented) {
+                return;
+            }
+            e.preventDefault();
+
+            const submitBtn = this.querySelector("button[type='submit']");
+            const originalHtml = submitBtn.innerHTML;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite">autorenew</i> 校验中...`;
+
+            try {
+                let response = await fetch(this.action, {
+                    method: 'POST',
+                    body: new FormData(this)
+                });
+
+                let result = await response.json();
+
+                if (result.status === "success") {
+                    showToast(result.message, 'success');
+                    const card = this.closest('.req-card');
+                    if (card) {
+                        card.style.transition = 'all 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
+                        card.style.opacity = '0';
+                        card.style.transform = 'translateX(50px)';
+
+                        setTimeout(() => {
+                            const listContainer = form.closest('.queue-list');
+                            card.remove();
+
+                            if (listContainer) {
+                                const remainCount = listContainer.querySelectorAll('.req-card').length;
+                                const tabId = listContainer.id.replace('tab-', '');
+                                const badge = document.querySelector(`.queue-header-tab[onclick*="${tabId}"] .count-badge`);
+                                if (badge) {
+                                    badge.innerText = remainCount;
+                                }
+                                if (remainCount === 0) {
+                                    window.location.reload();
+                                }
+                            }
+                        }, 400);
+                    }
+                } else {
+                    showToast(result.message || 'Error', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalHtml;
+                }
+            } catch(err) {
+                showToast('网络请求失败', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalHtml;
+            }
+        });
     });
 });
 

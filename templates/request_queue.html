@@ -55,16 +55,25 @@
             </div>
 
             <div class="req-qty">
+                {% if data.item %}
                 <span class="req-qty-label">{{ t('queue.req_qty_label', lang) }}</span>
                 {{ data.req.req_qty }}
+                {% else %}
+                <span>NULL</span>
+                {% endif %}
             </div>
 
             <div class="req-actions">
+                {% if data.item %}
                 <button class="btn-primary" style="background: #1db954; height: 40px; padding: 0 15px;"
                         onclick="openApproveModal('{{ data.req.id }}', '{{ data.req.pn_1 }}', '{{ data.req.item_name }}', {{ data.req.req_qty }}, {{ data.item.stock }}, '{{ data.item.location or '' }}')">
                     <i class="material-icons">check_circle</i> {{ t('queue.approve', lang) }}
                 </button>
-
+                {% else %}
+                <button class="btn-primary" style="background: #aaa; height: 40px; padding: 0 15px;" disabled>
+                    <i class="material-icons">block</i> {{ t('queue.approve', lang) }}
+                </button>
+                {% endif %}
                 <form action="/request_queue/reject/{{ data.req.id }}" method="post" style="margin: 0;" onsubmit="return confirm('{{ t('queue.confirm_reject', lang) }}');">
                     <button type="submit" class="btn-primary" style="background: white; border: 1px solid #ccc; color: #7f8c8d; height: 40px; padding: 0 15px;">
                         <i class="material-icons">block</i> {{ t('queue.reject', lang) }}

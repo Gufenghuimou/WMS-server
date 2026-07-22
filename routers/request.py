@@ -32,8 +32,7 @@ async def view_request_queue(request: Request, error: Optional[str] = None, curr
         req_data = []
         for req in requests:
             item = session.get(InventoryItem, req.item_id)
-            if item:
-                req_data.append({'req': req, 'item': item})
+            req_data.append({'req': req, 'item': item})
 
     with Session(engine) as session:
         statement = select(AssetRequest).where(AssetRequest.status == 'Pending').order_by(AssetRequest.created_at)
@@ -41,8 +40,7 @@ async def view_request_queue(request: Request, error: Optional[str] = None, curr
         asset_req_data = []
         for req in requests:
             asset = None
-            if req.ctrl_no:
-                asset = session.exec(select(AssetItem).where(AssetItem.ctrl_no == req.ctrl_no)).first()
+            asset = session.exec(select(AssetItem).where(AssetItem.ctrl_no == req.ctrl_no)).first()
             asset_req_data.append({'req': req, 'asset': asset})
     return templates.TemplateResponse(request, 'request_queue.html', {'req_data': req_data, 'asset_req_data': asset_req_data, 'user': current_user, 'active_page': 'request_queue', 'error': error})
 
@@ -292,24 +290,26 @@ async def approve_asset_request(request: Request, req_id: int, target_location: 
 
 
 @router.post('/request_queue/reject/{req_id}')
-async def reject_request(req_id: int, current_user: dict = Depends(get_current_user)):
+async def reject_request(request: Request, req_id: int, current_user: dict = Depends(get_current_user)):
+    lang = request.state.lang
     with Session(engine) as session:
         req = session.get(OutboundRequest, req_id)
         if req and req.status == 'Pending':
             req.status = 'Rejected'
             session.add(req)
             session.commit()
-    return RedirectResponse(url= "/request_queue", status_code=303)
+    return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 @router.post("/request_queue/asset_reject/{req_id}")
-async def reject_asset_request(req_id: int, current_user: dict = Depends(get_current_user)):
+async def reject_asset_request(request: Request, req_id: int, current_user: dict = Depends(get_current_user)):
+    lang = request.state.lang
     with Session(engine) as session:
         req = session.get(AssetRequest, req_id)
         if req and req.status == 'Pending':
             req.status = 'Rejected'
             session.add(req)
             session.commit()
-    return RedirectResponse(url= "/request_queue", status_code=303)
+    return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 @router.get("/request_log", response_class=HTMLResponse)
 async def view_request_log(request: Request, current_user: dict = Depends(get_current_user)):
