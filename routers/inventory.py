@@ -311,6 +311,7 @@ def export_all(request: Request, current_user: dict = Depends(get_current_user))
                 t_lang("inv.location", lang): c.location,
                 t_lang("inv.first_in_date", lang): c.first_in_date,
                 t_lang("inv.remarks", lang): c.remarks,
+                "Image": c.has_image,
                 t_lang("inv.usage_1y", lang): c.usage_1y,
                 t_lang("inv.usage_2y", lang): c.usage_2y,
                 t_lang("inv.usage_3y", lang): c.usage_3y,
@@ -496,12 +497,12 @@ async def import_history_excel(request: Request, file: UploadFile = File(...), c
                 for _, row in df.iterrows():
                     now_log = HistoryLog(
                         date=str(row['date'])[:10] if row['date'] else datetime.now().strftime("%Y-%m-%d"),
-                        pn_1=str(row['PN1']),
-                        pn_2=str(row['PN2']) if not pd.isna(row['PN2']) else "",
-                        change_qty=int(row['chang_qty']),
+                        pn_1=str(row['pn_1']),
+                        pn_2=str(row['pn_2']) if not pd.isna(row['pn_2']) else "",
+                        change_qty=int(row['change_qty']),
                         applicant=str(row['applicant']) if row['applicant'] else "",
                         department=str(row['department']) if row['department'] else "",
-                        note=str(row['note'])+"Imported Log" if not pd.isna(row['note']) else "Imported Log"
+                        note=str(row['note'])+" Imported Log" if not pd.isna(row['note']) else "Imported Log"
                     )
                     session.add(now_log)
                 session.commit()

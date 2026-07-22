@@ -48,7 +48,7 @@
                     {{ log.note or '-' }}
                 </td>
                 <td style="text-align: center;">
-                    {% if not is_undone and not is_undo_log and log.note != 'Imported Log' and log.note != 'Scrapped' and user.role in ['superadmin','admin'] %}
+                    {% if not is_undone and not is_undo_log and 'Imported Log' not in (log.note or '') and 'Scrapped' not in (log.note or '') and user.role in ['superadmin','admin'] %}
                     <form action="/undo/{{ log.id }}" method="post" style="margin: 0;" onsubmit="return confirm('{{ t('history.confirm_undo', lang) }}');">
                         <button type="submit" class="btn-undo">{{ t('history.undo', lang) }}</button>
                     </form>

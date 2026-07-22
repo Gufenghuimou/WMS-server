@@ -310,6 +310,7 @@ def asset_export(request: Request, current_user: dict = Depends(get_current_user
                 t_lang("asset.location", lang): c.location,
                 t_lang("asset.first_in_date", lang): c.first_in_date,
                 t_lang("asset.remarks", lang): c.remarks,
+                "Image": c.has_image,
                 'PO Type': c.po_type,
                 'Model': c.model
             })
@@ -739,8 +740,8 @@ async def asset_history_import(request: Request, file: UploadFile = File(...), c
                     now_log = AssetLog(
                         date=str(row['date'])[:10] if row['date'] else datetime.now().strftime("%Y-%m-%d"),
                         ctrl_no=str(row['ctrl_no']),
-                        pn_1=str(row['PN1']),
-                        pn_2=str(row['PN2']) if not pd.isna(row['PN2']) else "",
+                        pn_1=str(row['pn_1']),
+                        pn_2=str(row['pn_2']) if not pd.isna(row['pn_2']) else "",
                         name=str(row['name']) if not pd.isna(row['name']) else "",
                         status=status,
                         target_loc=str(row['location']) if not pd.isna(row['location']) else "",
