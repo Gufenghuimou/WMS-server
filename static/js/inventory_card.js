@@ -58,6 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let autoPlayTimer = null;
 
     function startAutoPlay() {
+        if (document.documentElement.matches(':hover')) return;
+
         if (autoPlayTimer) clearInterval(autoPlayTimer);
         autoPlayTimer = setInterval(() => {
             if (document.querySelector('.item-card.is-flipped')) return;
@@ -76,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.addEventListener('mouseenter', stopAutoPlay);
     document.addEventListener('mouseleave', startAutoPlay);
+    document.addEventListener('mousemove', stopAutoPlay, { once: true });
 
     const sortSelect = document.getElementById('sortSelect');
     if (sortSelect) {

@@ -737,10 +737,11 @@ document.addEventListener('DOMContentLoaded', fetchChatHistory);
         // 延时 0.4 秒后解除全局锁屏，让用户看清楚绿色的打勾状态
         setTimeout(() => {
             isScreenLocked = false;
+            window.location.reload();
             document.getElementById('screen-lock-overlay').style.display = 'none';
             localStorage.setItem('eam_last_active', Date.now().toString());
             resetIdleTimer();
-        }, 400);
+        }, 800);
     }
 
     function handleDragStart(e) {
