@@ -28,11 +28,11 @@
 
     <div class="log-tabs-container">
         <div class="log-tab active" onclick="switchLogTab('consumable', this)">
-            <h3><i class="material-icons">inventory_2</i> Consumables</h3>
+            <h3><i class="material-icons">inventory_2</i> {{ t('queue.consumables', lang) }}</h3>
             <span class="count-badge">{{ req_log|length }}</span>
         </div>
         <div class="log-tab inactive" onclick="switchLogTab('asset', this)">
-            <h3><i class="material-icons">devices</i> Assets</h3>
+            <h3><i class="material-icons">devices</i> {{ t('queue.assets', lang) }}</h3>
             <span class="count-badge">{{ asset_req_log|length }}</span>
         </div>
     </div>
