@@ -53,6 +53,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateCoverFlow();
             }
         }, true);
+
+        const leftBtn = document.getElementById('leftWidget');
+        const rightBtn = document.getElementById('rightWidget');
+        if (leftBtn && rightBtn) {
+            function stepCoverFlow(totalSteps) {
+                let stepsDone = 0;
+                let direction = Math.sign(totalSteps);
+                let absSteps = Math.abs(totalSteps);
+
+                function animateStep() {
+                    if (stepsDone < absSteps) {
+                        coverFlowIndex += direction;
+                        updateCoverFlow();
+                        stepsDone++;
+                        setTimeout(animateStep, 75);
+                    }
+                }
+                animateStep()
+            }
+            leftBtn.addEventListener('click', (e) => {
+                stepCoverFlow(-5);
+            });
+            rightBtn.addEventListener('click', (e) => {
+                stepCoverFlow(5);
+            });
+        }
     }
 
     let autoPlayTimer = null;

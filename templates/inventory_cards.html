@@ -23,6 +23,9 @@
 
 {% block content %}
 <div class="card-grid" id="inventoryGrid">
+    <div class="scroll-widgets">
+        <div id="leftWidget" class="material-icons">keyboard_arrow_left</div><div id="rightWidget" class="material-icons">keyboard_arrow_right</div>
+    </div>
     {% for item in items %}
     <div class="item-card" data-id="{{ item.id }}" data-sort-usage="{{ item.usage_1y or 0 }}" data-sort-id="{{ item.id }}" data-search="{{ item.pn_1 | lower }} {{ item.name | lower }} {{ item.location | lower }} {{ item.pn_2 | lower }} {{ item.description_1 | lower }} {{ item.description_2 | lower }} {{ item.remarks | lower }}">
         <div class="card-front">
