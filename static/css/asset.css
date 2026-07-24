@@ -112,6 +112,11 @@
     background: #f0f0f0;
     border: 1px solid #eee;
     flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+
+.card-img:hover {
+    transform: scale(1.1);
 }
 
 .card-info { flex: 1; min-width: 0; }

@@ -15,6 +15,7 @@
         --card-br: 18px
     }
     .card-title { font-size: 1.6rem !important; }
+    .card-title-sec { font-size: 1.1rem !important; }
     .card-subtitle { font-size: 1.1rem !important; }
     .stock-badge { font-size: 2rem !important; padding: 10px 20px !important; }
     .detail-row { font-size: 1.1rem !important; }
@@ -140,6 +141,7 @@
 }
 .card-header > div:first-child { flex: 1; overflow: hidden; padding-right: 10px; }
 .card-title { font-size: 1.1rem; font-weight: bold; color: #2c3e50; margin: 0 0 3px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-title-sec { font-size: 0.8rem; font-weight: bold; color: #2c3e50; margin: 0 0 3px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card-subtitle { font-size: 0.8rem; color: #7f8c8d; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .stock-badge {
@@ -159,6 +161,14 @@
     overflow: hidden;
     border: 1px dashed #ddd;
     background: #f8f9fa;
+}
+
+.img-container img {
+    transition: transform 0.3s ease;
+}
+
+.img-container img:hover {
+    transform: scale(1.35);
 }
 
 .card-actions {

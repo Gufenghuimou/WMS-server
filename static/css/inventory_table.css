@@ -221,7 +221,12 @@ input:checked + .slider:before {
     max-height: 170px;
     object-fit: contain;
     border-radius: 8px;
+    transition: transform 0.3s ease;
 }
+.lazy-image:hover {
+    transform: scale(1.1);
+}
+
 .detail-long-text {grid-column: span 2;}
 
 .detail-long-text, .detail-text {
