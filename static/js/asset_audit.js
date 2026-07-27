@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    const audio = new Audio('../static/sound/alert.mp3');
+
     // ==========================================
     // 1. 极速无刷新扫码引擎 (Ajax 联动)
     // ==========================================
@@ -100,6 +102,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         // 失败警告
                         resultBox.innerHTML = `<span style="color:#d93025;"><i class="material-icons" style="vertical-align:bottom;">error</i> ❌ ${data.message}</span>`;
+                        audio.currentTime = 0;
+                        audio.play().catch(error => {console.log("Loading sound fail")});
                     }
                 } catch (err) {
                     resultBox.innerHTML = `<span style="color:#d93025;">${ASSET_AUDIT_I18N.net_error}</span>`;
