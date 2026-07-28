@@ -79,7 +79,10 @@
                         <div class="card-header">
                             <div class="card-info">
                                 <div style="display:flex; justify-content:space-between;">
-                                    <h3 class="text-truncate font-monospace" style="margin: 0 0 4px 0; font-size: 1.5rem; font-weight: bold; color: var(--text-main); max-width: 300px;" title="{{ first.pn_1 }}">{{ first.pn_1 }} | {{ first.pn_2 or '' }}</h3>
+                                    <div style="display: flex; gap: 15px; align-items: baseline">
+                                        <h3 class="text-truncate font-monospace" style="margin: 0 0 4px 0; font-size: 1.5rem; font-weight: bold; color: var(--text-main); max-width: 300px;" title="{{ first.pn_1 }}">{{ first.pn_1 }}</h3>
+                                        <h3 class="text-truncate font-monospace" style="margin: 0 0 4px 0; font-size: 1.35rem; font-weight: s; color: var(--text-main); max-width: 300px;" title="{{ first.pn_2 }}">{{ first.pn_2 or '' }}</h3>
+                                    </div>
                                     <span style="font-size: 1.2rem; font-weight: bold; color: #2980b9; background: #eef2f5; padding: 2px 12px; border-radius: 10px; display: flex; align-items: center">{{ group|length }}</span>
                                 </div>
                                 <div class="text-truncate" style="font-size: 0.9rem; font-weight: 500;" title="{{ first.name }}">{{ first.name or t('asset_view.unnamed', lang) }}</div>
@@ -311,6 +314,11 @@
         </h4>
 
         <form id="itemEditForm" method="post" action="" style="display: flex; gap: 15px; align-items: flex-end; margin: 0;">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;"> PN</label>
+                <input type="text" name="pn_1" id="editPn" class="edit-input" style="width: 160px;" required>
+            </div>
+
             <div style="display: flex; flex-direction: column; gap: 6px;">
                 <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('asset_view.modal_item_ctrl', lang) }}</label>
                 <input type="text" name="ctrl_no" id="editCtrlNo" class="edit-input" style="width: 160px;" required>

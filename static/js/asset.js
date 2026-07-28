@@ -31,6 +31,7 @@ window.switchAssetType = function(groupId) {
             statusHtml = `<span style="background: rgba(231, 76, 60, 0.15); color: #c0392b; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap">${ASSET_I18N.status_out_stock}</span>`;
         }
 
+        let safePn = groupData.pn1 ? String(groupData.pn1).replace(/'/g, "\\'") : '';
         let safeCtrl = item.ctrl_no.replace(/'/g, "\\'");
         let rawLoc = item.location ? String(item.location).trim() : '';
         let safeLoc = rawLoc.replace(/'/g, "\\'").replace(/"/g, "&quot;");
@@ -62,7 +63,7 @@ window.switchAssetType = function(groupId) {
             let btn1Text = item.is_stock ? ASSET_I18N.btn_take_out : ASSET_I18N.btn_return_in;
             let btn1 = `<button type="button" class="btn-primary btn-sm" title=" ${btn1Text}" style="background-color: ${btn1Bg}; ${disabledStyle};" onclick="openToggleModal(${item.id}, '${isStockStr}', '${safeCtrl}', false, '', '${siblingLoc}')"><i class="material-icons" style="margin-top: 2px;">${btn1Icon}</i></button>`;
 
-            let btn2 = `<button type="button" class="btn-primary btn-sm" title="${ASSET_I18N.btn_edit}" style="background-color: #ccc; color: #333;" onclick="openItemEditModal(${item.id}, '${safeCtrl}', '${safeLoc}', '${safeDate}', '${safePoType}')"><i class="material-icons" style="margin-top: 2px;">edit_note</i></button>`;
+            let btn2 = `<button type="button" class="btn-primary btn-sm" title="${ASSET_I18N.btn_edit}" style="background-color: #ccc; color: #333;" onclick="openItemEditModal(${item.id}, '${safePn}', '${safeCtrl}', '${safeLoc}', '${safeDate}', '${safePoType}')"><i class="material-icons" style="margin-top: 2px;">edit_note</i></button>`;
 
             let btn3 = '';
             if (!item.is_stop && !item.is_stock) {
@@ -236,11 +237,12 @@ window.closeStopConfirmModal = function() {
     document.getElementById('stopConfirmModal').style.display = 'none';
 };
 
-window.openItemEditModal = function(itemId, ctrlNo, location, dateStr, poType) {
+window.openItemEditModal = function(itemId, pn, ctrlNo, location, dateStr, poType) {
     const modal = document.getElementById('itemEditModal');
 
     document.getElementById('itemEditForm').action = `/asset_edit_item/${itemId}`;
     document.getElementById('modalCtrlNoDisplay').innerText = `[${ctrlNo}]`;
+    document.getElementById('editPn').value = pn || '';
     document.getElementById('editCtrlNo').value = ctrlNo || '';
     document.getElementById('editLocation').value = (location === 'None' || !location) ? '' : location;
     document.getElementById('editDate').value = (dateStr === 'None' || !dateStr) ? '' : dateStr;

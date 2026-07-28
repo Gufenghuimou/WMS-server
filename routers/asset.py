@@ -151,6 +151,7 @@ async def asset_edit_group(
 async def asset_edit_item(
         request: Request,
         item_id: int,
+        pn_1: str = Form(...),
         ctrl_no: str = Form(...),
         location: str = Form(...),
         first_in_date: str = Form(""),
@@ -163,6 +164,7 @@ async def asset_edit_item(
         item = session.exec(statement).first()
         batch_po_type_returned = None
         if item:
+            item.pn_1 = pn_1
             item.ctrl_no = ctrl_no
             item.location = location
             item.first_in_date = first_in_date
@@ -179,6 +181,7 @@ async def asset_edit_item(
         return {'status': 'success',
                 'data': {
                     'id': item.id,
+                    'pn_1': item.pn_1,
                     'ctrl_no': item.ctrl_no,
                     'location': item.location,
                     'first_in_date': item.first_in_date,
