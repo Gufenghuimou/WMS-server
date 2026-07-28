@@ -670,19 +670,19 @@ def asset_scrap_export(request: Request, current_user: dict = Depends(get_curren
                 "Total Qty": using_qty + stocking_qty,
                 "Memo": c.remarks
             })
-            df1 = pd.DataFrame(scrap_list)
-            df2 = pd.DataFrame(scrap_no_use)
-            df3 = pd.DataFrame(scrap_ng)
-            output = io.BytesIO()
-            with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                df1.to_excel(writer, sheet_name='Scrap list', index=False)
-                df2.to_excel(writer, sheet_name='Unused scrap detail', index=False)
-                df3.to_excel(writer, sheet_name='NG scrap detail', index=False)
-            output.seek(0)
-            headers = {
-                'Content-Disposition': f'attachment; filename="Asset_to_Scrap{datetime.now().strftime("%Y%m%d")}.xlsx"'
-            }
-            return StreamingResponse(output, headers=headers, media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        df1 = pd.DataFrame(scrap_list)
+        df2 = pd.DataFrame(scrap_no_use)
+        df3 = pd.DataFrame(scrap_ng)
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df1.to_excel(writer, sheet_name='Scrap list', index=False)
+            df2.to_excel(writer, sheet_name='Unused scrap detail', index=False)
+            df3.to_excel(writer, sheet_name='NG scrap detail', index=False)
+        output.seek(0)
+        headers = {
+            'Content-Disposition': f'attachment; filename="Asset_to_Scrap{datetime.now().strftime("%Y%m%d")}.xlsx"'
+        }
+        return StreamingResponse(output, headers=headers, media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
     # -----------------------------资产变动--------------------------#
 
