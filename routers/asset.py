@@ -849,7 +849,7 @@ async def commit_asset_audit(request: Request, current_user: dict = Depends(get_
                 if location_changed:
                     asset.location = r.actual_location
                 is_stock_match = bool(re.match(in_stock_pattern, asset.location))
-                expected_is_stock = is_stock_match or asset.location in ["LOC0349", "LOC0351", "LOC0352", "NG Area"]
+                expected_is_stock = asset.is_stop or is_stock_match or asset.location in ["LOC0349", "LOC0351", "LOC0352", "NG Area"]
                 status_changed = (asset.is_stock != expected_is_stock)
 
                 if location_changed or status_changed:

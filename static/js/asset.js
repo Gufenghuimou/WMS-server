@@ -62,7 +62,7 @@ window.switchAssetType = function(groupId) {
             let btn1Text = item.is_stock ? ASSET_I18N.btn_take_out : ASSET_I18N.btn_return_in;
             let btn1 = `<button type="button" class="btn-primary btn-sm" title=" ${btn1Text}" style="background-color: ${btn1Bg}; ${disabledStyle};" onclick="openToggleModal(${item.id}, '${isStockStr}', '${safeCtrl}', false, '', '${siblingLoc}')"><i class="material-icons" style="margin-top: 2px;">${btn1Icon}</i></button>`;
 
-            let btn2 = `<button type="button" class="btn-primary btn-sm" title="${ASSET_I18N.btn_edit}" style="background-color: #ccc; color: #333; ${disabledStyle}" onclick="openItemEditModal(${item.id}, '${safeCtrl}', '${safeLoc}', '${safeDate}', '${safePoType}')"><i class="material-icons" style="margin-top: 2px;">edit_note</i></button>`;
+            let btn2 = `<button type="button" class="btn-primary btn-sm" title="${ASSET_I18N.btn_edit}" style="background-color: #ccc; color: #333;" onclick="openItemEditModal(${item.id}, '${safeCtrl}', '${safeLoc}', '${safeDate}', '${safePoType}')"><i class="material-icons" style="margin-top: 2px;">edit_note</i></button>`;
 
             let btn3 = '';
             if (!item.is_stop && !item.is_stock) {
