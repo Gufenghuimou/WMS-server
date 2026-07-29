@@ -4,7 +4,7 @@
 ![卡片滚动效果](static/sample/inventory_card_scroll.gif)
 ![库存管理](static/sample/inventory_table.png)
 ![资产库存](static/sample/asset.png)
-<img src="static/sample/mobile.png" alt="手机盘点" width="120">
+<img src="static/sample/mobile.png" alt="手机盘点" width="400">
 
 ---
 
