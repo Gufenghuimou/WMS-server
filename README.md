@@ -110,4 +110,5 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 - [ ] **在途订单控制台 (PO Dashboard)**：展示当前系统发起的采购申请、ERP 承认状态、预计到货时间，并支持修改未承认的订单。
 - [ ] **生产数据看板**：在首页仪表盘增加图表，直观展示近期生产型号趋势、工单消耗排名及物料缺口。
 
+
 ### Developed by Gufenghuimou
