@@ -1,5 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    const alertAudio = new Audio('../static/sound/alert.mp3');
+    const doneAudio = new Audio('../static/sound/done.mp3');
+
     // ==========================================
     // 1. 极速无刷新扫码引擎 (Ajax 联动)
     // ==========================================
@@ -97,12 +100,19 @@ document.addEventListener('DOMContentLoaded', () => {
                             targetRow.style.backgroundColor = '#e6f4ea';
                             setTimeout(() => targetRow.style.backgroundColor = 'transparent', 1000);
                         }
+
+                        doneAudio.currentTime = 0;
+                        doneAudio.play().catch(error => {console.log("Loading sound fail")});
                     } else {
                         // 失败警告
                         resultBox.innerHTML = `<span style="color:#d93025;"><i class="material-icons" style="vertical-align:bottom;">error</i> ❌ ${data.message}</span>`;
+                        alertAudio.currentTime = 0;
+                        alertAudio.play().catch(error => {console.log("Loading sound fail")});
                     }
                 } catch (err) {
                     resultBox.innerHTML = `<span style="color:#d93025;">${ASSET_AUDIT_I18N.net_error}</span>`;
+                    alertAudio.currentTime = 0;
+                    alertAudio.play().catch(error => {console.log("Loading sound fail")});
                 }
 
                 // 扫完清空条码，光标锁定，等待下一台
@@ -177,4 +187,26 @@ window.addEventListener('beforeunload', () => {
     if (scrollBox) {
         sessionStorage.setItem('assetAuditScroll', scrollBox.scrollTop);
     }
+});
+
+// 弹出地图
+document.querySelectorAll('.location-header h3').forEach(h3 => {
+    h3.addEventListener('click', function(e) {
+        if (e.target.classList.contains('collapse-icon')) return;
+        e.stopPropagation();
+        
+        let block = this.closest('.location-block');
+        let rawLoc = block ? block.getAttribute('data-loc') : '';
+        let safeLoc = rawLoc.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+        let rackName = "";
+        if (rawLoc && rawLoc !== '-' && rawLoc.toLowerCase() !== 'none' && rawLoc !== 'unallocated') {
+            if (rawLoc.includes('-')) {
+                rackName = rawLoc.split('-')[0].toUpperCase();
+            } else {
+                rackName = rawLoc.toUpperCase();
+            }
+            rackName = rackName.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+            if (window.openFooterMap) window.openFooterMap(rackName);
+        }
+    });
 });

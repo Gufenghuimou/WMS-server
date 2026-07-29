@@ -8,6 +8,7 @@ from collections import defaultdict
 import pandas as pd
 import io
 import os
+import re
 from datetime import datetime
 
 from database import engine
@@ -150,6 +151,7 @@ async def asset_edit_group(
 async def asset_edit_item(
         request: Request,
         item_id: int,
+        pn_1: str = Form(...),
         ctrl_no: str = Form(...),
         location: str = Form(...),
         first_in_date: str = Form(""),
@@ -162,6 +164,7 @@ async def asset_edit_item(
         item = session.exec(statement).first()
         batch_po_type_returned = None
         if item:
+            item.pn_1 = pn_1
             item.ctrl_no = ctrl_no
             item.location = location
             item.first_in_date = first_in_date
@@ -178,6 +181,7 @@ async def asset_edit_item(
         return {'status': 'success',
                 'data': {
                     'id': item.id,
+                    'pn_1': item.pn_1,
                     'ctrl_no': item.ctrl_no,
                     'location': item.location,
                     'first_in_date': item.first_in_date,
@@ -669,19 +673,19 @@ def asset_scrap_export(request: Request, current_user: dict = Depends(get_curren
                 "Total Qty": using_qty + stocking_qty,
                 "Memo": c.remarks
             })
-            df1 = pd.DataFrame(scrap_list)
-            df2 = pd.DataFrame(scrap_no_use)
-            df3 = pd.DataFrame(scrap_ng)
-            output = io.BytesIO()
-            with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                df1.to_excel(writer, sheet_name='Scrap list', index=False)
-                df2.to_excel(writer, sheet_name='Unused scrap detail', index=False)
-                df3.to_excel(writer, sheet_name='NG scrap detail', index=False)
-            output.seek(0)
-            headers = {
-                'Content-Disposition': f'attachment; filename="Asset_to_Scrap{datetime.now().strftime("%Y%m%d")}.xlsx"'
-            }
-            return StreamingResponse(output, headers=headers, media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        df1 = pd.DataFrame(scrap_list)
+        df2 = pd.DataFrame(scrap_no_use)
+        df3 = pd.DataFrame(scrap_ng)
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df1.to_excel(writer, sheet_name='Scrap list', index=False)
+            df2.to_excel(writer, sheet_name='Unused scrap detail', index=False)
+            df3.to_excel(writer, sheet_name='NG scrap detail', index=False)
+        output.seek(0)
+        headers = {
+            'Content-Disposition': f'attachment; filename="Asset_to_Scrap{datetime.now().strftime("%Y%m%d")}.xlsx"'
+        }
+        return StreamingResponse(output, headers=headers, media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
     # -----------------------------资产变动--------------------------#
 
@@ -838,13 +842,21 @@ async def scan_asset_audit(
 @router.post("/asset_audit/commit")
 async def commit_asset_audit(request: Request, current_user: dict = Depends(get_current_user)):
     lang = request.state.lang
+    in_stock_pattern = r'^[A-E]\d{2}-\d+$'
     with Session(engine) as session:
         records = session.exec(select(AssetAuditRecord).where(AssetAuditRecord.status == 'Completed')).all()
         for r in records:
             asset = session.exec(select(AssetItem).where(AssetItem.id == r.asset_id)).first()
             if asset:
-                if asset.location != r.actual_location:
+                location_changed = (asset.location != r.actual_location)
+                if location_changed:
                     asset.location = r.actual_location
+                is_stock_match = bool(re.match(in_stock_pattern, asset.location))
+                expected_is_stock = asset.is_stop or is_stock_match or asset.location in ["LOC0349", "LOC0351", "LOC0352", "NG Area"]
+                status_changed = (asset.is_stock != expected_is_stock)
+
+                if location_changed or status_changed:
+                    asset.is_stock = expected_is_stock
 
                     log = AssetLog(
                         ctrl_no=asset.ctrl_no,
