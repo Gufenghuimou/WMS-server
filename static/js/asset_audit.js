@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    const audio = new Audio('../static/sound/alert.mp3');
+    const alertAudio = new Audio('../static/sound/alert.mp3');
+    const doneAudio = new Audio('../static/sound/done.mp3');
 
     // ==========================================
     // 1. 极速无刷新扫码引擎 (Ajax 联动)
@@ -99,14 +100,19 @@ document.addEventListener('DOMContentLoaded', () => {
                             targetRow.style.backgroundColor = '#e6f4ea';
                             setTimeout(() => targetRow.style.backgroundColor = 'transparent', 1000);
                         }
+
+                        doneAudio.currentTime = 0;
+                        doneAudio.play().catch(error => {console.log("Loading sound fail")});
                     } else {
                         // 失败警告
                         resultBox.innerHTML = `<span style="color:#d93025;"><i class="material-icons" style="vertical-align:bottom;">error</i> ❌ ${data.message}</span>`;
-                        audio.currentTime = 0;
-                        audio.play().catch(error => {console.log("Loading sound fail")});
+                        alertAudio.currentTime = 0;
+                        alertAudio.play().catch(error => {console.log("Loading sound fail")});
                     }
                 } catch (err) {
                     resultBox.innerHTML = `<span style="color:#d93025;">${ASSET_AUDIT_I18N.net_error}</span>`;
+                    alertAudio.currentTime = 0;
+                    alertAudio.play().catch(error => {console.log("Loading sound fail")});
                 }
 
                 // 扫完清空条码，光标锁定，等待下一台
