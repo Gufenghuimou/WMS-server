@@ -182,3 +182,25 @@ window.addEventListener('beforeunload', () => {
         sessionStorage.setItem('assetAuditScroll', scrollBox.scrollTop);
     }
 });
+
+// 弹出地图
+document.querySelectorAll('.location-header h3').forEach(h3 => {
+    h3.addEventListener('click', function(e) {
+        if (e.target.classList.contains('collapse-icon')) return;
+        e.stopPropagation();
+        
+        let block = this.closest('.location-block');
+        let rawLoc = block ? block.getAttribute('data-loc') : '';
+        let safeLoc = rawLoc.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+        let rackName = "";
+        if (rawLoc && rawLoc !== '-' && rawLoc.toLowerCase() !== 'none' && rawLoc !== 'unallocated') {
+            if (rawLoc.includes('-')) {
+                rackName = rawLoc.split('-')[0].toUpperCase();
+            } else {
+                rackName = rawLoc.toUpperCase();
+            }
+            rackName = rackName.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+            if (window.openFooterMap) window.openFooterMap(rackName);
+        }
+    });
+});

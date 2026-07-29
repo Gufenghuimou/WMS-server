@@ -42,7 +42,7 @@ window.switchAssetType = function(groupId) {
             } else {
                 rackName = rawLoc;
             }
-            rackName = rackName.replace(/'/g, "\\'").replace(/"/g, "&quot;")
+            rackName = rackName.replace(/'/g, "\\'").replace(/"/g, "&quot;");
         }
         let safeDate = item.first_in_date ? item.first_in_date.replace(/'/g,"\\'"): '';
         let safePoType = item.po_type ? String(item.po_type).replace(/'/g, "\\'") : '';

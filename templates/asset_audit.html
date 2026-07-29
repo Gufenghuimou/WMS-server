@@ -55,7 +55,7 @@
             <div class="location-header" onclick="this.parentElement.classList.toggle('collapsed')">
                 <h3>
                     <i class="material-icons collapse-icon">expand_more</i>
-                    <i class="material-icons" style="font-size: 1.2rem;">place</i> {{ loc or 'Unallocated' }}
+                    <i class="material-icons loc-label" style="font-size: 1.2rem;">place</i> {{ loc or 'Unallocated' }}
                 </h3>
                 <span class="status-badge" style="background: #eee; color: #666;">{{ t('asset_audit.total_devices', lang) | replace('{count}', items|length) }}</span>
             </div>
