@@ -85,10 +85,11 @@ class HistoryLog(SQLModel, table=True):
     date: str = Field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d"))
     pn_1: str
     pn_2: Optional[str] = None
+    name: Optional[str] = None
     change_qty: int
     applicant: str
     department: str
-    note: str
+    note: Optional[str] = None
 
 class AuditRecord(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

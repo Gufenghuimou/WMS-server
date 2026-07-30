@@ -89,6 +89,7 @@ async def do_out(
             log_adjust = HistoryLog(
                 pn_1=item.pn_1,
                 pn_2=item.pn_2,
+                name=item.name,
                 change_qty=diff,
                 applicant='System',
                 department='-',
@@ -105,6 +106,7 @@ async def do_out(
         log = HistoryLog(
             pn_1=item.pn_1,
             pn_2=item.pn_2,
+            name=item.name,
             change_qty=-req_qty,
             applicant=real_applicant,
             department=dept,
@@ -197,6 +199,7 @@ async def delete_item(request: Request, item_id: int, current_user: dict = Depen
             log = HistoryLog(
                 pn_1=item.pn_1,
                 pn_2=item.pn_2,
+                name=item.name,
                 change_qty=-item.stock,
                 applicant=current_user["full_name"],
                 department='',
@@ -422,6 +425,7 @@ async def batch_submit(
                 log = HistoryLog(
                     pn_1=current_pn,
                     pn_2=safe_pn_2,
+                    name=safe_name,
                     change_qty=incoming_stock,
                     applicant=real_applicant,
                     department='-',
@@ -472,6 +476,7 @@ async def undo_history_log(request: Request, log_id: int, current_user: dict = D
         undo_log = HistoryLog(
             pn_1 = log.pn_1,
             pn_2 = log.pn_2,
+            name = log.name,
             change_qty = revert_qty,
             applicant = current_user["full_name"],
             department = log.department,
@@ -499,6 +504,7 @@ async def import_history_excel(request: Request, file: UploadFile = File(...), c
                         date=str(row['date'])[:10] if row['date'] else datetime.now().strftime("%Y-%m-%d"),
                         pn_1=str(row['pn_1']),
                         pn_2=str(row['pn_2']) if not pd.isna(row['pn_2']) else "",
+                        name=str(row['name']) if not pd.isna(row['name']) else "",
                         change_qty=int(row['change_qty']),
                         applicant=str(row['applicant']) if row['applicant'] else "",
                         department=str(row['department']) if row['department'] else "",
@@ -525,6 +531,7 @@ def export_history(request: Request, current_user: dict = Depends(get_current_us
                 t_lang("inv.date", lang): c.date,
                 "PN1": c.pn_1,
                 "PN2": c.pn_2,
+                "NAME": c.name,
                 t_lang("inv.change_qty", lang): c.change_qty,
                 t_lang("inv.applicant", lang): c.applicant,
                 t_lang("inv.department", lang): c.department,
