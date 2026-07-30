@@ -227,3 +227,13 @@
     color: #fff;
     font-weight: bold;
 }
+
+@keyframes tr-shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+}
+
+.is-shaking {
+    animation: tr-shake 0.3s ease-in-out;
+}

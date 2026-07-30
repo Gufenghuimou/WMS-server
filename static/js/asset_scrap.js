@@ -78,12 +78,12 @@ window.addAssetToTable = function(item, isFromFetch = false) {
     tr.className = 'scrap-item';
     tr.id = 'row-' + val;
     tr.innerHTML = `
-        <td style="font-weight: bold; font-size: 1.15rem">
+        <td class="font-monospace" style="font-weight: bold; font-size: 1.15rem;">
             <i class="material-icons" style="font-size: 18px; color: var(--danger-red); vertical-align: middle; margin-right: 8px;">qr_code</i>
             ${val}
         </td>
-        <td>${item.pn_1 || '-'}</td>
-        <td>${item.pn_2 || '-'}</td>
+        <td class="font-monospace" style="font-size: 1.1rem">${item.pn_1 || '-'}</td>
+        <td class="font-monospace" style="font-size: 1.1rem">${item.pn_2 || '-'}</td>
         <td>${item.name || '-'}</td>
         <td>${raisonHtml}</td>
         <td>${item.location || '-'}</td>
@@ -94,8 +94,12 @@ window.addAssetToTable = function(item, isFromFetch = false) {
         </td>
     `;
 
+    tr.classList.add('is-shaking');
+    tr.addEventListener('animationend', function() {
+        tr.classList.remove('is-shaking');
+    }, { once: true });
     if (emptyState && emptyState.style.display !== 'none') emptyState.style.display = 'none';
-    scrapList.appendChild(tr);
+    scrapList.prepend(tr);
 
     // 2. 插入后端所需的隐藏表单 <input>
     // const input = document.createElement('input');

@@ -475,19 +475,22 @@ async def asset_batch_submit(
 @router.get("/asset_scrap", response_class=HTMLResponse)
 async def asset_scrap(request: Request, current_user: dict = Depends(get_current_user)):
     with Session(engine) as session:
-        records = session.exec(select(AssetScrapRecord)).all()
+        records = session.exec(select(AssetScrapRecord).order_by(desc(AssetScrapRecord.id))).all()
         draft_records = []
         for r in records:
             item = session.exec(select(AssetItem).where(AssetItem.ctrl_no == r.ctrl_no)).first()
+            if not item:
+                continue
             draft_records.append({
                 'ctrl_no': item.ctrl_no,
                 'pn_1': item.pn_1,
                 'pn_2': item.pn_2,
                 'name': item.name,
-                'is_no_use': item.is_no_use,
+                'is_no_use': r.is_no_use,
                 'location': item.location,
                 'is_stop': item.is_stop if item else False,
             })
+            print(item.is_no_use)
     return templates.TemplateResponse(request, "asset_scrap.html", {"request": request, 'draft_records': draft_records, "user": current_user, "active_page": "asset_scrap"})
 
 @router.post("/asset_scrap")
