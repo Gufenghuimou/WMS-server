@@ -507,7 +507,7 @@
     "status_warn": "Loc Mismatch",
     "status_done": "Normal",
     "err_no_loc": "Please enter current station on the left first!",
-    "scan_warn": "Audit successful, but location mismatch found: [{ctrlNo}]",
+    "scan_warn": "Location mismatch found, expected loc: [{expected_location}]",
     "net_error": "Network or server error, please try again!"
   },
   "asset_history": {

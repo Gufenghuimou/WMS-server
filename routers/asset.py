@@ -837,6 +837,7 @@ async def scan_asset_audit(
             'status': 'success',
             'message': t_lang("do.scan_success", lang, name=record.name),
             'is_location_changed': record.expected_location != current_location,
+            'expected_location': record.expected_location
         }
 
 @router.post("/asset_audit/commit")

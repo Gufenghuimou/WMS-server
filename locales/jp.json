@@ -507,7 +507,7 @@
     "status_warn": "位置異常",
     "status_done": "正常",
     "err_no_loc": "先に左側で現在の作業場所を入力してください！",
-    "scan_warn": "棚卸完了、ただし位置異常を発見しました：[{ctrlNo}]",
+    "scan_warn": "位置の異常を検出しました。期待される位置：[{expected_location}]",
     "net_error": "ネットワークまたはサーバーエラー。再試行してください！"
   },
   "asset_history": {

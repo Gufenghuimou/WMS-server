@@ -507,7 +507,7 @@
     "status_warn": "位置异常",
     "status_done": "正常",
     "err_no_loc": "请先在左侧输入当前所在的工位！",
-    "scan_warn": "盘点成功，但发现位置异常：[{ctrlNo}]",
+    "scan_warn": "发现位置异常，期望位置：[{expected_location}]",
     "net_error": "网络或服务器错误，请重试！"
   },
   "asset_history": {

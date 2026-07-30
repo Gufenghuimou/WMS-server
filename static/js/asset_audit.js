@@ -81,8 +81,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (data.status === 'success') {
                         // 成功提示
                         if (data.is_location_changed) {
-                            let warnText = ASSET_AUDIT_I18N.scan_warn.replace('{ctrlNo}', ctrlNo);
-                            resultBox.innerHTML = `<span style="color:#f29900;"><i class="material-icons" style="vertical-align:bottom;">warning</i> ${warnText}</span>`;
+                            let warnText = ASSET_AUDIT_I18N.scan_warn.replace('{expected_location}', data.expected_location);
+                            resultBox.innerHTML = `<span style="color:#f29900;"><i class="material-icons" style="vertical-align:bottom;">warning</i> ${data.message}  ${warnText}</span>`;
                         } else {
                             resultBox.innerHTML = `<span style="color:#1e8e3e;"><i class="material-icons" style="vertical-align:bottom;">check_circle</i> ${data.message}</span>`;
                         }

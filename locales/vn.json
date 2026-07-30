@@ -507,7 +507,7 @@
     "status_warn": "Lệch VT",
     "status_done": "Bình thường",
     "err_no_loc": "Vui lòng nhập Trạm hiện tại ở ô bên trái!",
-    "scan_warn": "Kiểm kê TC, nhưng phát hiện Lệch Vị trí: [{ctrlNo}]",
+    "scan_warn": "Phát hiện vị trí bất thường, vị trí mong đợi: [{expected_location}]",
     "net_error": "Lỗi mạng hoặc máy chủ, thử lại!"
   },
   "asset_history": {
