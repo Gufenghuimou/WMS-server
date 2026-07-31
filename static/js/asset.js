@@ -8,7 +8,7 @@ window.switchAssetType = function(groupId) {
     let groupData = window.ASSET_DATA[groupId];
 
     let activeSibling = groupData.items.find(i => i.is_stock && i.location && i.location.toLowerCase() !== 'none' && i.location !== '-');
-    let siblingLoc = activeSibling ? activeSibling.location.replace(/'/g, '\\').replace(/"/g, "&quot;") : '';
+    let siblingLoc = activeSibling ? activeSibling.location.replace(/'/g, "\\'").replace(/"/g, "&quot;") : '';
 
     if (!groupData || !groupData.items || groupData.items.length === 0) {
         tbody.innerHTML = `
@@ -67,7 +67,7 @@ window.switchAssetType = function(groupId) {
 
             let btn3 = '';
             if (!item.is_stop && !item.is_stock) {
-                btn3 = `<button type="button" class="btn-primary btn-sm" title="${ASSET_I18N.btn_stop}" style="background-color: #bdc3c7; color: #fff; box-shadow: none;" onclick="alert('${ASSET_I18N.btn_stop_deny}')"><i class="material-icons" style="margin-top: 2px;">do_not_disturb</i></button>`;
+                btn3 = `<button type="button" class="btn-primary btn-sm" title="${ASSET_I18N.btn_stop}" style="background-color: #bdc3c7; color: #fff; box-shadow: none;" onclick="alert(ASSET_I18N.btn_stop_deny)"><i class="material-icons" style="margin-top: 2px;">do_not_disturb</i></button>`;
             } else {
                 let btn3Bg = item.is_stop ? '#95a5a6' : 'var(--danger-red)';
                 let btn3Icon = item.is_stop ? 'settings_backup_restore' : 'do_not_disturb';
