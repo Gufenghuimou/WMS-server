@@ -116,8 +116,13 @@
         scan_warn: "{{ t('asset_audit.scan_warn', lang) }}",
         status_warn: "{{ t('asset_audit.status_warn', lang) }}",
         status_done: "{{ t('asset_audit.status_done', lang) }}",
-        net_error: "{{ t('asset_audit.net_error', lang) }}"
+        net_error: "{{ t('asset_audit.net_error', lang) }}",
+        reprint: "{{ t('title.reprint', lang) }}",
+        alert_print_success: "{{ t('reprint.alert_print_success', lang) }}",
+        alert_print_fail: "{{ t('reprint.alert_print_fail', lang) }}"
     };
+
+    window.auditedLocations = {{ audited_locations| safe }};
 </script>
 <script src="/static/js/asset_audit.js"></script>
 {% endblock %}

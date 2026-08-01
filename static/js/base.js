@@ -81,13 +81,15 @@ window.drawWarehouseMap = function(targetRack = null) {
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        ctx.font = 'bold 16px "Roboto Mono", monospace'; // 字号稍微加大加粗
+        ctx.font = 'bold 16px "Roboto Mono", monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
         racks.forEach(r => {
             const isTarget = r.name === targetRack;
-            let bgColor = r.color || "#ffffff"; // 读取后台设置的颜色
+            let bgColor = r.color || "#ffffff";
+
+            const isAudited = window.auditedLocations && window.auditedLocations.includes(r.name);
 
             if (isTarget) {
                 ctx.fillStyle = bgColor;
@@ -101,6 +103,12 @@ window.drawWarehouseMap = function(targetRack = null) {
                 ctx.lineWidth = 1;
                 ctx.shadowBlur = 0;
             }
+            
+            if ( isAudited && !isTarget ) {
+                ctx.globalAlpha = 0.3; // 已盘点的库位半透明显示
+            } else {
+                ctx.globalAlpha = 1.0; // 未盘点或目标库位正常显示
+            }
 
             ctx.fillRect(r.x, r.y, r.w, r.h);
             ctx.strokeRect(r.x, r.y, r.w, r.h);
@@ -108,6 +116,8 @@ window.drawWarehouseMap = function(targetRack = null) {
             // 智能黑白文字
             ctx.fillStyle = getContrastYIQ(bgColor);
             ctx.fillText(r.name, r.x + r.w/2, r.y + r.h/2);
+
+            ctx.globalAlpha = 1.0; // 重置透明度，避免影响后续绘制
         });
     });
 }

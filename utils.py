@@ -105,5 +105,8 @@ def zpl_print_task(left_text:str, right_barcode:str):
             s.settimeout(3)
             s.connect((CURRENT_PRINTER_CONFIG['ip'], CURRENT_PRINTER_CONFIG['port']))
             s.sendall(zpl.encode('utf-8'))
+            return True, ""
     except Exception as e:
-        print(f"⚠️ 打印机连接失败或离线: {e}")
+        error_message = f"⚠️ 打印机连接失败或离线: {e}"
+        print(error_message)
+        return False, error_message

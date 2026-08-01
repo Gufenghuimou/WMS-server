@@ -9,6 +9,7 @@ import pandas as pd
 import io
 import os
 import re
+import json
 from datetime import datetime
 
 from database import engine
@@ -783,11 +784,35 @@ async def view_asset_audit(request: Request, current_user: dict = Depends(get_cu
         )
         misplaced = session.exec(statement_misplaced).all()
 
+        location_status = {}
+        for r in records:
+            loc = r.expected_location
+            if not loc:
+                continue
+            if '-' in loc:
+                loc = loc.split('-')[0]
+            if loc not in location_status:
+                location_status[loc] = True
+            if r.status == 'Pending':
+                location_status[loc] = False
+        audited_locations = [loc for loc, is_completed in location_status.items() if is_completed]
+
         grouped = defaultdict(list)
         for r in records:
             loc = r.actual_location or r.expected_location
             grouped[loc].append(r)
-    return templates.TemplateResponse(request, "asset_audit.html", {"records": records, 'missing': missing, 'misplaced': misplaced, "total": total, "progress": progress, "completed": completed, "grouped": grouped, "user": current_user, "active_page": "asset_audit"})
+    return templates.TemplateResponse(request, "asset_audit.html", {
+        "records": records,
+        'missing': missing,
+        'misplaced': misplaced,
+        "total": total,
+        "progress": progress,
+        "completed": completed,
+        "grouped": grouped,
+        "user": current_user,
+        "active_page": "asset_audit",
+        "audited_locations": json.dumps(audited_locations)
+        })
 
 @router.post("/asset_audit/start")
 async def start_audit(request: Request, current_user: dict = Depends(get_current_user)):

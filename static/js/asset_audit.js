@@ -82,9 +82,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         // 成功提示
                         if (data.is_location_changed) {
                             let warnText = ASSET_AUDIT_I18N.scan_warn.replace('{expected_location}', data.expected_location);
-                            resultBox.innerHTML = `<span style="color:#f29900;"><i class="material-icons" style="vertical-align:bottom;">warning</i> ${data.message}  ${warnText}</span>`;
+                            resultBox.innerHTML = `<span style="color:#f29900;"><i class="material-icons" style="vertical-align:bottom;">warning</i> **${ctrlNo}** ${data.message}  ${warnText}</span> <button type="button" class="btn-primary" onclick="doPrintAudit('${ctrlNo}');"><i class="material-icons">print</i> ${ASSET_AUDIT_I18N.reprint}</button>`;
                         } else {
-                            resultBox.innerHTML = `<span style="color:#1e8e3e;"><i class="material-icons" style="vertical-align:bottom;">check_circle</i> ${data.message}</span>`;
+                            resultBox.innerHTML = `<span style="color:#1e8e3e;"><i class="material-icons" style="vertical-align:bottom;">check_circle</i> **${ctrlNo}** ${data.message}</span> <button type="button" class="btn-primary" onclick="doPrintAudit('${ctrlNo}');"><i class="material-icons">print</i>${ASSET_AUDIT_I18N.reprint}</button>`;
                         }
 
                         // 🚀 核心黑科技：DOM 靶向修改，瞬间刷新页面数据！
@@ -120,6 +120,50 @@ document.addEventListener('DOMContentLoaded', () => {
                 barcodeInput.focus();
             }
         });
+    }
+
+    window.doPrintAudit = async function(ctrlNo) {
+        let formData = new FormData();
+        formData.append('right_barcode', ctrlNo);
+
+        try {
+
+            let res = await fetch('/api/trigger_print', { method: 'POST', body: formData });
+            let data = await res.json();
+
+            if (data.status === 'success') {
+                alert(ASSET_AUDIT_I18N.alert_print_success);
+            } else {
+                alert(ASSET_AUDIT_I18N.alert_print_fail);
+            }
+            // let pingRes = await fetch('/api/printer_status');
+            // let pingData = await pingRes.json();
+            // if (data.status === 'online') {
+            //     let res = await fetch('/api/trigger_print', { method: 'POST', body: formData });
+            //     let data = await res.json();
+            //     if (data.status === 'success') {
+            //         alert(ASSET_AUDIT_I18N.alert_print_success);
+            //     }
+            // } else {
+            //     alert(ASSET_AUDIT_I18N.alert_print_fail);
+            // }
+
+            // let dot = document.getElementById('printerDot');
+            // if (!dot) return;
+            // let status = dot.style.color;
+            // if (status === 'rgb(29, 185, 84)') {
+            //     let res = await fetch('/api/trigger_print', { method: 'POST', body: formData });
+            //     let data = await res.json();
+            //     if (data.status === 'success') {
+            //         alert(ASSET_AUDIT_I18N.alert_print_success);
+            //     }
+            // } else {
+            //     alert(ASSET_AUDIT_I18N.alert_print_fail);
+            // }
+
+        } catch (e) {
+            alert(ASSET_AUDIT_I18N.alert_print_fail);
+        }
     }
 
     // ==========================================

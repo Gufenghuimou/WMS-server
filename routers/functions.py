@@ -294,8 +294,13 @@ async def trigger_print(
         current_user: dict = Depends(get_current_user)
 ):
     lang = request.state.lang
-    background_tasks.add_task(utils.zpl_print_task, left_text, right_barcode)
-    return {'status': 'success', 'message': t_lang("do.mission_sent", lang)}
+    is_success, error_message = utils.zpl_print_task(left_text, right_barcode)
+    if not is_success:
+        return {'status': 'error', 'message': error_message}
+    else:
+        return {'status': 'success', 'message': t_lang("do.mission_sent", lang)}
+    # background_tasks.add_task(utils.zpl_print_task, left_text, right_barcode)
+    # return {'status': 'success', 'message': t_lang("do.mission_sent", lang)}
 
 @router.get("/api/asset_info/{ctrl_no}")
 def get_asset_info_api(request: Request, ctrl_no: str, current: dict = Depends(get_current_user)):
