@@ -16,10 +16,17 @@ import core
 
 app = FastAPI()
 
+class CachingStaticFiles(StaticFiles):
+    async def get_response(self, path: str, scope):
+        response = await super().get_response(path, scope)
+        if response.status_code in [200, 304]:
+            response.headers["Cache-Control"] = "public, max-age=2592000"  # 设置缓存时间为30天
+        return response
+
 # 挂载中间件与静态资源
 app.add_middleware(BaseHTTPMiddleware, dispatch=inject_global_template_data)
 app.add_middleware(SessionMiddleware, secret_key="h8x!kP9z$mQ2vL5w*rB4nJ7c@yT1gF6")
-app.mount("/static", StaticFiles(directory=os.path.join(core.base_dir, "static")), name="static")
+app.mount("/static", CachingStaticFiles(directory=os.path.join(core.base_dir, "static")), name="static")
 
 # 异常处理
 @app.exception_handler(RequiresLoginException)

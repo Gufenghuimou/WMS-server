@@ -97,3 +97,11 @@ td {
 .searchable-hidden {
     display: none !important;
 }
+
+.btn-filter {
+    background: transparent; border: 1px solid var(--border-color); color: var(--text-muted);
+    padding: 8px 15px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 5px; height: 36px;
+    transition: 0.2s;
+}
+.btn-filter:hover { background: #f8f9fa; }
+.btn-filter.active { background: #fff9e6; border-color: #f1c40f; color: #d4ac0d; font-weight: bold; }

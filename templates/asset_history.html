@@ -7,11 +7,14 @@
 {% endblock %}
 
 {% block top_actions %}
-    <a href="/asset_history/export" style="text-decoration: none;">
-        <button class="btn-primary" style="border-radius: 20px; gap: 8px;">
-            <i class="material-icons" style="font-size: 1.2rem;">file_download</i> {{ t('asset_history.export_btn', lang) }}
-        </button>
-    </a>
+    <div style="display: flex; gap: 8px; align-items: center;">
+        <button class="btn-filter" id="logFilter"><i class="material-icons" style="font-size: 1.2rem;">filter</i> 查看全部</button>
+        <a href="/asset_history/export" style="text-decoration: none;">
+            <button class="btn-primary" style="border-radius: 20px; gap: 8px;">
+                <i class="material-icons" style="font-size: 1.2rem;">file_download</i> {{ t('asset_history.export_btn', lang) }}
+            </button>
+        </a>
+    </div>
 {% endblock %}
 
 {% block content %}
