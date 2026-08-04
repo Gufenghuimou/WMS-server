@@ -786,15 +786,16 @@ async def view_asset_audit(request: Request, current_user: dict = Depends(get_cu
 
         location_status = {}
         for r in records:
-            loc = r.expected_location
-            if not loc:
-                continue
-            if '-' in loc:
-                loc = loc.split('-')[0]
-            if loc not in location_status:
-                location_status[loc] = True
-            if r.status == 'Pending':
-                location_status[loc] = False
+            locs_to_check = [r.expected_location, r.actual_location]
+            for loc in locs_to_check:
+                if not loc:
+                    continue
+                if '-' in loc:
+                    loc = loc.split('-')[0]
+                if loc not in location_status:
+                    location_status[loc] = True
+                if r.status == 'Pending':
+                    location_status[loc] = False
         audited_locations = [loc for loc, is_completed in location_status.items() if is_completed]
 
         grouped = defaultdict(list)
