@@ -491,7 +491,6 @@ async def asset_scrap(request: Request, current_user: dict = Depends(get_current
                 'location': item.location,
                 'is_stop': item.is_stop if item else False,
             })
-            print(item.is_no_use)
     return templates.TemplateResponse(request, "asset_scrap.html", {"request": request, 'draft_records': draft_records, "user": current_user, "active_page": "asset_scrap"})
 
 @router.post("/asset_scrap")
