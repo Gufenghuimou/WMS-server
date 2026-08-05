@@ -132,9 +132,12 @@ document.addEventListener('DOMContentLoaded', () => {
             let data = await res.json();
 
             if (data.status === 'success') {
-                alert(ASSET_AUDIT_I18N.alert_print_success);
+                showToast(data.message, 'success');
+                barcodeInput.focus();
+
             } else {
                 alert(ASSET_AUDIT_I18N.alert_print_fail);
+                barcodeInput.focus();
             }
             // let pingRes = await fetch('/api/printer_status');
             // let pingData = await pingRes.json();
@@ -163,6 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (e) {
             alert(ASSET_AUDIT_I18N.alert_print_fail);
+            barcodeInput.focus();
         }
     }
 
