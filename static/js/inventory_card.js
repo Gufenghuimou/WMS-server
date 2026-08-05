@@ -423,7 +423,8 @@ window.openEditModal = function(btn) {
 
     let imgPreview = document.getElementById('editImagePreview');
     let placeholder = document.getElementById('editImagePlaceholder');
-    imgPreview.src = `/static/item_images/${id}.jpg?t=${new Date().getTime()}`;
+    let sysVer = window.GLOBAL_SYS_VER || '1';
+    imgPreview.src = `/static/item_images/${id}.jpg?t=${sysVer}`;
     imgPreview.style.display = 'block';
     placeholder.style.display = 'none';
     imgPreview.onerror = function() { this.style.display = 'none'; placeholder.style.display = 'flex'; };

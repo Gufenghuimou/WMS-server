@@ -6,6 +6,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.staticfiles import StaticFiles
 import os
+import time
 
 
 from dependencies import RequiresLoginException
@@ -15,6 +16,9 @@ import core
 
 
 app = FastAPI()
+
+GLOBAL_APP_VERSION = str(int(time.time()))  # 使用时间戳作为版本号，确保每次启动时都是最新的
+app.state.sys_ver = GLOBAL_APP_VERSION
 
 class CachingStaticFiles(StaticFiles):
     async def get_response(self, path: str, scope):

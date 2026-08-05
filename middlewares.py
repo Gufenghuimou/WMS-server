@@ -24,5 +24,6 @@ async def inject_global_template_data(request: Request, call_next):
     except Exception as e:
         request.state.pending_count = 0
 
+    request.state.sys_ver = request.app.state.sys_ver
     response = await call_next(request)
     return response

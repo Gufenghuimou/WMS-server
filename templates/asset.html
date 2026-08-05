@@ -67,7 +67,7 @@
                 <div class="card-front">
                     <div class="left-part" style="flex-shrink: 0;">
                         <img class="card-img" style="{% if not first.has_image %}display:none;{% endif %}"
-                             src="{% if first.has_image %}/static/asset_images/{{ first.pn_1 }}.jpg?t={{ range(1, 99999) | random }}{% else %}data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs={% endif %}"
+                             src="{% if first.has_image %}/static/asset_images/{{ first.pn_1 }}.jpg?t={{ request.state.sys_ver }}{% else %}data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs={% endif %}"
                              loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
 
                         <div class="card-img" style="{% if first.has_image %}display:none;{% else %}display:flex;{% endif %} justify-content: center; align-items: center; background: #f8f9fa; color: #dcdcdc; border: 1px dashed #ddd;">
@@ -150,7 +150,7 @@
                         <div style="position:relative; cursor:pointer;" onclick="document.getElementById('edit-upload-{{first.id}}').click();">
 
                             <img id="edit-preview-{{first.id}}" class="card-img" style="{% if not first.has_image %}display:none;{% endif %} width:130px; height:130px; border-radius:8px; object-fit:cover; border: 1px solid #ddd;"
-                                 src="{% if first.has_image %}/static/asset_images/{{ first.pn_1 }}.jpg?t={{ range(1, 99999) | random }}{% else %}data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs={% endif %}"
+                                 src="{% if first.has_image %}/static/asset_images/{{ first.pn_1 }}.jpg?t={{ request.state.sys_ver }}{% else %}data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs={% endif %}" loading="lazy"
                                  onerror="this.style.display='none'; document.getElementById('edit-placeholder-{{first.id}}').style.display='flex';">
 
                             <div id="edit-placeholder-{{first.id}}" class="card-img" style="{% if first.has_image %}display:none;{% else %}display:flex;{% endif %} justify-content: center; align-items: center; background: #f8f9fa; color: #dcdcdc; border: 1px dashed #ddd; width:130px; height:130px; border-radius:8px;">

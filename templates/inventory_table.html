@@ -83,7 +83,7 @@
                                 <div class="detail-inner">
                                     <div class="detail-image-box">
                                         {% if item.has_image %}
-                                            <img class="lazy-image" data-src="/static/item_images/{{ item.id }}.jpg?t={{ range(1, 99999) | random }}" alt="Item Image">
+                                            <img class="lazy-image" data-src="/static/item_images/{{ item.id }}.jpg?t={{ request.state.sys_ver }}" loading="lazy" alt="Item Image">
                                         {% endif %}
                                     </div>
                                     <div class="detail-text">
