@@ -508,7 +508,10 @@
     "status_done": "正常",
     "err_no_loc": "请先在左侧输入当前所在的工位！",
     "scan_warn": "发现位置异常，期望位置：[{expected_location}]",
-    "net_error": "网络或服务器错误，请重试！"
+    "net_error": "网络或服务器错误，请重试！",
+    "repeated_title": "此物品已经扫描过，是否覆盖位置？",
+    "repeated_text": "上次确认的位置为 <strong>{previousLoc}</strong><br>当前扫描位置为 <strong>{currentLoc}</strong><br>是否覆盖？",
+    "repeated_submit": "确认覆盖"
   },
   "asset_history": {
     "export_btn": "导出资产明细",

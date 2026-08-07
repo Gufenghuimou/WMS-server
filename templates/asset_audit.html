@@ -107,6 +107,17 @@
         {% endfor %}
     </div>
 </div>
+<div id="repeatedConfirmModal" class="modal-overlay">
+    <div class="modal-box" style="width: 380px; text-align: center; padding: 30px 25px;">
+        <div><i class="material-icons" style="font-size: 3.5rem; color: #faad14;">announcement</i></div>
+        <h3 style="margin-top:0; color:var(--text-main);"> {{ t('asset_audit.repeated_title', lang) }}</h3>
+        <p id="repeatedConfirmText"style="font-size: 0.95rem; color: #666; margin-bottom: 25px; line-height: 1.5;"></p>
+        <div style="display: flex; justify-content: center; gap: 15px;">
+            <button type="button" id="repeatedCancelBtn" class="btn-primary" style="background: #f0f2f5; color: #555; box-shadow: none;" onclick="closeRepeatedConfirmModal()">{{ t('asset_view.btn_cancel_modal', lang) }}</button>
+            <button type="submit" id="repeatedSubmitBtn" class="btn-primary" style="width: 120px; background-color: #faad14;">{{ t('asset_audit.repeated_submit', lang) }}</button>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -119,7 +130,8 @@
         net_error: "{{ t('asset_audit.net_error', lang) }}",
         reprint: "{{ t('title.reprint', lang) }}",
         alert_print_success: "{{ t('reprint.alert_print_success', lang) }}",
-        alert_print_fail: "{{ t('reprint.alert_print_fail', lang) }}"
+        alert_print_fail: "{{ t('reprint.alert_print_fail', lang) }}",
+        repeated_text: "{{ t('asset_audit.repeated_text', lang) | safe }}"
     };
 
     window.auditedLocations = {{ audited_locations| safe }};

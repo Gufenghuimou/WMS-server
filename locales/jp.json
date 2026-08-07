@@ -508,7 +508,10 @@
     "status_done": "正常",
     "err_no_loc": "先に左側で現在の作業場所を入力してください！",
     "scan_warn": "位置の異常を検出しました。期待される位置：[{expected_location}]",
-    "net_error": "ネットワークまたはサーバーエラー。再試行してください！"
+    "net_error": "ネットワークまたはサーバーエラー。再試行してください！",
+    "repeated_title": "このアイテムは既にスキャンされています。位置を上書きしますか？",
+    "repeated_text": "前回確認された位置：<strong>{previousLoc}</strong><br>今回スキャンされた位置：<strong>{currentLoc}</strong><br>上書きしますか？",
+    "repeated_submit": "上書き"
   },
   "asset_history": {
     "export_btn": "詳細エクスポート",

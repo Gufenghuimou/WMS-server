@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const alertAudio = new Audio('../static/sound/alert.mp3');
     const doneAudio = new Audio('../static/sound/done.mp3');
+    const noticeAudio = new Audio('../static/sound/notice.mp3');
 
     // ==========================================
     // 1. 极速无刷新扫码引擎 (Ajax 联动)
@@ -49,6 +50,62 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        async function executeAuditSubmit(ctrlNo, currentLoc) {
+            // 构造请求数据
+            let formData = new FormData();
+            formData.append("ctrl_no", ctrlNo);
+            formData.append("current_location", currentLoc);
+                
+            try {
+                let response = await fetch('/api/asset_audit/scan', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                let data = await response.json();
+
+                if (data.status === 'success') {
+                    // 🚀 核心黑科技：DOM 靶向修改，瞬间刷新页面数据！
+                    let targetRow = document.getElementById(`row-${ctrlNo}`);
+                    if (targetRow) {
+                        targetRow.querySelector('.cell-actual-loc').innerText = currentLoc;
+                        targetRow.querySelector('.cell-time').innerText = new Date().toISOString().split('T')[0];
+
+                        let badge = targetRow.querySelector('.cell-status');
+                        badge.className = 'status-badge cell-status ' + (data.is_location_changed ? 'status-warn' : 'status-done');
+                        badge.innerText = data.is_location_changed ? ASSET_AUDIT_I18N.status_warn : ASSET_AUDIT_I18N.status_done;
+
+                        targetRow.style.backgroundColor = '#e6f4ea';
+                        setTimeout(() => targetRow.style.backgroundColor = 'transparent', 1000);
+                    }
+
+                    // 成功提示
+                    if (data.is_location_changed) {
+                        let warnText = ASSET_AUDIT_I18N.scan_warn.replace('{expected_location}', data.expected_location);
+                        resultBox.innerHTML = `<span style="color:#f29900;"><i class="material-icons" style="vertical-align:bottom;">warning</i> **${ctrlNo}** ${data.message}  ${warnText}</span> <button type="button" class="btn-primary" onclick="doPrintAudit('${ctrlNo}');"><i class="material-icons">print</i> ${ASSET_AUDIT_I18N.reprint}</button>`;
+                    } else {
+                        resultBox.innerHTML = `<span style="color:#1e8e3e;"><i class="material-icons" style="vertical-align:bottom;">check_circle</i> **${ctrlNo}** ${data.message}</span> <button type="button" class="btn-primary" onclick="doPrintAudit('${ctrlNo}');"><i class="material-icons">print</i>${ASSET_AUDIT_I18N.reprint}</button>`;
+                    }
+
+                    doneAudio.currentTime = 0;
+                    doneAudio.play().catch(error => {console.log("Loading sound fail")});
+                } else {
+                    // 失败警告
+                    resultBox.innerHTML = `<span style="color:#d93025;"><i class="material-icons" style="vertical-align:bottom;">error</i> ❌ ${data.message}</span>`;
+                    alertAudio.currentTime = 0;
+                    alertAudio.play().catch(error => {console.log("Loading sound fail")});
+                }
+            } catch (err) {
+                resultBox.innerHTML = `<span style="color:#d93025;">${ASSET_AUDIT_I18N.net_error}</span>`;
+                alertAudio.currentTime = 0;
+                alertAudio.play().catch(error => {console.log("Loading sound fail")});
+            }
+
+            // 扫完清空条码，光标锁定，等待下一台
+            barcodeInput.value = '';
+            barcodeInput.focus();
+        }
+
         // 扫码框按回车，触发盘点 API
         barcodeInput.addEventListener('keydown', async function(e) {
             if (e.key === 'Enter') {
@@ -65,61 +122,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (!ctrlNo) return;
 
-                // 构造请求数据
-                let formData = new FormData();
-                formData.append("ctrl_no", ctrlNo);
-                formData.append("current_location", currentLoc);
-
-                try {
-                    let response = await fetch('/api/asset_audit/scan', {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    let data = await response.json();
-
-                    if (data.status === 'success') {
-                        // 成功提示
-                        if (data.is_location_changed) {
-                            let warnText = ASSET_AUDIT_I18N.scan_warn.replace('{expected_location}', data.expected_location);
-                            resultBox.innerHTML = `<span style="color:#f29900;"><i class="material-icons" style="vertical-align:bottom;">warning</i> **${ctrlNo}** ${data.message}  ${warnText}</span> <button type="button" class="btn-primary" onclick="doPrintAudit('${ctrlNo}');"><i class="material-icons">print</i> ${ASSET_AUDIT_I18N.reprint}</button>`;
-                        } else {
-                            resultBox.innerHTML = `<span style="color:#1e8e3e;"><i class="material-icons" style="vertical-align:bottom;">check_circle</i> **${ctrlNo}** ${data.message}</span> <button type="button" class="btn-primary" onclick="doPrintAudit('${ctrlNo}');"><i class="material-icons">print</i>${ASSET_AUDIT_I18N.reprint}</button>`;
-                        }
-
-                        // 🚀 核心黑科技：DOM 靶向修改，瞬间刷新页面数据！
-                        let targetRow = document.getElementById(`row-${ctrlNo}`);
-                        if (targetRow) {
-                            targetRow.querySelector('.cell-actual-loc').innerText = currentLoc;
-                            targetRow.querySelector('.cell-time').innerText = new Date().toISOString().split('T')[0];
-
-                            let badge = targetRow.querySelector('.cell-status');
-                            badge.className = 'status-badge cell-status ' + (data.is_location_changed ? 'status-warn' : 'status-done');
-                            badge.innerText = data.is_location_changed ? ASSET_AUDIT_I18N.status_warn : ASSET_AUDIT_I18N.status_done;
-
-                            targetRow.style.backgroundColor = '#e6f4ea';
-                            setTimeout(() => targetRow.style.backgroundColor = 'transparent', 1000);
-                        }
-
-                        doneAudio.currentTime = 0;
-                        doneAudio.play().catch(error => {console.log("Loading sound fail")});
-                    } else {
-                        // 失败警告
-                        resultBox.innerHTML = `<span style="color:#d93025;"><i class="material-icons" style="vertical-align:bottom;">error</i> ❌ ${data.message}</span>`;
-                        alertAudio.currentTime = 0;
-                        alertAudio.play().catch(error => {console.log("Loading sound fail")});
+                let targetRow = document.getElementById(`row-${ctrlNo}`);
+                if (targetRow) {
+                    let statusBadge = targetRow.querySelector('.cell-status');
+                    let isMiss = statusBadge.classList.contains('status-miss');
+                    if (!isMiss) {
+                        // 如果不是缺失状态，说明已经扫过一次了，获取上次记录的位置
+                        let previousActualLoc = targetRow.querySelector('.cell-actual-loc').innerText.trim();
+                        openRepeatedConfirmModal(ctrlNo, previousActualLoc, currentLoc);
+                        return;
                     }
-                } catch (err) {
-                    resultBox.innerHTML = `<span style="color:#d93025;">${ASSET_AUDIT_I18N.net_error}</span>`;
-                    alertAudio.currentTime = 0;
-                    alertAudio.play().catch(error => {console.log("Loading sound fail")});
                 }
-
-                // 扫完清空条码，光标锁定，等待下一台
-                barcodeInput.value = '';
-                barcodeInput.focus();
+                await executeAuditSubmit(ctrlNo, currentLoc);
             }
         });
+
+        window.openRepeatedConfirmModal = function(ctrlNo, previousLoc, currentLoc) {
+            const modal = document.getElementById('repeatedConfirmModal');
+            const text = document.getElementById('repeatedConfirmText');
+            const submitBtn = document.getElementById('repeatedSubmitBtn');
+            const cancelBtn = document.getElementById('repeatedCancelBtn');
+
+            // text.innerHTML = `上次确认的位置为 <strong>${previousLoc}</strong><br>当前扫描位置为 <strong>${currentLoc}</strong><br>是否覆盖？`;
+            text.innerHTML = ASSET_AUDIT_I18N.repeated_text.replace('{previousLoc}', previousLoc).replace('{currentLoc}', currentLoc);
+            modal.style.display = 'flex';
+            cancelBtn.focus();
+            noticeAudio.currentTime = 0;
+            noticeAudio.play().catch(error => {console.log("Loading sound fail")});
+            submitBtn.onclick = async function() {
+                closeRepeatedConfirmModal();
+                await executeAuditSubmit(ctrlNo, currentLoc);
+            }
+        }
+
+        const cancelBtn = document.getElementById('repeatedCancelBtn');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                }
+            });
+        }
+
+        const submitBtn = document.getElementById('repeatedSubmitBtn');
+        if (submitBtn) {
+            submitBtn.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                }
+            });
+        }
+
+        window.closeRepeatedConfirmModal = function() {
+            document.getElementById('repeatedConfirmModal').style.display = 'none';
+            barcodeInput.value = '';
+            barcodeInput.focus();
+        }
     }
 
     window.doPrintAudit = async function(ctrlNo) {

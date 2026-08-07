@@ -508,7 +508,10 @@
     "status_done": "Bình thường",
     "err_no_loc": "Vui lòng nhập Trạm hiện tại ở ô bên trái!",
     "scan_warn": "Phát hiện vị trí bất thường, vị trí mong đợi: [{expected_location}]",
-    "net_error": "Lỗi mạng hoặc máy chủ, thử lại!"
+    "net_error": "Lỗi mạng hoặc máy chủ, thử lại!",
+    "repeated_title": "Mục này đã được quét. Bạn có muốn ghi đè vị trí không?",
+    "repeated_text": "Vị trí đã xác nhận trước đó: <strong>{previousLoc}</strong><br>Vị trí quét hiện tại: <strong>{currentLoc}</strong><br>Xác nhận ghi đè?",
+    "repeated_submit": "Ghi đè"
   },
   "asset_history": {
     "export_btn": "Xuất Chi tiết",

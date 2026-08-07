@@ -508,7 +508,10 @@
     "status_done": "Normal",
     "err_no_loc": "Please enter current station on the left first!",
     "scan_warn": "Location mismatch found, expected loc: [{expected_location}]",
-    "net_error": "Network or server error, please try again!"
+    "net_error": "Network or server error, please try again!",
+    "repeated_title": "This item has already been scanned. Overwrite location?",
+    "repeated_text": "Previously confirmed location: <strong>{previousLoc}</strong><br>Currently scanned location: <strong>{currentLoc}</strong><br>Overwrite?",
+    "repeated_submit": "Overwrite"
   },
   "asset_history": {
     "export_btn": "Export Details",
