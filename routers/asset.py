@@ -500,7 +500,7 @@ async def asset_batch_scrap(
     with Session(engine) as session:
         draft_records = session.exec(select(AssetScrapRecord)).all()
         for draft in draft_records:
-            current_c_no = draft.strip()
+            current_c_no = draft.ctrl_no.strip()
 
             statement = select(AssetItem).where(AssetItem.ctrl_no == current_c_no)
             item = session.exec(statement).first()
