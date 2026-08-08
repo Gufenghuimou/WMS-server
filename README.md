@@ -64,6 +64,10 @@
 - Python 3.10+
 - 推荐使用虚拟环境
 
+### 本地环境配置：生成 SSL 证书
+本项目在本地运行（如需启用 HTTPS）需要 SSL 证书。为了保证代码安全，项目仓库中未包含私钥和证书文件。
+请在克隆项目后，在**项目根目录**下手动生成本地测试用的自签发证书。
+
 ### 安装步骤
 ```bash
 # 1. 克隆项目
@@ -77,7 +81,7 @@ pip install -r requirements.txt
 python init_db.py
 
 # 4. 启动 FastAPI 服务
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+uvicorn main:app --reload
 
 # 5. 浏览器访问 https://127.0.0.1  默认超管账号: superadmin  PW: superadmin
 ```
