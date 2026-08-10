@@ -4,6 +4,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const doneAudio = new Audio('../static/sound/done.mp3');
     const noticeAudio = new Audio('../static/sound/notice.mp3');
 
+    // 渲染页面时将折叠的group丢到后面去 将未盘点的物品拉到group最上端
+    const auditContainer = document.getElementById('auditContainer');
+    if (auditContainer) {
+        const blocks = auditContainer.querySelectorAll('.location-block');
+        blocks.forEach(block => {
+            if (block.classList.contains('collapsed')) {
+                auditContainer.appendChild(block);
+                const statusBadge = block.querySelector('.status-badge');
+                if (!statusBadge) return;
+                statusBadge.style.backgroundColor = '#e6f4ea';
+                statusBadge.style.color = '#1e8e3e';
+            }
+            const groupedTable = block.querySelector('tbody');
+            const rows = groupedTable.querySelectorAll('tr');
+            rows.forEach(row => {
+                const rowStatus = row.querySelector('.status-badge');
+                if (!rowStatus) return;
+                if (rowStatus.classList.contains('status-done') || rowStatus.classList.contains('status-warn')) {
+                    groupedTable.appendChild(row);
+                }
+            })
+        });
+    }
+
     // ==========================================
     // 1. 极速无刷新扫码引擎 (Ajax 联动)
     // ==========================================
@@ -137,14 +161,37 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // 重复扫码确认模态框，确认时可以唤出地图
         window.openRepeatedConfirmModal = function(ctrlNo, previousLoc, currentLoc) {
             const modal = document.getElementById('repeatedConfirmModal');
             const text = document.getElementById('repeatedConfirmText');
             const submitBtn = document.getElementById('repeatedSubmitBtn');
             const cancelBtn = document.getElementById('repeatedCancelBtn');
+                        
+            let safePrev = "";
+            if (previousLoc && previousLoc !== '-' && previousLoc.toLowerCase() !== 'none') {
+                if (previousLoc.includes('-')) {
+                    safePrev = previousLoc.split('-')[0].toUpperCase();
+                } else {
+                    safePrev = previousLoc;
+                }
+                safePrev = safePrev.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+            }
+            let safeCurr = "";
+            if (currentLoc && currentLoc !== '-' && currentLoc.toLowerCase() !== 'none') {
+                if (currentLoc.includes('-')) {
+                    safeCurr = currentLoc.split('-')[0].toUpperCase();
+                } else {
+                    safeCurr = currentLoc;
+                }
+                safeCurr = safeCurr.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+            }
 
             // text.innerHTML = `上次确认的位置为 <strong>${previousLoc}</strong><br>当前扫描位置为 <strong>${currentLoc}</strong><br>是否覆盖？`;
-            text.innerHTML = ASSET_AUDIT_I18N.repeated_text.replace('{previousLoc}', previousLoc).replace('{currentLoc}', currentLoc);
+            let prevHtml = `<span style="cursor:pointer; color:var(--primary); font-weight:500; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;" onclick="window.openFooterMap('${safePrev}')"><i class="material-icons" style="font-size:1.1rem">place</i>${previousLoc}</span>`;
+            let currHtml = `<span style="cursor:pointer; color:var(--primary); font-weight:500; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;" onclick="window.openFooterMap('${safeCurr}')"><i class="material-icons" style="font-size:1.1rem">place</i>${currentLoc}</span>`;
+
+            text.innerHTML = ASSET_AUDIT_I18N.repeated_text.replace('{previousLoc}', prevHtml).replace('{currentLoc}', currHtml);
             modal.style.display = 'flex';
             cancelBtn.focus();
             noticeAudio.currentTime = 0;
