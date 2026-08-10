@@ -54,9 +54,7 @@ window.validateApproveForm = function(event) {
         event.preventDefault();
 
         // 动态替换 I18N 字符串中的变量
-        errorText.innerText = QUEUE_I18N.stock_insufficient
-                                .replace('{realStock}', realStock)
-                                .replace('{reqQty}', currentReqQty);
+        errorText.innerText = QUEUE_I18N.stock_insufficient.replace('{realStock}', realStock).replace('{reqQty}', currentReqQty);
 
         errorBox.style.display = 'flex';
 

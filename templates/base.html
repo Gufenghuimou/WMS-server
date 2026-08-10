@@ -261,7 +261,7 @@
         </div>
     </main>
 
-    <div id="qrModal" class="custom-modal" style="display: none; z-index: 5000;">
+    {# <div id="qrModal" class="custom-modal" style="display: none; z-index: 5000;">
         <div class="custom-modal-content" style="width: 320px; text-align: center; padding: 30px;">
             <span class="close-modal" onclick="closeQrModal()">&times;</span>
             <h3 style="margin-top:0; color: var(--text-main); display: flex; align-items: center; justify-content: center; gap: 8px;">
@@ -275,7 +275,7 @@
                 <i class="material-icons" style="font-size: 0.9rem; vertical-align: middle;">timer</i>{{ t('base.qr_time_note', lang) }}
             </div>
         </div>
-    </div>
+    </div> #}
 
     <div id="chatWidget" class="chat-widget">
         <button id="chatToggleBtn" class="chat-toggle-btn" onclick="toggleChat()">
@@ -333,6 +333,6 @@
 
     <script src="/static/js/base.js"></script>
     {% block extra_js %}{% endblock %}
-
+    {% include 'global_modal.html' %}
 </body>
 </html>

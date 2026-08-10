@@ -485,6 +485,8 @@ select.btn-primary {
     to { transform: translateY(0); opacity: 1; }
 }
 
+
+
 @keyframes shakeError {
     0%, 100% { transform: translateX(0); }
     20%, 60% { transform: translateX(-4px); }

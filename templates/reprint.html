@@ -211,7 +211,7 @@
             let data = await res.json();
 
             if (data.status === 'success') {
-                alert(REPRINT_I18N.alert_print_success);
+                showToast(data.message, 'success');
                 // 打印成功后清空框，准备扫下一个
                 if(mode === 'inv') {
                     document.getElementById('invPn1').value = '';
@@ -292,7 +292,7 @@
             let data = await res.json();
 
             if (data.status === 'success') {
-                alert(data.message);
+                showToast(data.message, 'success');
                 checkPrinterStatus(); // 保存后立即重新测试连通性
             } else {
                 alert(REPRINT_I18N.alert_save_fail + (data.message || "未知错误"));

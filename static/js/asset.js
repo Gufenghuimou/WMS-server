@@ -61,9 +61,9 @@ window.switchAssetType = function(groupId) {
             let btn1Bg = !item.is_stock ? '#1db954' : '#f39c12';
             let btn1Icon = item.is_stock ? 'output' : 'login';
             let btn1Text = item.is_stock ? ASSET_I18N.btn_take_out : ASSET_I18N.btn_return_in;
-            let btn1 = `<button type="button" class="btn-primary btn-sm" title=" ${btn1Text}" style="background-color: ${btn1Bg}; ${disabledStyle};" onclick="openToggleModal(${item.id}, '${isStockStr}', '${safeCtrl}', false, '', '${siblingLoc}')"><i class="material-icons" style="margin-top: 2px;">${btn1Icon}</i></button>`;
+            let btn1 = `<button type="button" class="btn-primary btn-sm" title=" ${btn1Text}" style="background-color: ${btn1Bg}; ${disabledStyle};" onclick="openAssetToggleModal(${item.id}, '${isStockStr}', '${safeCtrl}', false, '', '${siblingLoc}')"><i class="material-icons" style="margin-top: 2px;">${btn1Icon}</i></button>`;
 
-            let btn2 = `<button type="button" class="btn-primary btn-sm" title="${ASSET_I18N.btn_edit}" style="background-color: #ccc; color: #333;" onclick="openItemEditModal(${item.id}, '${safePn}', '${safeCtrl}', '${safeLoc}', '${safeDate}', '${safePoType}')"><i class="material-icons" style="margin-top: 2px;">edit_note</i></button>`;
+            let btn2 = `<button type="button" class="btn-primary btn-sm" title="${ASSET_I18N.btn_edit}" style="background-color: #ccc; color: #333;" onclick="openAssetItemEditModal(${item.id}, '${safePn}', '${safeCtrl}', '${safeLoc}', '${safeDate}', '${safePoType}')"><i class="material-icons" style="margin-top: 2px;">edit_note</i></button>`;
 
             let btn3 = '';
             if (!item.is_stop && !item.is_stock) {
@@ -125,144 +125,144 @@ window.switchAssetType = function(groupId) {
 };
 
 // Modals Control
-window.openToggleModal = function(itemId, isStockStr, ctrlNo, isUserRequest = false, defaultRack = '', originalLoc = '') {
-    const modal = document.getElementById('toggleModal');
-    const form = document.getElementById('toggleForm');
-    const hintBox = document.getElementById('toggleHintBox');
-    const locInput = document.getElementById('locInput');
-    const title = document.getElementById('toggleTitle');
-    const adminLocBox = locInput.parentElement;
-    const userFieldsBox = document.getElementById('toggleUserFields');
-    const toggleDeptInput = document.getElementById('toggleDept');
+// window.openToggleModal = function(itemId, isStockStr, ctrlNo, isUserRequest = false, defaultRack = '', originalLoc = '') {
+//     const modal = document.getElementById('toggleModal');
+//     const form = document.getElementById('toggleForm');
+//     const hintBox = document.getElementById('toggleHintBox');
+//     const locInput = document.getElementById('locInput');
+//     const title = document.getElementById('toggleTitle');
+//     const adminLocBox = locInput.parentElement;
+//     const userFieldsBox = document.getElementById('toggleUserFields');
+//     const toggleDeptInput = document.getElementById('toggleDept');
 
-    if (isUserRequest) {
-        form.action = `/api/request_asset/${ctrlNo}`;
-        title.innerHTML = `<i class="material-icons" style="color:#1db954;">assignment_return</i> ${ASSET_I18N.request_return_title}`;
-        hintBox.innerHTML = `${ASSET_I18N.request_return} <strong>${ctrlNo}</strong>.`;
-        adminLocBox.style.display = 'none';
-        locInput.required = false;
-        userFieldsBox.style.display = 'block';
-        toggleDeptInput.required = true;
-        toggleDeptInput.value = defaultRack;
-        toggleDeptInput.placeholder = defaultRack;
-    } else {
-        form.action = `/asset_out/${itemId}`;
-        adminLocBox.style.display = 'block';
-        userFieldsBox.style.display = 'none';
-        toggleDeptInput.required = false;
-        toggleDeptInput.value = '';
-        if (isStockStr === 'True') {
-            title.innerHTML = `<i class="material-icons" style="color:#f39c12;">output</i> ${ASSET_I18N.toggle_out_title}`;
-            hintBox.innerHTML = ASSET_I18N.toggle_out_hint;
-            locInput.placeholder = ASSET_I18N.toggle_out_ph;
-            locInput.value = '';
-            locInput.required = true;
-        } else {
-            title.innerHTML = `<i class="material-icons" style="color:#1db954;">keyboard_return</i> ${ASSET_I18N.toggle_in_title}`;
-            hintBox.innerHTML = ASSET_I18N.toggle_in_hint;
-            locInput.placeholder = originalLoc ? originalLoc : ASSET_I18N.toggle_in_ph;
-            locInput.value = originalLoc;
-            locInput.required = false;
-        }
-    }
+//     if (isUserRequest) {
+//         form.action = `/api/request_asset/${ctrlNo}`;
+//         title.innerHTML = `<i class="material-icons" style="color:#1db954;">assignment_return</i> ${ASSET_I18N.request_return_title}`;
+//         hintBox.innerHTML = `${ASSET_I18N.request_return} <strong>${ctrlNo}</strong>.`;
+//         adminLocBox.style.display = 'none';
+//         locInput.required = false;
+//         userFieldsBox.style.display = 'block';
+//         toggleDeptInput.required = true;
+//         toggleDeptInput.value = defaultRack;
+//         toggleDeptInput.placeholder = defaultRack;
+//     } else {
+//         form.action = `/asset_out/${itemId}`;
+//         adminLocBox.style.display = 'block';
+//         userFieldsBox.style.display = 'none';
+//         toggleDeptInput.required = false;
+//         toggleDeptInput.value = '';
+//         if (isStockStr === 'True') {
+//             title.innerHTML = `<i class="material-icons" style="color:#f39c12;">output</i> ${ASSET_I18N.toggle_out_title}`;
+//             hintBox.innerHTML = ASSET_I18N.toggle_out_hint;
+//             locInput.placeholder = ASSET_I18N.toggle_out_ph;
+//             locInput.value = '';
+//             locInput.required = true;
+//         } else {
+//             title.innerHTML = `<i class="material-icons" style="color:#1db954;">keyboard_return</i> ${ASSET_I18N.toggle_in_title}`;
+//             hintBox.innerHTML = ASSET_I18N.toggle_in_hint;
+//             locInput.placeholder = originalLoc ? originalLoc : ASSET_I18N.toggle_in_ph;
+//             locInput.value = originalLoc;
+//             locInput.required = false;
+//         }
+//     }
 
-    modal.style.display = 'flex';
-};
+//     modal.style.display = 'flex';
+// };
 
-window.closeToggleModal = function() {
-    document.getElementById('toggleModal').style.display = 'none';
-};
+// window.closeToggleModal = function() {
+//     document.getElementById('toggleModal').style.display = 'none';
+// };
 
-window.openStopConfirmModal = function(itemId, ctrlNo, isStopStr, isUserRequest = false, defaultRack = '') {
-    const modal = document.getElementById('stopConfirmModal');
-    const form = document.getElementById('stopForm');
-    const title = document.getElementById('stopModalTitle');
-    const text = document.getElementById('stopModalText');
-    const icon = document.getElementById('stopModalIcon');
-    const locReuseContainer = document.getElementById('locReuseContainer');
-    const locReuse = document.getElementById('locReuse');
-    const submitBtn = document.getElementById('stopSubmitBtn');
-    const radio = document.getElementById('raisonRadio')
-    const userFieldsBox = document.getElementById('stopUserFields');
-    const stopDeptInput = document.getElementById('stopDept');
+// window.openStopConfirmModal = function(itemId, ctrlNo, isStopStr, isUserRequest = false, defaultRack = '') {
+//     const modal = document.getElementById('stopConfirmModal');
+//     const form = document.getElementById('stopForm');
+//     const title = document.getElementById('stopModalTitle');
+//     const text = document.getElementById('stopModalText');
+//     const icon = document.getElementById('stopModalIcon');
+//     const locReuseContainer = document.getElementById('locReuseContainer');
+//     const locReuse = document.getElementById('locReuse');
+//     const submitBtn = document.getElementById('stopSubmitBtn');
+//     const radio = document.getElementById('raisonRadio')
+//     const userFieldsBox = document.getElementById('stopUserFields');
+//     const stopDeptInput = document.getElementById('stopDept');
 
-    if (isUserRequest) {
-        form.action = `/api/request_asset/${ctrlNo}`;
-        icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red);">build</i>';
-        title.innerText = `${ASSET_I18N.report_broken_title}`;
-        text.innerHTML = `${ASSET_I18N.report_broken} <strong>${ctrlNo}</strong>`;
-        radio.style.display = 'none';
-        radio.querySelectorAll('input').forEach(input => {input.required = false;});
-        userFieldsBox.style.display = 'block';
-        stopDeptInput.required = true;
-        stopDeptInput.value = defaultRack;
-        stopDeptInput.placeholder = defaultRack;
-        submitBtn.style.backgroundColor = 'var(--danger-red)';
-        submitBtn.innerHTML = `<i class="material-icons">send</i> ${ASSET_I18N.btn_submit}`;
-    } else {
-        form.action = `/api/asset_stop_toggle/${itemId}`;
-        userFieldsBox.style.display = 'none';
-        stopDeptInput.required = false;
-        stopDeptInput.value = '';
-        if (isStopStr === 'True') {
-            icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: #1db954;">settings_backup_restore</i>';
-            title.innerText = ASSET_I18N.stop_reuse_title;
-            text.innerHTML = ASSET_I18N.stop_reuse_text.replace('{ctrlNo}', ctrlNo);
-            locReuseContainer.style.display = 'block';
-            locReuse.placeholder = defaultRack;
-            locReuse.required = true;
-            locReuse.value = defaultRack;
-            radio.style.display = 'none';
-            radio.querySelectorAll('input').forEach(i => i.required = false);
-            submitBtn.style.backgroundColor = '#1db954';
-            submitBtn.innerHTML = `<i class="material-icons">check_circle</i> ${ASSET_I18N.btn_reuse}`;
-        } else {
-            icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red);">do_not_disturb_on</i>';
-            title.innerText = ASSET_I18N.stop_freeze_title;
-            text.innerHTML = ASSET_I18N.stop_freeze_text.replace('{ctrlNo}', ctrlNo);
-            locReuseContainer.style.display = 'none';
-            locReuse.placeholder = '';
-            locReuse.value = '';
-            radio.style.display = 'flex';
-            radio.querySelectorAll('input').forEach(i => i.required = true);
-            submitBtn.style.backgroundColor = 'var(--danger-red)';
-            submitBtn.innerHTML = `<i class="material-icons">block</i> ${ASSET_I18N.btn_stop}`;
-        }
-    }
+//     if (isUserRequest) {
+//         form.action = `/api/request_asset/${ctrlNo}`;
+//         icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red);">build</i>';
+//         title.innerText = `${ASSET_I18N.report_broken_title}`;
+//         text.innerHTML = `${ASSET_I18N.report_broken} <strong>${ctrlNo}</strong>`;
+//         radio.style.display = 'none';
+//         radio.querySelectorAll('input').forEach(input => {input.required = false;});
+//         userFieldsBox.style.display = 'block';
+//         stopDeptInput.required = true;
+//         stopDeptInput.value = defaultRack;
+//         stopDeptInput.placeholder = defaultRack;
+//         submitBtn.style.backgroundColor = 'var(--danger-red)';
+//         submitBtn.innerHTML = `<i class="material-icons">send</i> ${ASSET_I18N.btn_submit}`;
+//     } else {
+//         form.action = `/api/asset_stop_toggle/${itemId}`;
+//         userFieldsBox.style.display = 'none';
+//         stopDeptInput.required = false;
+//         stopDeptInput.value = '';
+//         if (isStopStr === 'True') {
+//             icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: #1db954;">settings_backup_restore</i>';
+//             title.innerText = ASSET_I18N.stop_reuse_title;
+//             text.innerHTML = ASSET_I18N.stop_reuse_text.replace('{ctrlNo}', ctrlNo);
+//             locReuseContainer.style.display = 'block';
+//             locReuse.placeholder = defaultRack;
+//             locReuse.required = true;
+//             locReuse.value = defaultRack;
+//             radio.style.display = 'none';
+//             radio.querySelectorAll('input').forEach(i => i.required = false);
+//             submitBtn.style.backgroundColor = '#1db954';
+//             submitBtn.innerHTML = `<i class="material-icons">check_circle</i> ${ASSET_I18N.btn_reuse}`;
+//         } else {
+//             icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red);">do_not_disturb_on</i>';
+//             title.innerText = ASSET_I18N.stop_freeze_title;
+//             text.innerHTML = ASSET_I18N.stop_freeze_text.replace('{ctrlNo}', ctrlNo);
+//             locReuseContainer.style.display = 'none';
+//             locReuse.placeholder = '';
+//             locReuse.value = '';
+//             radio.style.display = 'flex';
+//             radio.querySelectorAll('input').forEach(i => i.required = true);
+//             submitBtn.style.backgroundColor = 'var(--danger-red)';
+//             submitBtn.innerHTML = `<i class="material-icons">block</i> ${ASSET_I18N.btn_stop}`;
+//         }
+//     }
 
-    modal.style.display = 'flex';
-};
+//     modal.style.display = 'flex';
+// };
 
-window.closeStopConfirmModal = function() {
-    document.getElementById('stopConfirmModal').style.display = 'none';
-};
+// window.closeStopConfirmModal = function() {
+//     document.getElementById('stopConfirmModal').style.display = 'none';
+// };
 
-window.openItemEditModal = function(itemId, pn, ctrlNo, location, dateStr, poType) {
-    const modal = document.getElementById('itemEditModal');
+// window.openItemEditModal = function(itemId, pn, ctrlNo, location, dateStr, poType) {
+//     const modal = document.getElementById('itemEditModal');
 
-    document.getElementById('itemEditForm').action = `/asset_edit_item/${itemId}`;
-    document.getElementById('modalCtrlNoDisplay').innerText = `[${ctrlNo}]`;
-    document.getElementById('editPn').value = pn || '';
-    document.getElementById('editCtrlNo').value = ctrlNo || '';
-    document.getElementById('editLocation').value = (location === 'None' || !location) ? '' : location;
-    document.getElementById('editDate').value = (dateStr === 'None' || !dateStr) ? '' : dateStr;
-    document.getElementById('editPoType').value = (poType === 'None' || !poType) ? '' : poType;
-    document.getElementById('applyPoToAllCheckbox').checked= false;
+//     document.getElementById('itemEditForm').action = `/asset_edit_item/${itemId}`;
+//     document.getElementById('modalCtrlNoDisplay').innerText = `[${ctrlNo}]`;
+//     document.getElementById('editPn').value = pn || '';
+//     document.getElementById('editCtrlNo').value = ctrlNo || '';
+//     document.getElementById('editLocation').value = (location === 'None' || !location) ? '' : location;
+//     document.getElementById('editDate').value = (dateStr === 'None' || !dateStr) ? '' : dateStr;
+//     document.getElementById('editPoType').value = (poType === 'None' || !poType) ? '' : poType;
+//     document.getElementById('applyPoToAllCheckbox').checked= false;
 
-    modal.style.display = 'flex';
-};
+//     modal.style.display = 'flex';
+// };
 
-window.closeItemEditModal = function() {
-    document.getElementById('itemEditModal').style.display = 'none';
-};
+// window.closeItemEditModal = function() {
+//     document.getElementById('itemEditModal').style.display = 'none';
+// };
 
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        if(window.closeToggleModal) window.closeToggleModal();
-        if(window.closeStopConfirmModal) window.closeStopConfirmModal();
-        if(window.closeItemEditModal) window.closeItemEditModal();
-    }
-});
+// document.addEventListener('keydown', (e) => {
+//     if (e.key === 'Escape') {
+//         if(window.closeToggleModal) window.closeToggleModal();
+//         if(window.closeStopConfirmModal) window.closeStopConfirmModal();
+//         if(window.closeItemEditModal) window.closeItemEditModal();
+//     }
+// });
 
 // Initialization & Events
 document.addEventListener("DOMContentLoaded", () => {
@@ -331,99 +331,99 @@ window.cancelEdit = function(event, cardId) {
 };
 
 // Image Cropper Engine
-let cropper = null;
-let currentCropContext = { pn1: null, itemId: null };
+// let cropper = null;
+// let currentCropContext = { pn1: null, itemId: null };
 
-window.uploadCardImage = function(inputElem, pn1, itemId) {
-    if (!inputElem.files || inputElem.files.length === 0) return;
+// window.uploadCardImage = function(inputElem, pn1, itemId) {
+//     if (!inputElem.files || inputElem.files.length === 0) return;
 
-    let file = inputElem.files[0];
-    let reader = new FileReader();
+//     let file = inputElem.files[0];
+//     let reader = new FileReader();
 
-    currentCropContext.pn1 = pn1;
-    currentCropContext.itemId = itemId;
+//     currentCropContext.pn1 = pn1;
+//     currentCropContext.itemId = itemId;
 
-    reader.onload = function(e) {
-        document.getElementById('cropImageTarget').src = e.target.result;
-        document.getElementById('cropModal').style.display = 'block';
+//     reader.onload = function(e) {
+//         document.getElementById('cropImageTarget').src = e.target.result;
+//         document.getElementById('cropModal').style.display = 'block';
 
-        if (cropper) { cropper.destroy(); }
+//         if (cropper) { cropper.destroy(); }
 
-        let image = document.getElementById('cropImageTarget');
-        cropper = new Cropper(image, {
-            aspectRatio: 1 / 1,
-            viewMode: 1,
-            autoCropArea: 0.9,
-            dragMode: 'move',
-        });
-    };
-    reader.readAsDataURL(file);
-    inputElem.value = '';
-};
+//         let image = document.getElementById('cropImageTarget');
+//         cropper = new Cropper(image, {
+//             aspectRatio: 1 / 1,
+//             viewMode: 1,
+//             autoCropArea: 0.9,
+//             dragMode: 'move',
+//         });
+//     };
+//     reader.readAsDataURL(file);
+//     inputElem.value = '';
+// };
 
-window.confirmCrop = function() {
-    if (!cropper || !currentCropContext.pn1) return;
+// window.confirmCrop = function() {
+//     if (!cropper || !currentCropContext.pn1) return;
 
-    cropper.getCroppedCanvas({
-        maxWidth: 800,
-        maxHeight: 800,
-        imageSmoothingEnabled: true,
-        imageSmoothingQuality: 'high',
-    }).toBlob(async function(blob) {
-        let formData = new FormData();
-        formData.append('file', blob, 'image.jpg');
+//     cropper.getCroppedCanvas({
+//         maxWidth: 800,
+//         maxHeight: 800,
+//         imageSmoothingEnabled: true,
+//         imageSmoothingQuality: 'high',
+//     }).toBlob(async function(blob) {
+//         let formData = new FormData();
+//         formData.append('file', blob, 'image.jpg');
 
-        try {
-            let res = await fetch(`/api/asset_upload_image/${encodeURIComponent(currentCropContext.pn1)}`, {
-                method: 'POST',
-                body: formData
-            });
-            let data = await res.json();
+//         try {
+//             let res = await fetch(`/api/asset_upload_image/${encodeURIComponent(currentCropContext.pn1)}`, {
+//                 method: 'POST',
+//                 body: formData
+//             });
+//             let data = await res.json();
 
-            if (data.status === 'success') {
-                closeCropModal();
-                showToast('Image updated successfully!', 'success');
-                let freshUrl = data.url + '?t=' + new Date().getTime();
+//             if (data.status === 'success') {
+//                 closeCropModal();
+//                 showToast('Image updated successfully!', 'success');
+//                 let freshUrl = data.url + '?t=' + new Date().getTime();
 
-                let previewBack = document.getElementById(`edit-preview-${currentCropContext.itemId}`);
-                let placeholderBack = document.getElementById(`edit-placeholder-${currentCropContext.itemId}`);
-                if (previewBack) {
-                    previewBack.src = freshUrl;
-                    previewBack.style.display = 'block';
-                }
-                if (placeholderBack) placeholderBack.style.display = 'none';
+//                 let previewBack = document.getElementById(`edit-preview-${currentCropContext.itemId}`);
+//                 let placeholderBack = document.getElementById(`edit-placeholder-${currentCropContext.itemId}`);
+//                 if (previewBack) {
+//                     previewBack.src = freshUrl;
+//                     previewBack.style.display = 'block';
+//                 }
+//                 if (placeholderBack) placeholderBack.style.display = 'none';
 
-                let cardFront = document.getElementById(`card-${currentCropContext.pn1.replace(/ /g, '-').replace(/\//g, '-')}`);
-                if (cardFront) {
-                    let imgFront = cardFront.querySelector('.left-part img.card-img');
-                    let placeholderFront = cardFront.querySelector('.left-part div.card-img');
+//                 let cardFront = document.getElementById(`card-${currentCropContext.pn1.replace(/ /g, '-').replace(/\//g, '-')}`);
+//                 if (cardFront) {
+//                     let imgFront = cardFront.querySelector('.left-part img.card-img');
+//                     let placeholderFront = cardFront.querySelector('.left-part div.card-img');
 
-                    if (imgFront) {
-                        imgFront.src = freshUrl;
-                        imgFront.style.display = 'block';
-                    }
-                    if (placeholderFront) placeholderFront.style.display = 'none';
-                }
-            } else {
-                showToast(ASSET_I18N.upload_fail, 'error');
-            }
-        } catch(e) {
-            showToast(ASSET_I18N.upload_net_err, 'error');
-        }
+//                     if (imgFront) {
+//                         imgFront.src = freshUrl;
+//                         imgFront.style.display = 'block';
+//                     }
+//                     if (placeholderFront) placeholderFront.style.display = 'none';
+//                 }
+//             } else {
+//                 showToast(ASSET_I18N.upload_fail, 'error');
+//             }
+//         } catch(e) {
+//             showToast(ASSET_I18N.upload_net_err, 'error');
+//         }
 
-    }, 'image/jpeg', 0.8);
-};
+//     }, 'image/jpeg', 0.8);
+// };
 
-window.closeCropModal = function() {
-    document.getElementById('cropModal').style.display = 'none';
-    if(cropper) cropper.destroy();
-};
+// window.closeCropModal = function() {
+//     document.getElementById('cropModal').style.display = 'none';
+//     if(cropper) cropper.destroy();
+// };
 
 // Global Ajax Interceptor
 document.addEventListener('submit', async function(e) {
     const form = e.target;
     const isGroupEdit = form.closest('.card-back');
-    const isTargetForm = (form.id === 'toggleForm' || form.id === 'stopForm' || form.id === 'itemEditForm' || isGroupEdit);
+    const isTargetForm = (form.id === 'assetToggleForm' || form.id === 'stopForm' || form.id === 'assetItemEditForm' || isGroupEdit);
 
     if (!isTargetForm) return;
 
@@ -448,9 +448,9 @@ document.addEventListener('submit', async function(e) {
         if (result.status === 'success') {
             showToast(result.message || 'Success!', 'success');
 
-            if (form.id === 'toggleForm' && window.closeToggleModal) closeToggleModal();
+            if (form.id === 'assetToggleForm' && window.closeAssetToggleModal) closeAssetToggleModal();
             if (form.id === 'stopForm' && window.closeStopConfirmModal) closeStopConfirmModal();
-            if (form.id === 'itemEditForm' && window.closeItemEditModal) closeItemEditModal();
+            if (form.id === 'assetItemEditForm' && window.closeAssetItemEditModal) closeAssetItemEditModal();
 
             if (form.action.includes('/api/request_asset')) {
                 let card = form.closest('.asset-card');

@@ -1,0 +1,409 @@
+<link rel="stylesheet" href="/static/css/global_modal.css">
+
+<!-- =============================================
+    1. 全局调用的 Modal (二维码、图像裁剪、报废)
+==============================================-->
+
+<!-- 二维码生成的Modal -->
+<div id="qrModal" class="custom-modal" style="z-index: 5000;">
+    <div class="custom-modal-content" style="width: 320px; text-align: center;">
+        <span class="close-modal" onclick="closeQrModal()">&times;</span>
+        <h3 style="margin-top:0; color: var(--text-main); display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <i class="material-icons" style="color: #8e44ad;">qr_code_scanner</i>{{ t('base.scan_to_login', lang) }}
+        </h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">{{ t('base.qr_note', lang) }}</p>
+        <canvas id="qrcodeCanvas" style="margin: 0 auto; display: block; border: 1px solid #eee; padding: 10px; border-radius: 8px;"></canvas>
+        <div style="font-size: 0.75rem; color: #aaa; margin-top: 15px;">
+            <i class="material-icons" style="font-size: 0.9rem; vertical-align: middle;">timer</i>{{ t('base.qr_time_note', lang) }}
+        </div>
+    </div>
+</div>
+
+<!-- 物品图像上传剪裁的Modal -->
+<div id="cropModal" class="custom-modal" style="z-index: 9999;">
+    <!-- 图像裁剪需要原生流布局，添加 display: block 覆盖居中 -->
+    <div class="custom-modal-content" style="display: block; width: 90%; max-width: 600px; padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 15px;">
+            <h3 style="margin: 0; color: var(--primary-blue); font-size: 1.1rem;">
+                <i class="material-icons" style="vertical-align: middle;">crop</i> 剪裁物料图片
+            </h3>
+            <i class="material-icons" style="cursor: pointer; color: #999;" onclick="closeCropModal()">close</i>
+        </div>
+        <div style="width: 100%; max-height: 50vh; margin-bottom: 15px; background: #eee; border-radius: 8px; overflow: hidden;">
+            <img id="cropImageTarget" style="max-width: 100%; display: block;">
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button type="button" onclick="closeCropModal()" style="padding: 8px 20px; border-radius: 6px; border: none; background: #95a5a6; color: white; cursor: pointer;">取消</button>
+            <button type="button" onclick="confirmCrop()" style="padding: 8px 20px; border-radius: 6px; border: none; background: var(--primary-blue); color: white; font-weight: bold; cursor: pointer;">确认裁剪</button>
+        </div>
+    </div>
+</div>
+
+<!-- 报废滑动确认Modal -->
+<div id="scrapModal" class="custom-modal">
+    <div class="custom-modal-content" style="width: 380px; text-align: center; border-top: 6px solid var(--danger-red, #d93025);">
+        <span class="close-modal" onclick="closeScrapModal()">&times;</span>
+        <i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red); margin-bottom: 10px; width: auto; height: auto; line-height: 1;">report_problem</i>
+        <h3 style="margin-top: 0; color: #333; font-size: 1.3rem;">{{ t('asset_scrap.modal_title', lang) }}</h3>
+        <div style="background: #fce8e6; color: #c0392b; padding: 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 25px; text-align: left; line-height: 1.5;">
+            {{ t('asset_scrap.modal_warning', lang) | safe }}
+        </div>
+        <form id="scrapForm" method="post" action="" style="width: 100%;"></form>
+        <div class="slider-container" id="sliderContainer" style="width: 100%;">
+            <div class="slider-track" id="sliderTrack">
+                <div class="slider-text" id="sliderText">{{ t('asset_scrap.slider_text', lang) }}</div>
+                <div class="slider-bg" id="sliderBg"></div>
+                <div class="slider-handle" id="sliderHandle">
+                    <i class="material-icons">double_arrow</i>
+                </div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 15px; justify-content: center; margin-top: 25px; width: 100%;">
+            <button type="button" class="btn-primary" style="background: #f1f3f4; color: #555; box-shadow: none;" onclick="closeScrapModal()">{{ t('asset_scrap.btn_think_again', lang) }}</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- =============================================
+    2. 资产工作流 Modal (Asset / Audit)
+==============================================-->
+
+<!-- 重复扫码确认Modal -->
+<div id="repeatedConfirmModal" class="custom-modal">
+    <div class="custom-modal-content" style="width: 380px; text-align: center;">
+        <span class="close-modal" onclick="closeRepeatedConfirmModal()">&times;</span>
+        <div><i class="material-icons" style="font-size: 3.5rem; color: #faad14;">announcement</i></div>
+        <h3 style="margin-top:15px; color:var(--text-main);"> {{ t('asset_audit.repeated_title', lang) }}</h3>
+        <p id="repeatedConfirmText" style="font-size: 1.05rem; color: #666; margin-bottom: 25px; line-height: 2.2;"></p>
+        <div style="display: flex; justify-content: center; gap: 15px; width: 100%;">
+            <button type="button" id="repeatedCancelBtn" class="btn-primary" style="background: #f0f2f5; color: #555; box-shadow: none;" onclick="closeRepeatedConfirmModal()">{{ t('asset_view.btn_cancel_modal', lang) }}</button>
+            <button type="submit" id="repeatedSubmitBtn" class="btn-primary" style="width: 120px; background-color: #faad14;">{{ t('asset_audit.repeated_submit', lang) }}</button>
+        </div>
+    </div>
+</div>
+
+<div id="assetToggleModal" class="custom-modal">
+    <div class="custom-modal-content" style="display: block; width: 450px;">
+        <span class="close-modal" onclick="closeAssetToggleModal()">&times;</span>
+        <h3 id="toggleTitle" style="margin-top:0; color:var(--text-main); display:flex; align-items:center; gap:8px;">
+            <i class="material-icons" style="color:var(--primary);">swap_horiz</i> {{ t('asset_view.modal_toggle_title', lang) }}
+        </h3>
+        <p id="toggleHintBox" style="font-size: 0.85rem; color: #666; margin-bottom: 20px; line-height: 1.5; background:#f8f9fa; padding:10px; border-radius:8px; border-left:3px solid var(--primary);"></p>
+
+        <form id="assetToggleForm" method="post" action="">
+            <div style="margin-bottom: 20px;">
+                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('asset_view.modal_toggle_lbl', lang) }}</label>
+                <input type="text" name="target_loc" id="locInput" autocomplete="off" placeholder=""
+                       style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; outline: none;" value="">
+            </div>
+            <div id="toggleUserFields" style="display: none; margin-bottom: 20px;">
+                <input type="hidden" name="matter" id="toggleMatter" value="return">
+                <input type="hidden" name="req_qty" value="1">
+                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('asset_view.location', lang) }} <span style="color:red;">*</span></label>
+                <input type="text" name="department" id="toggleDept" class="edit-input" style="width: 100%; margin-bottom: 10px;">
+
+                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('asset_view.note', lang) }}</label>
+                <input type="text" name="note" id="toggleNote" class="edit-input" style="width: 100%;">
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #555; box-shadow: none;" onclick="closeAssetToggleModal()">{{ t('asset_view.btn_cancel_modal', lang) }}</button>
+                <button type="submit" class="btn-primary">{{ t('asset_view.btn_confirm_modal', lang) }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 停用Form的Modal -->
+<div id="stopConfirmModal" class="custom-modal">
+    <div class="custom-modal-content" style="width: 380px; text-align: center;">
+        <span class="close-modal" onclick="closeStopConfirmModal()">&times;</span>
+        <div id="stopModalIcon" style="margin-bottom: 15px;"></div>
+        <h3 id="stopModalTitle" style="margin-top:0; color:var(--text-main);">{{ t('asset_view.modal_stop_title', lang) }}</h3>
+        <p id="stopModalText" style="font-size: 0.95rem; color: #666; margin-bottom: 25px; line-height: 1.5;"></p>
+        <form id="stopForm" method="post" action="" style="width: 100%;">
+            <div id="locReuseContainer" style="margin-bottom: 20px; display: none;">
+                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('asset_view.modal_toggle_lbl', lang) }}</label>
+                <input type="text" name="target_loc" id="locReuse" autocomplete="off" placeholder=""
+                       style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; outline: none;" value="">
+            </div>
+            <div id="raisonRadio" style="display: flex; justify-content: center; gap: 30px; margin-bottom: 20px;">
+                <div>
+                    <input id="no-use" type="radio" name="is_no_use" value="true" required>
+                    <label class="radio-label" for="no-use">{{ t('asset_scrap.no_use', lang) }}</label>
+                </div>
+                <div>
+                    <input id="broken" type="radio" name="is_no_use" value="false" required checked>
+                    <label class="radio-label" for="broken">{{ t('asset_scrap.broken', lang) }}</label>
+                </div>
+            </div>
+            <div id="stopUserFields" style="display: none; margin-bottom: 20px; text-align: left;">
+                <input type="hidden" name="matter" value="broken">
+                <input type="hidden" name="req_qty" value="1">
+                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('asset_view.location', lang) }}<span style="color:red;">*</span></label>
+                <input type="text" name="department" id="stopDept" class="edit-input" style="width: 100%; margin-bottom: 10px;">
+                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('asset_view.note', lang) }}</label>
+                <input type="text" name="note" id="stopNote" class="edit-input" style="width: 100%;">
+            </div>
+            <div style="display: flex; justify-content: center; gap: 15px;">
+                <button type="button" class="btn-primary" style="background: #f0f2f5; color: #555; box-shadow: none;" onclick="closeStopConfirmModal()">{{ t('asset_view.btn_cancel_modal', lang) }}</button>
+                <button type="submit" id="stopSubmitBtn" class="btn-primary" style="width: 120px;"></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 【修复ID】单个资产物品编辑的Modal -->
+<div id="assetItemEditModal" class="custom-modal">
+    <!-- 横向铺开的表单，设置 display: block 和 max-content 保证宽度不会被挤压 -->
+    <div class="custom-modal-content" style="display: block; width: max-content; max-width: 95%;">
+        <span class="close-modal" onclick="closeAssetItemEditModal()">&times;</span>
+        <h4 style="margin: 0 0 15px 0; color: var(--text-main); font-size: 1rem; border-bottom: 1px solid #eee; padding-bottom: 8px;">
+            <i class="material-icons" style="font-size: 1.1rem; color: #3498db; vertical-align: middle;">edit_note</i>
+            {{ t('asset_view.modal_item_title', lang) }} <span id="modalCtrlNoDisplay" style="color:#888; font-size:0.85rem; margin-left:10px;"></span>
+        </h4>
+        <form id="assetItemEditForm" method="post" action="" style="display: flex; gap: 15px; align-items: flex-end; margin: 0;">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;"> PN</label>
+                <input type="text" name="pn_1" id="editPn" class="edit-input" style="width: 160px;" required>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('asset_view.modal_item_ctrl', lang) }}</label>
+                <input type="text" name="ctrl_no" id="editCtrlNo" class="edit-input" style="width: 160px;" required>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('asset_view.modal_item_loc', lang) }}</label>
+                <input type="text" name="location" id="editLocation" class="edit-input" style="width: 160px;" placeholder="{{ t('asset_view.modal_item_loc_ph', lang) }}">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('asset_view.modal_item_date', lang) }}</label>
+                <input type="date" name="first_in_date" id="editDate" class="edit-input" style="width: 140px;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; gap: 6px; align-items: flex-end;">
+                    <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">PO Type</label>
+                    <label style="display: flex; align-items: flex-end; gap: 2px; font-size: 0.85rem; color: #e67e22; cursor: pointer; user-select: none;">
+                        <input type="checkbox" name="apply_po_to_all" id="applyPoToAllCheckbox" value="true" style="cursor: pointer; width: 16px; height: 16px; accent-color: #e67e22; margin-bottom: 0">
+                        全部应用
+                    </label>
+                </div>
+                <select id="editPoType" class="edit-input" name="po_type" style="width: 140px;">
+                    <option value=""></option>
+                    <option value="common">Common</option>
+                    <option value="reimburse">Reimburse</option>
+                    <option value="consign">Consign</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 8px; margin-left: 10px;">
+                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #555; box-shadow: none; height: 33px; line-height: 1; padding: 0 15px;" onclick="closeAssetItemEditModal()">{{ t('asset_view.btn_cancel_modal', lang) }}</button>
+                <button type="submit" class="btn-primary" style="background: #3498db; height: 33px; line-height: 1; padding: 0 15px;">{{ t('asset_view.btn_save_changes', lang) }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- =============================================
+    3. 审批工作流 Modal (Approve)
+==============================================-->
+
+<!-- 物料申请审批时的Modal -->
+<div id="approveModal" class="custom-modal">
+    <!-- 内容要求靠左对齐，设置 display: block -->
+    <div class="custom-modal-content" style="display: block; width: 450px;">
+        <span class="close-modal" onclick="closeApproveModal()">&times;</span>
+        <h3 style="margin-top: 0; color: var(--primary-green); border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; align-items: center; gap: 10px; font-size: 1.5rem;">
+            <i class="material-icons" style="vertical-align: middle;">place</i>
+            <strong id="modalLocation"></strong>
+        </h3>
+        <form id="approveForm" method="post" onsubmit="return validateApproveForm(event)">
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee;">
+                <div style="margin-bottom: 8px; font-size: 1.2rem; color: #666;">{{ t('queue.item_pn', lang) }} <strong id="modalPn" style="color: #333;"></strong></div>
+                <div style="margin-bottom: 8px; font-size: 0.9rem; color: #666;">{{ t('queue.item_name', lang) }} <strong id="modalName" style="color: #333;"></strong></div>
+                <div style="display: flex; gap: 15px; margin-top: 15px;">
+                    <div style="flex: 1; text-align: center; background: white; padding: 10px; border-radius: 6px; border: 1px solid #ddd;">
+                        <span style="display: block; font-size: 0.75rem; color: #888;">{{ t('queue.sys_stock', lang) }}</span>
+                        <strong id="modalSysStock" style="font-size: 1.2rem; color: var(--primary-blue);"></strong>
+                    </div>
+                    <div style="flex: 1; text-align: center; background: #fff0f0; padding: 10px; border-radius: 6px; border: 1px solid #fadbd8;">
+                        <span style="display: block; font-size: 0.75rem; color: #e74c3c;">{{ t('queue.deduct_qty', lang) }}</span>
+                        <strong id="modalReqQty" style="font-size: 1.2rem; color: var(--danger-red);"></strong>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; color: var(--text-main); margin-bottom: 8px;">{{ t('queue.real_stock', lang) }} <span style="color: red;">*</span></label>
+                <input type="number" id="realStock" name="real_stock" required min="0" step="1"
+                       style="width: 100%; height: 42px; font-size: 1.2rem; text-align: center; border: 2px solid var(--danger-red); border-radius: 6px; outline: none; box-sizing: border-box;">
+                <p style="font-size: 0.75rem; color: #888; margin-top: 5px;"><i class="material-icons" style="font-size: 1rem; vertical-align: middle;">info</i> {{ t('queue.stock_tip', lang) }}</p>
+            </div>
+            <div id="approveError" style="display: none; background: #fce8e6; color: #d93025; padding: 10px; border-radius: 6px; font-size: 0.85rem; margin-bottom: 15px; align-items: center; gap: 5px; border: 1px solid #fadbd8;">
+                <i class="material-icons" style="font-size: 1.2rem;">error_outline</i>
+                <span id="approveErrorText"></span>
+            </div>
+            <button type="submit" class="btn-primary" style="width: 100%; height: 42px; background: #1db954; font-size: 1.1rem; border-radius: 6px;">
+                {{ t('queue.confirm_approve', lang) }}
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- 资产申请审批时的Modal -->
+<div id="assetApproveModal" class="custom-modal">
+    <div class="custom-modal-content" style="width: 450px;">
+        <span class="close-modal" onclick="closeAssetApproveModal()">&times;</span>
+        <h3 id="assetModalTitle" style="margin-top: 0; display: flex; align-items: center; gap: 10px; font-size: 1.5rem; width: 100%;"></h3>
+        <form id="assetApproveForm" method="post" action="" style="width: 100%;">
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee; display: flex; align-items: center; flex-direction: column; gap: 5px;">
+                <div style="margin-bottom: 8px; font-size: 0.95rem; color: #666;"><strong id="assetModalPn" style="color: #333;"></strong></div>
+                <div id="assetModalCtrlNoBox" style="margin-bottom: 8px; font-size: 1.4rem; color: #666;"><strong id="assetModalCtrlNo" class="font-monospace"></strong></div>
+            </div>
+            <div id="assetDynamicInput" style="margin-bottom: 15px; width: 100%; text-align: left;"></div>
+            <button type="submit" class="btn-primary" style="width: 100%; height: 42px; background: #1db954; font-size: 1.1rem; border-radius: 6px;">
+                {{ t('queue.confirm_approve', lang) }}
+            </button>
+        </form>
+    </div>
+</div>
+
+
+<!-- =============================================
+    4. Simcard 工作流 Modal
+==============================================-->
+
+<!-- 电话卡分配使用者时的Modal -->
+<div id="simcardToggleModal" class="custom-modal">
+    <div class="custom-modal-content" style="display: block; width: 450px;">
+        <span class="close-modal" onclick="closeSimcardToggleModal()">&times;</span>
+        <h3 id="toggleTitle" style="margin-top:0; color:var(--text-main); display:flex; align-items:center; gap:8px;">
+            <i class="material-icons" style="color:var(--primary);">swap_horiz</i> {{ t('asset_view.modal_toggle_title', lang) }}
+        </h3>
+        <p id="toggleHintBox" style="font-size: 0.85rem; color: #666; margin-bottom: 20px; line-height: 1.5; background:#f8f9fa; padding:10px; border-radius:8px; border-left:3px solid var(--primary);"></p>
+        <form id="simcardToggleForm" method="post" action="">
+            <div id="toggleFields" style="margin-bottom: 20px;">
+                <div class="form-row" style="margin-bottom: 15px;">
+                    <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('simcard_history.target_loc', lang) }}</label>
+                    <input type="text" name="target_loc" id="locInput" class="edit-input" autocomplete="off" placeholder="" style="width:100%;" required>
+                </div>
+                <div class="form-row" style="margin-bottom: 15px;">
+                    <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('simcard_history.target_user', lang) }}</label>
+                    <input type="text" name="target_user" id="userInput" class="edit-input" autocomplete="off" placeholder="" style="width:100%;">
+                </div>
+                <div class="form-row" style="margin-bottom: 15px;">
+                    <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('simcard_history.target_proj', lang) }}</label>
+                    <input type="text" name="target_project" id="projectInput" class="edit-input" autocomplete="off" placeholder="" style="width:100%;">
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #555; box-shadow: none;" onclick="closeSimcardToggleModal()">{{ t('asset_view.btn_cancel_modal', lang) }}</button>
+                <button type="submit" class="btn-primary">{{ t('asset_view.btn_confirm_modal', lang) }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 【修复ID】电话卡编辑属性时的Modal -->
+<div id="simcardEditModal" class="custom-modal">
+    <!-- 同样采用 display: block 防止网格布局被挤扁 -->
+    <div class="custom-modal-content" style="display: block; width: 650px; max-width: 95%;">
+        <span class="close-modal" onclick="closeSimcardEditModal()">&times;</span>
+        <h4 style="margin: 0 0 15px 0; color: var(--text-main); font-size: 1rem; border-bottom: 1px solid #eee; padding-bottom: 8px;">
+            <i class="material-icons" style="font-size: 1.1rem; color: #3498db; vertical-align: middle;">edit_note</i>
+            {{ t('asset_view.modal_item_title', lang) }}
+        </h4>
+        <form id="simcardEditForm" method="post" action="" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+            <div style="grid-column: span 3;">
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">ICCID</label>
+                <input type="text" name="icc_id" id="editIccid" class="edit-input" style="width:100%" required autocomplete="off">
+            </div>
+            <div>
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('simcard.carrier', lang) }}</label>
+                <input type="text" name="carrier" id="editCarrier" class="edit-input" style="width:100%" required autocomplete="off">
+            </div>
+            <div style="grid-column: span 2;">
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('simcard.number', lang) }}</label>
+                <input type="text" name="phone_number" id="editPhone" class="edit-input" style="width:100%" required autocomplete="off">
+            </div>
+            <div>
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('simcard.location', lang) }}</label>
+                <input type="text" name="location" id="editLoc" class="edit-input" style="width:100%" autocomplete="off">
+            </div>
+            <div>
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('simcard.direct_user', lang) }}</label>
+                <input type="text" name="direct_user" id="editUser" class="edit-input" style="width:100%" autocomplete="off">
+            </div>
+            <div>
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('simcard.project', lang) }}</label>
+                <input type="text" name="project" id="editProject" class="edit-input" style="width:100%" autocomplete="off">
+            </div>
+            <div style="grid-column: span 3;">
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('simcard.note', lang) }}</label>
+                <input type="text" name="note" id="editNote" class="edit-input" style="width:100%" autocomplete="off">
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; grid-column: span 3; margin-top: 10px;">
+                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #555; box-shadow: none;" onclick="closeSimcardEditModal()">{{ t('table.cancel_btn', lang) }}</button>
+                <button type="submit" class="btn-primary" style="background: var(--primary-green)">{{ t('table.save_btn', lang) }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 电话卡停用时的Modal -->
+<div id="activeToggleModal" class="custom-modal">
+    <div class="custom-modal-content" style="width: 380px; text-align: center;">
+        <span class="close-modal" onclick="closeActiveToggleModal()">&times;</span>
+        <div id="activeModalIcon" style="margin-bottom: 15px;"></div>
+        <h3 id="activeModalTitle" style="margin-top: 0; color: var(--text-main);"></h3>
+        <p id="activeModalText" style="font-size: 0.95rem; color: #666; margin-bottom: 25px; line-height: 1.5;"></p>
+        <form id="activeToggleForm" method="post" action="" style="width: 100%;">
+            <div style="display: flex; justify-content: center; gap: 15px;">
+                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #555; box-shadow: none;" onclick="closeActiveToggleModal()">{{ t('table.cancel_btn', lang) }}</button>
+                <button type="submit" id="activeSubmitBtn" class="btn-primary"></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const MODAL_I18N = {
+        generating: "{{ t('base.generating', lang) }}",
+        unknown_error: "{{ t('base.unknown_error', lang) }}",
+        network_error_qr: "{{ t('base.network_error_qr', lang) }}",
+        upload_fail: "{{ t('asset_view.upload_fail', lang) }}",
+        upload_net_err: "{{ t('asset_view.upload_net_err', lang) }}",
+        request_return_title: "{{ t('asset_view.request_return_title', lang) }}",
+        request_return: "{{ t('asset_view.request_return', lang) }}",
+        toggle_out_title: "{{ t('asset_view.toggle_out_title', lang) }}",
+        toggle_out_hint: "{{ t('asset_view.toggle_out_hint', lang) }}",
+        toggle_out_ph: "{{ t('asset_view.toggle_out_ph', lang) }}",
+        toggle_in_title: "{{ t('asset_view.toggle_in_title', lang) }}",
+        toggle_in_hint: "{{ t('asset_view.toggle_in_hint', lang) }}",
+        toggle_in_ph: "{{ t('asset_view.toggle_in_ph', lang) }}",
+        report_broken_title: "{{ t('asset_view.report_broken_title', lang) }}",
+        report_broken: "{{ t('asset_view.report_broken', lang) }}",
+        btn_submit: "{{ t('asset_view.btn_submit', lang) }}",
+        stop_reuse_title: "{{ t('asset_view.stop_reuse_title', lang) }}",
+        stop_reuse_text: "{{ t('asset_view.stop_reuse_text', lang) }}",
+        btn_reuse: "{{ t('asset_view.btn_reuse', lang) }}",
+        stop_freeze_title: "{{ t('asset_view.stop_freeze_title', lang) }}",
+        stop_freeze_text: "{{ t('asset_view.stop_freeze_text', lang) }}",
+        btn_stop: "{{ t('asset_view.btn_stop', lang) }}",
+        dispatch_asset: "{{ t('queue.dispatch_asset', lang) }}",
+        scan_area_label: "{{ t('queue.scan_area_label', lang) }}",
+        scab_area_note: "{{ t('queue.scab_area_note', lang) }}",
+        confirm_return: "{{ t('queue.confirm_return', lang) }}",
+        target_location: "{{ t('queue.target_location', lang) }}",
+        target_location_ph: "{{ t('queue.target_location_ph', lang) }}",
+        confirm_broken: "{{ t('queue.confirm_broken', lang) }}",
+        broken_note: "{{ t('queue.broken_note', lang) }}",
+        simcard_disable: "{{ t('simcard.simcard_disable', lang) }}",
+        disabled_notice: "{{ t('simcard.disable_notice', lang) }}",
+        btn_disable: "{{ t('simcard.btn_disable', lang) }}",
+        simcard_enable: "{{ t('simcard.simcard_enable', lang) }}",
+        enable_notice: "{{ t('simcard.disable_notice', lang) }}",
+        btn_enable: "{{ t('simcard.btn_enable', lang) }}",
+
+    };
+</script>
+<script src="/static/js/global_modal.js"></script>
