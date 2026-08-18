@@ -86,15 +86,15 @@
 <div id="assetToggleModal" class="custom-modal">
     <div class="custom-modal-content" style="display: block; width: 450px;">
         <span class="close-modal" onclick="closeAssetToggleModal()">&times;</span>
-        <h3 id="toggleTitle" style="margin-top:0; color:var(--text-main); display:flex; align-items:center; gap:8px;">
+        <h3 id="assetToggleTitle" style="margin-top:0; color:var(--text-main); display:flex; align-items:center; gap:8px;">
             <i class="material-icons" style="color:var(--primary);">swap_horiz</i> {{ t('asset_view.modal_toggle_title', lang) }}
         </h3>
-        <p id="toggleHintBox" style="font-size: 0.85rem; color: #666; margin-bottom: 20px; line-height: 1.5; background:#f8f9fa; padding:10px; border-radius:8px; border-left:3px solid var(--primary);"></p>
+        <p id="assetToggleHintBox" style="font-size: 0.85rem; color: #666; margin-bottom: 20px; line-height: 1.5; background:#f8f9fa; padding:10px; border-radius:8px; border-left:3px solid var(--primary);"></p>
 
         <form id="assetToggleForm" method="post" action="">
             <div style="margin-bottom: 20px;">
                 <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('asset_view.modal_toggle_lbl', lang) }}</label>
-                <input type="text" name="target_loc" id="locInput" autocomplete="off" placeholder=""
+                <input type="text" name="target_loc" id="assetLocInput" autocomplete="off" placeholder=""
                        style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; outline: none;" value="">
             </div>
             <div id="toggleUserFields" style="display: none; margin-bottom: 20px;">
@@ -276,15 +276,15 @@
 <div id="simcardToggleModal" class="custom-modal">
     <div class="custom-modal-content" style="display: block; width: 450px;">
         <span class="close-modal" onclick="closeSimcardToggleModal()">&times;</span>
-        <h3 id="toggleTitle" style="margin-top:0; color:var(--text-main); display:flex; align-items:center; gap:8px;">
+        <h3 id="simcardToggleTitle" style="margin-top:0; color:var(--text-main); display:flex; align-items:center; gap:8px;">
             <i class="material-icons" style="color:var(--primary);">swap_horiz</i> {{ t('asset_view.modal_toggle_title', lang) }}
         </h3>
-        <p id="toggleHintBox" style="font-size: 0.85rem; color: #666; margin-bottom: 20px; line-height: 1.5; background:#f8f9fa; padding:10px; border-radius:8px; border-left:3px solid var(--primary);"></p>
+        <p id="simcardToggleHintBox" style="font-size: 0.85rem; color: #666; margin-bottom: 20px; line-height: 1.5; background:#f8f9fa; padding:10px; border-radius:8px; border-left:3px solid var(--primary);"></p>
         <form id="simcardToggleForm" method="post" action="">
             <div id="toggleFields" style="margin-bottom: 20px;">
                 <div class="form-row" style="margin-bottom: 15px;">
                     <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('simcard_history.target_loc', lang) }}</label>
-                    <input type="text" name="target_loc" id="locInput" class="edit-input" autocomplete="off" placeholder="" style="width:100%;" required>
+                    <input type="text" name="target_loc" id="simcardLocInput" class="edit-input" autocomplete="off" placeholder="" style="width:100%;" required>
                 </div>
                 <div class="form-row" style="margin-bottom: 15px;">
                     <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('simcard_history.target_user', lang) }}</label>

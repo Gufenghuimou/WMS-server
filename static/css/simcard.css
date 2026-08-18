@@ -99,7 +99,7 @@
     font-size: 1.15rem;
 }
 
-.name-input {
+/* .name-input {
     width: 100%;
     border-radius: 6px;
     border: 1px solid var(--border-color);
@@ -107,9 +107,9 @@
     background-color: #f8f9fa;
     color: var(--text-main);
     font-size: 0.85rem;
-}
+} */
 
-.modal-overlay {
+/* .modal-overlay {
     display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center;
     backdrop-filter: blur(3px);
@@ -217,4 +217,4 @@
     background-color: #f8f9fa;
     color: var(--text-main);
     font-size: 1.05rem;
-}
+} */

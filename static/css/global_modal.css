@@ -1,132 +1,165 @@
-    /* ==========================================
-       全局统一Modal样式 
-       ========================================== */
-    .custom-modal {
-        display: none;
-        justify-content: center;
-        align-items: center;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.5);
-        backdrop-filter: blur(4px);
-        overflow-y: auto;
-    }
+/* ==========================================
+    全局统一Modal样式 
+    ========================================== */
+.custom-modal {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    overflow-y: auto;
+}
 
-    .custom-modal-content {
-        background-color: var(--surface, #fff);
-        padding: 25px 30px;
-        border-radius: 12px;
-        width: 500px; /* 默认宽度 */
-        max-width: 90%;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        position: relative;
-        max-height: 90vh;
-        overflow-y: auto;
-        box-sizing: border-box;
-        /* 默认采用 Flex 垂直居中排版，若需左对齐或原生流，可在行内覆盖 display: block; */
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        overflow-x: hidden;
-        border: 1px solid var(--border-color, #eee);
-        animation: modalFadeIn 0.2s ease-out;
-    }
+.custom-modal-content {
+    background-color: var(--surface, #fff);
+    padding: 25px 30px;
+    border-radius: 12px;
+    width: 500px; /* 默认宽度 */
+    max-width: 90%;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+    /* 默认采用 Flex 垂直居中排版，若需左对齐或原生流，可在行内覆盖 display: block; */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+    border: 1px solid var(--border-color, #eee);
+    animation: modalFadeIn 0.2s ease-out;
+}
 
-    .close-modal {
-        position: absolute;
-        right: 20px;
-        top: 20px;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: #95a5a6;
-        line-height: 1;
-        transition: 0.2s;
-        z-index: 10;
-    }
-    .close-modal:hover { color: var(--danger-red, #e74c3c); }
+.close-modal {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #95a5a6;
+    line-height: 1;
+    transition: 0.2s;
+    z-index: 10;
+}
+.close-modal:hover { color: var(--danger-red, #e74c3c); }
 
-    @keyframes modalFadeIn {
-        from { transform: translateY(-20px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-    }
+@keyframes modalFadeIn {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
 
 
-    /* 滑动解锁样式 */
-    .slider-container {
-        width: 100%;
-        height: 56px;
-        background-color: #f1f3f4;
-        border-radius: 28px;
-        position: relative;
-        overflow: hidden;
-        border: 1px solid #e0e0e0;
-        user-select: none;
-    }
+/* 滑动解锁样式 */
+.slider-container {
+    width: 100%;
+    height: 56px;
+    background-color: #f1f3f4;
+    border-radius: 28px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+    user-select: none;
+}
 
-    .slider-track {
-        width: 100%;
-        height: 100%;
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+.slider-track {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-    .slider-text {
-        font-size: 0.95rem;
-        color: #7f8c8d;
-        z-index: 2;
-        pointer-events: none;
-    }
+.slider-text {
+    font-size: 0.95rem;
+    color: #7f8c8d;
+    z-index: 2;
+    pointer-events: none;
+}
 
-    .slider-bg {
-        position: absolute;
-        left: 0;
-        top: 0;
-        height: 100%;
-        width: 0;
-        background-color: var(--danger-red);
-        z-index: 1;
-        transition: none;
-    }
+.slider-bg {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0;
+    background-color: var(--danger-red);
+    z-index: 1;
+    transition: none;
+}
 
-    .slider-handle {
-        width: 50px;
-        height: 50px;
-        background-color: #fff;
-        border-radius: 50%;
-        position: absolute;
-        left: 3px;
-        z-index: 3;
-        cursor: grab;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        transition: transform 0.1s;
-    }
+.slider-handle {
+    width: 50px;
+    height: 50px;
+    background-color: #fff;
+    border-radius: 50%;
+    position: absolute;
+    left: 3px;
+    z-index: 3;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transition: transform 0.1s;
+}
 
-    .slider-handle:active {
-        cursor: grabbing;
-    }
+.slider-handle:active {
+    cursor: grabbing;
+}
 
-    .slider-handle i {
-        color: #555;
-        font-size: 1.5rem;
-    }
+.slider-handle i {
+    color: #555;
+    font-size: 1.5rem;
+}
 
-    .slider-container.unlocked .slider-text {
-        color: #fff;
-        font-weight: bold;
-    }
+.slider-container.unlocked .slider-text {
+    color: #fff;
+    font-weight: bold;
+}
 
-    /* 其他样式 */
-    #toggleFields {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
+/* simcard Modal 样式 */
+#toggleFields {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.form-row {
+display: flex;
+gap: 15px;
+align-items: center;
+justify-content: center;
+}
+.form-row label {
+    max-width: 50px;
+    text-align: center;
+    padding-top: 10px;
+    white-space: nowrap;
+}
+.form-row input {
+    max-width: 75%;
+    height: 36px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    padding: 6px;
+    background-color: #f8f9fa;
+    color: var(--text-main);
+    font-size: 1.05rem;
+}
+
+.edit-input {
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    padding: 6px;
+    background-color: #f8f9fa;
+    color: var(--text-main);
+    font-size: 0.85rem;
+}

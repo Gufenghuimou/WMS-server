@@ -1,7 +1,7 @@
 let grid;
 let overlay;
 let coverFlowIndex = 0;
-let cropper = null;
+// let cropper = null;
 let favs = [];
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -464,186 +464,186 @@ window.openEditModal = function(btn) {
 //     }
 // };
 
-// 定义滑动报废变量
-let isDraggingSlider = false;
-let startX = 0;
-let maxDrag = 0;
-const ZOOM_LEVEL = 0.67;
+// // 定义滑动报废变量
+// let isDraggingSlider = false;
+// let startX = 0;
+// let maxDrag = 0;
+// const ZOOM_LEVEL = 0.67;
 
-// 滑动删除
+// // 滑动删除
 
-window.openScrapModal = function(itemId) {
-    const modal = document.getElementById('scrapModal');
-    const form = document.getElementById('scrapForm');
+// window.openScrapModal = function(itemId) {
+//     const modal = document.getElementById('scrapModal');
+//     const form = document.getElementById('scrapForm');
 
-    form.action = `/delete/${itemId}`
+//     form.action = `/delete/${itemId}`
 
-    resetSlider();
-    modal.style.display = 'flex';
+//     resetSlider();
+//     modal.style.display = 'flex';
 
-    const handle = document.getElementById('sliderHandle');
-    const container = document.getElementById('sliderContainer');
-    maxDrag = container.clientWidth - handle.clientWidth - 6;
+//     const handle = document.getElementById('sliderHandle');
+//     const container = document.getElementById('sliderContainer');
+//     maxDrag = container.clientWidth - handle.clientWidth - 6;
 
-    handle.onmousedown = startSlide;
-}
+//     handle.onmousedown = startSlide;
+// }
 
-window.closeScrapModal = function() {
-    document.getElementById('scrapModal').style.display = 'none';
-    resetSlider();
-}
+// window.closeScrapModal = function() {
+//     document.getElementById('scrapModal').style.display = 'none';
+//     resetSlider();
+// }
 
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        closeScrapModal();
-    }
-});
+// document.addEventListener('keydown', (e) => {
+//     if (e.key === 'Escape') {
+//         closeScrapModal();
+//     }
+// });
 
-// scrapModal 滑动控制
+// // scrapModal 滑动控制
 
-function resetSlider(animate = false) {
-    const container = document.getElementById('sliderContainer');
-    const handle = document.getElementById('sliderHandle');
-    const bg = document.getElementById('sliderBg');
-    const text = document.getElementById('sliderText');
+// function resetSlider(animate = false) {
+//     const container = document.getElementById('sliderContainer');
+//     const handle = document.getElementById('sliderHandle');
+//     const bg = document.getElementById('sliderBg');
+//     const text = document.getElementById('sliderText');
 
-    container.classList.remove('unlocked');
-    text.innerText = '滑动以确认';
+//     container.classList.remove('unlocked');
+//     text.innerText = '滑动以确认';
 
-    if (animate) {
-        handle.style.transition = 'left 0.3s ease';
-        bg.style.transition = 'width 0.3s ease';
-    }
+//     if (animate) {
+//         handle.style.transition = 'left 0.3s ease';
+//         bg.style.transition = 'width 0.3s ease';
+//     }
 
-    handle.style.left = '3px';
-    bg.style.width = '0';
-}
+//     handle.style.left = '3px';
+//     bg.style.width = '0';
+// }
 
-function unlockSuccess() {
-    isDraggingSlider = false;
-    document.onmousemove = null;
+// function unlockSuccess() {
+//     isDraggingSlider = false;
+//     document.onmousemove = null;
 
-    const container = document.getElementById('sliderContainer');
-    container.classList.add('unlocked');
-    document.getElementById('sliderText').innerText = '释放以报废';
+//     const container = document.getElementById('sliderContainer');
+//     container.classList.add('unlocked');
+//     document.getElementById('sliderText').innerText = '释放以报废';
 
-    setTimeout(() => {
-        document.getElementById('scrapForm').submit();
-    }, 200);
-}
+//     setTimeout(() => {
+//         document.getElementById('scrapForm').submit();
+//     }, 200);
+// }
 
-function updateSliderPosition(x) {
-    const handle = document.getElementById('sliderHandle');
-    const bg = document.getElementById('sliderBg');
-    handle.style.left = (x + 3) + 'px';
-    bg.style.width = (x + 25) + 'px';
-}
+// function updateSliderPosition(x) {
+//     const handle = document.getElementById('sliderHandle');
+//     const bg = document.getElementById('sliderBg');
+//     handle.style.left = (x + 3) + 'px';
+//     bg.style.width = (x + 25) + 'px';
+// }
 
-function onSlide(e) {
-    if (!isDraggingSlider) return;
-    let moveX = (e.clientX - startX) / ZOOM_LEVEL;
+// function onSlide(e) {
+//     if (!isDraggingSlider) return;
+//     let moveX = (e.clientX - startX) / ZOOM_LEVEL;
 
-    if (moveX < 0) moveX = 0;
-    if (moveX > maxDrag) moveX = maxDrag;
+//     if (moveX < 0) moveX = 0;
+//     if (moveX > maxDrag) moveX = maxDrag;
 
-    updateSliderPosition(moveX);
+//     updateSliderPosition(moveX);
 
-    if (moveX >= maxDrag * 0.98) {
-        unlockSuccess();
-    }
-}
+//     if (moveX >= maxDrag * 0.98) {
+//         unlockSuccess();
+//     }
+// }
 
-function startSlide(e) {
-    isDraggingSlider = true;
-    startX = e.clientX;
-    document.onmousemove = onSlide;
-    document.onmouseup = stopSlide;
+// function startSlide(e) {
+//     isDraggingSlider = true;
+//     startX = e.clientX;
+//     document.onmousemove = onSlide;
+//     document.onmouseup = stopSlide;
 
-    document.getElementById('sliderHandle').style.transition = 'none';
-    document.getElementById('sliderBg').style.transition = 'none';
-}
+//     document.getElementById('sliderHandle').style.transition = 'none';
+//     document.getElementById('sliderBg').style.transition = 'none';
+// }
 
-function stopSlide(e) {
-    if (!isDraggingSlider) return;
-    isDraggingSlider = false;
-    document.onmousemove = null;
-    document.onmouseup = null;
+// function stopSlide(e) {
+//     if (!isDraggingSlider) return;
+//     isDraggingSlider = false;
+//     document.onmousemove = null;
+//     document.onmouseup = null;
 
-    if (!document.getElementById('sliderContainer').classList.contains('unlocked')) {
-        resetSlider(true);
-    }
-}
+//     if (!document.getElementById('sliderContainer').classList.contains('unlocked')) {
+//         resetSlider(true);
+//     }
+// }
 
 //
 
-window.handleImageSelect = function(event) {
-    let file = event.target.files[0];
-    if (!file) return;
+// window.handleImageSelect = function(event) {
+//     let file = event.target.files[0];
+//     if (!file) return;
 
-    let reader = new FileReader();
-    reader.onload = function(e) {
-        document.getElementById('cropImageTarget').src = e.target.result;
-        document.getElementById('cropModal').style.display = 'block';
+//     let reader = new FileReader();
+//     reader.onload = function(e) {
+//         document.getElementById('cropImageTarget').src = e.target.result;
+//         document.getElementById('cropModal').style.display = 'block';
 
-        if (cropper) { cropper.destroy(); }
+//         if (cropper) { cropper.destroy(); }
 
-        let image = document.getElementById('cropImageTarget');
-        cropper = new Cropper(image, {
-            aspectRatio: 16 / 9,
-            viewMode: 1,
-            autoCropArea: 0.9,
-            dragMode: 'move',
-        });
-    };
-    reader.readAsDataURL(file);
-    event.target.value = '';
-};
+//         let image = document.getElementById('cropImageTarget');
+//         cropper = new Cropper(image, {
+//             aspectRatio: 16 / 9,
+//             viewMode: 1,
+//             autoCropArea: 0.9,
+//             dragMode: 'move',
+//         });
+//     };
+//     reader.readAsDataURL(file);
+//     event.target.value = '';
+// };
 
-window.confirmCrop = function() {
-    if (!cropper) return;
+// window.confirmCrop = function() {
+//     if (!cropper) return;
 
-    cropper.getCroppedCanvas({
-        maxWidth: 800,
-        maxHeight: 800,
-        imageSmoothingEnabled: true,
-        imageSmoothingQuality: 'high',
-    }).toBlob(function(blob) {
-        let formData = new FormData();
-        formData.append('file', blob, 'image.jpg');
+//     cropper.getCroppedCanvas({
+//         maxWidth: 800,
+//         maxHeight: 800,
+//         imageSmoothingEnabled: true,
+//         imageSmoothingQuality: 'high',
+//     }).toBlob(function(blob) {
+//         let formData = new FormData();
+//         formData.append('file', blob, 'image.jpg');
 
-        fetch(`/api/upload_image/${window.currentEditItemId}`, {
-            method: 'POST',
-            body: formData
-        })
-        .then(res => res.json())
-        .then(data => {
-            if(data.status === 'success') {
-                closeCropModal();
-                showToast(data.message, 'success');
-                let freshUrl = data.url + '?t=' + new Date().getTime();
+//         fetch(`/api/upload_image/${window.currentEditItemId}`, {
+//             method: 'POST',
+//             body: formData
+//         })
+//         .then(res => res.json())
+//         .then(data => {
+//             if(data.status === 'success') {
+//                 closeCropModal();
+//                 showToast(data.message, 'success');
+//                 let freshUrl = data.url + '?t=' + new Date().getTime();
 
-                let imgPreview = document.getElementById('editImagePreview');
-                imgPreview.src = freshUrl;
-                imgPreview.style.display = 'block';
-                document.getElementById('editImagePlaceholder').style.display = 'none';
+//                 let imgPreview = document.getElementById('editImagePreview');
+//                 imgPreview.src = freshUrl;
+//                 imgPreview.style.display = 'block';
+//                 document.getElementById('editImagePlaceholder').style.display = 'none';
 
-                let cardImg = document.querySelector(`.card-item-img[data-itemid="${window.currentEditItemId}"]`);
-                if (cardImg) {
-                    cardImg.src = freshUrl;
-                    cardImg.style.display = 'block';
-                    cardImg.nextElementSibling.style.display = 'none';
-                }
-            }
-        })
-        .catch(err => alert(CARD_I18N.upload_fail + err));
+//                 let cardImg = document.querySelector(`.card-item-img[data-itemid="${window.currentEditItemId}"]`);
+//                 if (cardImg) {
+//                     cardImg.src = freshUrl;
+//                     cardImg.style.display = 'block';
+//                     cardImg.nextElementSibling.style.display = 'none';
+//                 }
+//             }
+//         })
+//         .catch(err => alert(CARD_I18N.upload_fail + err));
 
-    }, 'image/jpeg', 0.8);
-};
+//     }, 'image/jpeg', 0.8);
+// };
 
-window.closeCropModal = function() {
-    document.getElementById('cropModal').style.display = 'none';
-    if(cropper) cropper.destroy();
-};
+// window.closeCropModal = function() {
+//     document.getElementById('cropModal').style.display = 'none';
+//     if(cropper) cropper.destroy();
+// };
 
 window.toggleBookmark = async function(event, itemId) {
     event.stopPropagation();

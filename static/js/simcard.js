@@ -62,210 +62,210 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// 定义滑动报废变量
-let isDraggingSlider = false;
-let startX = 0;
-let maxDrag = 0;
-const ZOOM_LEVEL = 0.67;
+// // 定义滑动报废变量
+// let isDraggingSlider = false;
+// let startX = 0;
+// let maxDrag = 0;
+// const ZOOM_LEVEL = 0.67;
 
-// Modals Control
+// // Modals Control
 
-window.openToggleModal = function(itemId, isStockStr) {
-    const modal = document.getElementById('toggleModal');
-    const form = document.getElementById('toggleForm');
-    const title = document.getElementById('toggleTitle');
-    const hintBox = document.getElementById('toggleHintBox');
-    const fieldBox = document.getElementById('toggleFields');
-    const locInput = document.getElementById('locInput');
-    const userInput = document.getElementById('userInput');
-    const projectInput = document.getElementById('projectInput');
+// window.openToggleModal = function(itemId, isStockStr) {
+//     const modal = document.getElementById('toggleModal');
+//     const form = document.getElementById('toggleForm');
+//     const title = document.getElementById('toggleTitle');
+//     const hintBox = document.getElementById('toggleHintBox');
+//     const fieldBox = document.getElementById('toggleFields');
+//     const locInput = document.getElementById('locInput');
+//     const userInput = document.getElementById('userInput');
+//     const projectInput = document.getElementById('projectInput');
 
-    form.action = `/simcard_out/${itemId}`
+//     form.action = `/simcard_out/${itemId}`
 
-    if (isStockStr === 'True') {
-        title.innerHTML = `<i class="material-icons" style="color:#1db954;">output</i> ${ASSET_I18N.toggle_out_title}`;
-        hintBox.innerHTML = ASSET_I18N.toggle_out_hint;
-        fieldBox.style.display = 'flex';
-        locInput.value = '';
-        locInput.required = true;
-        userInput.value = '';
-        projectInput.value = '';
-    } else {
-        title.innerHTML = `<i class="material-icons" style="color:#f39c12;">keyboard_return</i> ${ASSET_I18N.toggle_in_title}`;
-        hintBox.innerHTML = ASSET_I18N.toggle_in_hint;
-        fieldBox.style.display = 'none';
-        locInput.value = '';
-        locInput.required = false;
-        userInput.value = '';
-        projectInput.value = '';
-    }
-    modal.style.display = 'flex';
-}
+//     if (isStockStr === 'True') {
+//         title.innerHTML = `<i class="material-icons" style="color:#1db954;">output</i> ${ASSET_I18N.toggle_out_title}`;
+//         hintBox.innerHTML = ASSET_I18N.toggle_out_hint;
+//         fieldBox.style.display = 'flex';
+//         locInput.value = '';
+//         locInput.required = true;
+//         userInput.value = '';
+//         projectInput.value = '';
+//     } else {
+//         title.innerHTML = `<i class="material-icons" style="color:#f39c12;">keyboard_return</i> ${ASSET_I18N.toggle_in_title}`;
+//         hintBox.innerHTML = ASSET_I18N.toggle_in_hint;
+//         fieldBox.style.display = 'none';
+//         locInput.value = '';
+//         locInput.required = false;
+//         userInput.value = '';
+//         projectInput.value = '';
+//     }
+//     modal.style.display = 'flex';
+// }
 
-window.openItemEditModal = function(itemId, icc, carrier, phone, loc, user, proj, note) {
-    const modal = document.getElementById('itemEditModal');
-    document.getElementById('itemEditForm').action = `/simcard_edit/${itemId}`;
+// window.openItemEditModal = function(itemId, icc, carrier, phone, loc, user, proj, note) {
+//     const modal = document.getElementById('itemEditModal');
+//     document.getElementById('itemEditForm').action = `/simcard_edit/${itemId}`;
 
-    document.getElementById('editIccid').value = icc;
-    document.getElementById('editCarrier').value = carrier;
-    document.getElementById('editPhone').value = phone;
-    document.getElementById('editLoc').value = loc;
-    document.getElementById('editUser').value = user || '';
-    document.getElementById('editProject').value = proj || '';
-    document.getElementById('editNote').value = note || '';
+//     document.getElementById('editIccid').value = icc;
+//     document.getElementById('editCarrier').value = carrier;
+//     document.getElementById('editPhone').value = phone;
+//     document.getElementById('editLoc').value = loc;
+//     document.getElementById('editUser').value = user || '';
+//     document.getElementById('editProject').value = proj || '';
+//     document.getElementById('editNote').value = note || '';
 
-    modal.style.display = 'flex';
-}
+//     modal.style.display = 'flex';
+// }
 
-window.openActiveToggleModal = function(itemId, isActiveStr) {
-    const modal = document.getElementById('activeToggleModal');
-    const form = document.getElementById('activeToggleForm');
-    const title = document.getElementById('activeModalTitle');
-    const text = document.getElementById('activeModalText');
-    const icon = document.getElementById('activeModalIcon');
-    const submitBtn = document.getElementById('activeSubmitBtn');
+// window.openActiveToggleModal = function(itemId, isActiveStr) {
+//     const modal = document.getElementById('activeToggleModal');
+//     const form = document.getElementById('activeToggleForm');
+//     const title = document.getElementById('activeModalTitle');
+//     const text = document.getElementById('activeModalText');
+//     const icon = document.getElementById('activeModalIcon');
+//     const submitBtn = document.getElementById('activeSubmitBtn');
 
-    form.action = `/simcard_active_toggle/${itemId}`;
+//     form.action = `/simcard_active_toggle/${itemId}`;
 
-    if (isActiveStr === 'True') {
-        icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red);">do_not_disturb_on</i>';
-        title.innerHTML = SIMCARD_I18N.simcard_disable;
-        text.innerHTML = SIMCARD_I18N.disabled_notice;
-        submitBtn.innerHTML = `<i class="material-icons">block</i> ${SIMCARD_I18N.btn_disable}`;
-        submitBtn.style.backgroundColor = 'var(--danger-red)';
-    } else {
-        icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: #1db954;">settings_backup_restore</i>';
-        title.innerHTML = SIMCARD_I18N.simcard_enable;
-        text.innerHTML = SIMCARD_I18N.enable_notice;
-        submitBtn.innerHTML = `<i class="material-icons">check_circle</i> ${SIMCARD_I18N.btn_enable}`;
-        submitBtn.style.backgroundColor = 'var(--primary-green)';
-    }
-    modal.style.display = 'flex';
-}
+//     if (isActiveStr === 'True') {
+//         icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red);">do_not_disturb_on</i>';
+//         title.innerHTML = SIMCARD_I18N.simcard_disable;
+//         text.innerHTML = SIMCARD_I18N.disabled_notice;
+//         submitBtn.innerHTML = `<i class="material-icons">block</i> ${SIMCARD_I18N.btn_disable}`;
+//         submitBtn.style.backgroundColor = 'var(--danger-red)';
+//     } else {
+//         icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: #1db954;">settings_backup_restore</i>';
+//         title.innerHTML = SIMCARD_I18N.simcard_enable;
+//         text.innerHTML = SIMCARD_I18N.enable_notice;
+//         submitBtn.innerHTML = `<i class="material-icons">check_circle</i> ${SIMCARD_I18N.btn_enable}`;
+//         submitBtn.style.backgroundColor = 'var(--primary-green)';
+//     }
+//     modal.style.display = 'flex';
+// }
 
-window.openScrapModal = function(itemId, isActiveStr) {
-    const modal = document.getElementById('scrapModal');
-    const form = document.getElementById('scrapForm');
+// window.openScrapModal = function(itemId, isActiveStr) {
+//     const modal = document.getElementById('scrapModal');
+//     const form = document.getElementById('scrapForm');
 
-    form.action = `/simcard_delete/${itemId}`
-    if (isActiveStr === 'True') return;
+//     form.action = `/simcard_delete/${itemId}`
+//     if (isActiveStr === 'True') return;
 
-    resetSlider();
-    modal.style.display = 'flex';
+//     resetSlider();
+//     modal.style.display = 'flex';
 
-    const handle = document.getElementById('sliderHandle');
-    const container = document.getElementById('sliderContainer');
-    maxDrag = container.clientWidth - handle.clientWidth - 6;
+//     const handle = document.getElementById('sliderHandle');
+//     const container = document.getElementById('sliderContainer');
+//     maxDrag = container.clientWidth - handle.clientWidth - 6;
 
-    handle.onmousedown = startSlide;
-}
+//     handle.onmousedown = startSlide;
+// }
 
-window.closeToggleModal = function() {
-    document.getElementById('toggleModal').style.display = 'none';
-}
+// window.closeToggleModal = function() {
+//     document.getElementById('toggleModal').style.display = 'none';
+// }
 
-window.closeItemEditModal = function() {
-    document.getElementById('itemEditModal').style.display = 'none';
-}
+// window.closeItemEditModal = function() {
+//     document.getElementById('itemEditModal').style.display = 'none';
+// }
 
-window.closeActiveToggleModal = function() {
-    document.getElementById('activeToggleModal').style.display = 'none';
-}
+// window.closeActiveToggleModal = function() {
+//     document.getElementById('activeToggleModal').style.display = 'none';
+// }
 
-window.closeScrapModal = function() {
-    document.getElementById('scrapModal').style.display = 'none';
-    resetSlider();
-}
+// window.closeScrapModal = function() {
+//     document.getElementById('scrapModal').style.display = 'none';
+//     resetSlider();
+// }
 
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        closeToggleModal();
-        closeItemEditModal();
-        closeActiveToggleModal();
-        closeScrapModal();
-    }
-});
+// document.addEventListener('keydown', (e) => {
+//     if (e.key === 'Escape') {
+//         closeToggleModal();
+//         closeItemEditModal();
+//         closeActiveToggleModal();
+//         closeScrapModal();
+//     }
+// });
 
-// scrapModal 滑动控制
+// // scrapModal 滑动控制
 
-function resetSlider(animate = false) {
-    const container = document.getElementById('sliderContainer');
-    const handle = document.getElementById('sliderHandle');
-    const bg = document.getElementById('sliderBg');
-    const text = document.getElementById('sliderText');
+// function resetSlider(animate = false) {
+//     const container = document.getElementById('sliderContainer');
+//     const handle = document.getElementById('sliderHandle');
+//     const bg = document.getElementById('sliderBg');
+//     const text = document.getElementById('sliderText');
 
-    container.classList.remove('unlocked');
-    text.innerText = '滑动以确认';
+//     container.classList.remove('unlocked');
+//     text.innerText = '滑动以确认';
 
-    if (animate) {
-        handle.style.transition = 'left 0.3s ease';
-        bg.style.transition = 'width 0.3s ease';
-    }
+//     if (animate) {
+//         handle.style.transition = 'left 0.3s ease';
+//         bg.style.transition = 'width 0.3s ease';
+//     }
 
-    handle.style.left = '3px';
-    bg.style.width = '0';
-}
+//     handle.style.left = '3px';
+//     bg.style.width = '0';
+// }
 
-function unlockSuccess() {
-    isDraggingSlider = false;
-    document.onmousemove = null;
+// function unlockSuccess() {
+//     isDraggingSlider = false;
+//     document.onmousemove = null;
 
-    const container = document.getElementById('sliderContainer');
-    container.classList.add('unlocked');
-    document.getElementById('sliderText').innerText = '释放以报废';
+//     const container = document.getElementById('sliderContainer');
+//     container.classList.add('unlocked');
+//     document.getElementById('sliderText').innerText = '释放以报废';
 
-    setTimeout(() => {
-        document.getElementById('scrapForm').submit();
-    }, 200);
-}
+//     setTimeout(() => {
+//         document.getElementById('scrapForm').submit();
+//     }, 200);
+// }
 
-function updateSliderPosition(x) {
-    const handle = document.getElementById('sliderHandle');
-    const bg = document.getElementById('sliderBg');
-    handle.style.left = (x + 3) + 'px';
-    bg.style.width = (x + 25) + 'px';
-}
+// function updateSliderPosition(x) {
+//     const handle = document.getElementById('sliderHandle');
+//     const bg = document.getElementById('sliderBg');
+//     handle.style.left = (x + 3) + 'px';
+//     bg.style.width = (x + 25) + 'px';
+// }
 
-function onSlide(e) {
-    if (!isDraggingSlider) return;
-    let moveX = (e.clientX - startX) / ZOOM_LEVEL;
+// function onSlide(e) {
+//     if (!isDraggingSlider) return;
+//     let moveX = (e.clientX - startX) / ZOOM_LEVEL;
 
-    if (moveX < 0) moveX = 0;
-    if (moveX > maxDrag) moveX = maxDrag;
+//     if (moveX < 0) moveX = 0;
+//     if (moveX > maxDrag) moveX = maxDrag;
 
-    updateSliderPosition(moveX);
+//     updateSliderPosition(moveX);
 
-    if (moveX >= maxDrag * 0.98) {
-        unlockSuccess();
-    }
-}
+//     if (moveX >= maxDrag * 0.98) {
+//         unlockSuccess();
+//     }
+// }
 
-function startSlide(e) {
-    isDraggingSlider = true;
-    startX = e.clientX;
-    document.onmousemove = onSlide;
-    document.onmouseup = stopSlide;
+// function startSlide(e) {
+//     isDraggingSlider = true;
+//     startX = e.clientX;
+//     document.onmousemove = onSlide;
+//     document.onmouseup = stopSlide;
 
-    document.getElementById('sliderHandle').style.transition = 'none';
-    document.getElementById('sliderBg').style.transition = 'none';
-}
+//     document.getElementById('sliderHandle').style.transition = 'none';
+//     document.getElementById('sliderBg').style.transition = 'none';
+// }
 
-function stopSlide(e) {
-    if (!isDraggingSlider) return;
-    isDraggingSlider = false;
-    document.onmousemove = null;
-    document.onmouseup = null;
+// function stopSlide(e) {
+//     if (!isDraggingSlider) return;
+//     isDraggingSlider = false;
+//     document.onmousemove = null;
+//     document.onmouseup = null;
 
-    if (!document.getElementById('sliderContainer').classList.contains('unlocked')) {
-        resetSlider(true);
-    }
-}
+//     if (!document.getElementById('sliderContainer').classList.contains('unlocked')) {
+//         resetSlider(true);
+//     }
+// }
 
 // AJAX
 
 document.addEventListener('submit', async function(e){
     const form = e.target;
-    if (form.id !== 'toggleForm' && form.id !== 'itemEditForm' && form.id !== 'activeToggleForm') return;
+    if (form.id !== 'simcardToggleForm' && form.id !== 'simcardEditForm' && form.id !== 'activeToggleForm') return;
     e.preventDefault();
 
     try {
@@ -278,8 +278,8 @@ document.addEventListener('submit', async function(e){
         let result = await response.json();
         if (result.status === 'success') {
             showToast(result.message, 'success');
-            closeToggleModal();
-            closeItemEditModal();
+            closeSimcardToggleModal();
+            closeSimcardEditModal();
             closeActiveToggleModal();
 
             updateTableRow(result.data)

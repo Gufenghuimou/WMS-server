@@ -3,7 +3,7 @@ window.openMobileUploadAuth = async function(event) {
     let originalHtml = btn.innerHTML;
 
     // 按钮变成加载状态
-    btn.innerHTML = `<i class="material-icons" style="font-size: 1.2rem; animation: spin 1s linear infinite;">autorenew</i> ${BASE_I18N.generating}`;
+    btn.innerHTML = `<i class="material-icons" style="font-size: 1.2rem; animation: spin 1s linear infinite;">autorenew</i> ${MODAL_I18N.generating}`;
     btn.disabled = true;
 
     try {
@@ -28,11 +28,11 @@ window.openMobileUploadAuth = async function(event) {
             // 呼出弹窗
             document.getElementById('qrModal').style.display = 'flex';
         } else {
-            alert(BASE_I18N.auth_fail + (data.message || BASE_I18N.unknown_error));
+            alert(MODAL_I18N.auth_fail + (data.message || MODAL_I18N.unknown_error));
         }
     } catch(e) {
         console.error(e);
-        alert(BASE_I18N.network_error_qr);
+        alert(MODAL_I18N.network_error_qr);
     } finally {
         // 恢复按钮状态
         btn.innerHTML = originalHtml;
@@ -123,10 +123,10 @@ window.confirmCrop = function() {
                     if (placeholderFront) placeholderFront.style.display = 'none';
                 }
             } else {
-                showToast(ASSET_I18N.upload_fail, 'error');
+                showToast(MODAL_I18N.upload_fail, 'error');
             }
         } catch(e) {
-            showToast(ASSET_I18N.upload_net_err, 'error');
+            showToast(MODAL_I18N.upload_net_err, 'error');
         }
 
     }, 'image/jpeg', 0.8);
@@ -193,7 +193,7 @@ window.confirmCrop = function() {
                 }
             }
         })
-        .catch(err => alert(CARD_I18N.upload_fail + err));
+        .catch(err => alert(MODAL_I18N.upload_fail + err));
 
     }, 'image/jpeg', 0.8);
 };
@@ -218,7 +218,13 @@ window.openScrapModal = function(itemId) {
     const modal = document.getElementById('scrapModal');
     const form = document.getElementById('scrapForm');
 
-    form.action = `/delete/${itemId}`
+    let currentPage = document.querySelector('.nav-item.active');
+    // console.log(currentPage);
+    if (currentPage.getAttribute('href') === '/all') {
+        form.action = `/delete/${itemId}`;
+    } else if (currentPage.getAttribute('href') === '/simcard') {
+        form.action = `/simcard_delete/${itemId}`;
+    }
 
     resetSlider();
     modal.style.display = 'flex';
@@ -320,17 +326,17 @@ function stopSlide(e) {
 window.openAssetToggleModal = function(itemId, isStockStr, ctrlNo, isUserRequest = false, defaultRack = '', originalLoc = '') {
     const modal = document.getElementById('assetToggleModal');
     const form = document.getElementById('assetToggleForm');
-    const hintBox = document.getElementById('toggleHintBox');
-    const locInput = document.getElementById('locInput');
-    const title = document.getElementById('toggleTitle');
+    const hintBox = document.getElementById('assetToggleHintBox');
+    const locInput = document.getElementById('assetLocInput');
+    const title = document.getElementById('assetToggleTitle');
     const adminLocBox = locInput.parentElement;
     const userFieldsBox = document.getElementById('toggleUserFields');
     const toggleDeptInput = document.getElementById('toggleDept');
 
     if (isUserRequest) {
         form.action = `/api/request_asset/${ctrlNo}`;
-        title.innerHTML = `<i class="material-icons" style="color:#1db954;">assignment_return</i> ${ASSET_I18N.request_return_title}`;
-        hintBox.innerHTML = `${ASSET_I18N.request_return} <strong>${ctrlNo}</strong>.`;
+        title.innerHTML = `<i class="material-icons" style="color:#1db954;">assignment_return</i> ${MODAL_I18N.request_return_title}`;
+        hintBox.innerHTML = `${MODAL_I18N.request_return} <strong>${ctrlNo}</strong>.`;
         adminLocBox.style.display = 'none';
         locInput.required = false;
         userFieldsBox.style.display = 'block';
@@ -344,15 +350,15 @@ window.openAssetToggleModal = function(itemId, isStockStr, ctrlNo, isUserRequest
         toggleDeptInput.required = false;
         toggleDeptInput.value = '';
         if (isStockStr === 'True') {
-            title.innerHTML = `<i class="material-icons" style="color:#f39c12;">output</i> ${ASSET_I18N.toggle_out_title}`;
-            hintBox.innerHTML = ASSET_I18N.toggle_out_hint;
-            locInput.placeholder = ASSET_I18N.toggle_out_ph;
+            title.innerHTML = `<i class="material-icons" style="color:#f39c12;">output</i> ${MODAL_I18N.toggle_out_title}`;
+            hintBox.innerHTML = MODAL_I18N.toggle_out_hint;
+            locInput.placeholder = MODAL_I18N.toggle_out_ph;
             locInput.value = '';
             locInput.required = true;
         } else {
-            title.innerHTML = `<i class="material-icons" style="color:#1db954;">keyboard_return</i> ${ASSET_I18N.toggle_in_title}`;
-            hintBox.innerHTML = ASSET_I18N.toggle_in_hint;
-            locInput.placeholder = originalLoc ? originalLoc : ASSET_I18N.toggle_in_ph;
+            title.innerHTML = `<i class="material-icons" style="color:#1db954;">keyboard_return</i> ${MODAL_I18N.toggle_in_title}`;
+            hintBox.innerHTML = MODAL_I18N.toggle_in_hint;
+            locInput.placeholder = originalLoc ? originalLoc : MODAL_I18N.toggle_in_ph;
             locInput.value = originalLoc;
             locInput.required = false;
         }
@@ -385,8 +391,8 @@ window.openStopConfirmModal = function(itemId, ctrlNo, isStopStr, isUserRequest 
     if (isUserRequest) {
         form.action = `/api/request_asset/${ctrlNo}`;
         icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red);">build</i>';
-        title.innerText = `${ASSET_I18N.report_broken_title}`;
-        text.innerHTML = `${ASSET_I18N.report_broken} <strong>${ctrlNo}</strong>`;
+        title.innerText = `${MODAL_I18N.report_broken_title}`;
+        text.innerHTML = `${MODAL_I18N.report_broken} <strong>${ctrlNo}</strong>`;
         radio.style.display = 'none';
         radio.querySelectorAll('input').forEach(input => {input.required = false;});
         userFieldsBox.style.display = 'block';
@@ -394,7 +400,7 @@ window.openStopConfirmModal = function(itemId, ctrlNo, isStopStr, isUserRequest 
         stopDeptInput.value = defaultRack;
         stopDeptInput.placeholder = defaultRack;
         submitBtn.style.backgroundColor = 'var(--danger-red)';
-        submitBtn.innerHTML = `<i class="material-icons">send</i> ${ASSET_I18N.btn_submit}`;
+        submitBtn.innerHTML = `<i class="material-icons">send</i> ${MODAL_I18N.btn_submit}`;
     } else {
         form.action = `/api/asset_stop_toggle/${itemId}`;
         userFieldsBox.style.display = 'none';
@@ -402,8 +408,8 @@ window.openStopConfirmModal = function(itemId, ctrlNo, isStopStr, isUserRequest 
         stopDeptInput.value = '';
         if (isStopStr === 'True') {
             icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: #1db954;">settings_backup_restore</i>';
-            title.innerText = ASSET_I18N.stop_reuse_title;
-            text.innerHTML = ASSET_I18N.stop_reuse_text.replace('{ctrlNo}', ctrlNo);
+            title.innerText = MODAL_I18N.stop_reuse_title;
+            text.innerHTML = MODAL_I18N.stop_reuse_text.replace('{ctrlNo}', ctrlNo);
             locReuseContainer.style.display = 'block';
             locReuse.placeholder = defaultRack;
             locReuse.required = true;
@@ -411,18 +417,18 @@ window.openStopConfirmModal = function(itemId, ctrlNo, isStopStr, isUserRequest 
             radio.style.display = 'none';
             radio.querySelectorAll('input').forEach(i => i.required = false);
             submitBtn.style.backgroundColor = '#1db954';
-            submitBtn.innerHTML = `<i class="material-icons">check_circle</i> ${ASSET_I18N.btn_reuse}`;
+            submitBtn.innerHTML = `<i class="material-icons">check_circle</i> ${MODAL_I18N.btn_reuse}`;
         } else {
             icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red);">do_not_disturb_on</i>';
-            title.innerText = ASSET_I18N.stop_freeze_title;
-            text.innerHTML = ASSET_I18N.stop_freeze_text.replace('{ctrlNo}', ctrlNo);
+            title.innerText = MODAL_I18N.stop_freeze_title;
+            text.innerHTML = MODAL_I18N.stop_freeze_text.replace('{ctrlNo}', ctrlNo);
             locReuseContainer.style.display = 'none';
             locReuse.placeholder = '';
             locReuse.value = '';
             radio.style.display = 'flex';
             radio.querySelectorAll('input').forEach(i => i.required = true);
             submitBtn.style.backgroundColor = 'var(--danger-red)';
-            submitBtn.innerHTML = `<i class="material-icons">block</i> ${ASSET_I18N.btn_stop}`;
+            submitBtn.innerHTML = `<i class="material-icons">block</i> ${MODAL_I18N.btn_stop}`;
         }
     }
 
@@ -515,12 +521,12 @@ window.openAssetApproveModal = function(reqId, matter, pn, reqQty, ctrlNo) {
         ctrlBox.style.display = 'none';
     }
     if (matter === 'require') {
-        title.innerHTML = `<i class="material-icons" style="color: var(--primary-blue);">add_shopping_cart</i> ${QUEUE_I18N.dispatch_asset}`;
+        title.innerHTML = `<i class="material-icons" style="color: var(--primary-blue);">add_shopping_cart</i> ${MODAL_I18N.dispatch_asset}`;
         dynamicBox.innerHTML = `
-            <label style="display: block; font-weight: bold; color: var(--text-main); margin-bottom: 8px;">Scan Serial Numbers (Expected: ${reqQty})${QUEUE_I18N.scan_area_label.replace('{reqQty}', reqQty)} <span style="color: red;">*</span></label>
+            <label style="display: block; font-weight: bold; color: var(--text-main); margin-bottom: 8px;">Scan Serial Numbers (Expected: ${reqQty})${MODAL_I18N.scan_area_label.replace('{reqQty}', reqQty)} <span style="color: red;">*</span></label>
             <input type="text" id="scanSnInput" name="ctrl_nos" required placeholder="JPE160001"
                    style="width: 100%; height: 42px; font-size: 1rem; padding: 0 10px; border: 2px solid var(--primary-blue); border-radius: 6px; outline: none; box-sizing: border-box;">
-            <p style="font-size: 0.75rem; color: #888; margin-top: 5px;">${QUEUE_I18N.scab_area_note}</p>
+            <p style="font-size: 0.75rem; color: #888; margin-top: 5px;">${MODAL_I18N.scab_area_note}</p>
         `;
 
         // 拦截回车
@@ -540,10 +546,10 @@ window.openAssetApproveModal = function(reqId, matter, pn, reqQty, ctrlNo) {
         }, 10);
     }
     else if (matter === 'return') {
-        title.innerHTML = `<i class="material-icons" style="color: var(--primary-green);">assignment_return</i> ${QUEUE_I18N.confirm_return}`;
+        title.innerHTML = `<i class="material-icons" style="color: var(--primary-green);">assignment_return</i> ${MODAL_I18N.confirm_return}`;
         dynamicBox.innerHTML = `
-            <label style="display: block; font-weight: bold; color: var(--text-main); margin-bottom: 8px;">${QUEUE_I18N.target_location}</label>
-            <input type="text" id="scanLocInput" name="target_location" placeholder="${QUEUE_I18N.target_location_ph}"
+            <label style="display: block; font-weight: bold; color: var(--text-main); margin-bottom: 8px;">${MODAL_I18N.target_location}</label>
+            <input type="text" id="scanLocInput" name="target_location" placeholder="${MODAL_I18N.target_location_ph}"
                    style="width: 100%; height: 42px; font-size: 1rem; padding: 0 10px; border: 2px solid var(--primary); border-radius: 6px; outline: none; box-sizing: border-box;">
         `;
         // 拦截回车
@@ -560,11 +566,11 @@ window.openAssetApproveModal = function(reqId, matter, pn, reqQty, ctrlNo) {
         }, 10);
     }
     else if (matter === 'broken') {
-        title.innerHTML = `<i class="material-icons" style="color:#d93025;">build</i> ${QUEUE_I18N.confirm_broken}`;
+        title.innerHTML = `<i class="material-icons" style="color:#d93025;">build</i> ${MODAL_I18N.confirm_broken}`;
         dynamicBox.innerHTML = `
             <div style="background: #fce8e6; color: #d93025; padding: 15px; border-radius: 6px; border: 1px dashed #fadbd8; text-align: center;">
                 <i class="material-icons" style="font-size: 2rem; margin-bottom: 5px;">warning</i><br>
-                ${QUEUE_I18N.broken_note}
+                ${MODAL_I18N.broken_note}
             </div>
         `;
     }
@@ -582,26 +588,26 @@ window.closeAssetApproveModal = function() {
 window.openSimcardToggleModal = function(itemId, isStockStr) {
     const modal = document.getElementById('simcardToggleModal');
     const form = document.getElementById('simcardToggleForm');
-    const title = document.getElementById('toggleTitle');
-    const hintBox = document.getElementById('toggleHintBox');
+    const title = document.getElementById('simcardToggleTitle');
+    const hintBox = document.getElementById('simcardToggleHintBox');
     const fieldBox = document.getElementById('toggleFields');
-    const locInput = document.getElementById('locInput');
+    const locInput = document.getElementById('simcardLocInput');
     const userInput = document.getElementById('userInput');
     const projectInput = document.getElementById('projectInput');
 
     form.action = `/simcard_out/${itemId}`
 
     if (isStockStr === 'True') {
-        title.innerHTML = `<i class="material-icons" style="color:#1db954;">output</i> ${ASSET_I18N.toggle_out_title}`;
-        hintBox.innerHTML = ASSET_I18N.toggle_out_hint;
+        title.innerHTML = `<i class="material-icons" style="color:#1db954;">output</i> ${MODAL_I18N.toggle_out_title}`;
+        hintBox.innerHTML = MODAL_I18N.toggle_out_hint;
         fieldBox.style.display = 'flex';
         locInput.value = '';
         locInput.required = true;
         userInput.value = '';
         projectInput.value = '';
     } else {
-        title.innerHTML = `<i class="material-icons" style="color:#f39c12;">keyboard_return</i> ${ASSET_I18N.toggle_in_title}`;
-        hintBox.innerHTML = ASSET_I18N.toggle_in_hint;
+        title.innerHTML = `<i class="material-icons" style="color:#f39c12;">keyboard_return</i> ${MODAL_I18N.toggle_in_title}`;
+        hintBox.innerHTML = MODAL_I18N.toggle_in_hint;
         fieldBox.style.display = 'none';
         locInput.value = '';
         locInput.required = false;
@@ -654,15 +660,15 @@ window.openActiveToggleModal = function(itemId, isActiveStr) {
 
     if (isActiveStr === 'True') {
         icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red);">do_not_disturb_on</i>';
-        title.innerHTML = SIMCARD_I18N.simcard_disable;
-        text.innerHTML = SIMCARD_I18N.disabled_notice;
-        submitBtn.innerHTML = `<i class="material-icons">block</i> ${SIMCARD_I18N.btn_disable}`;
+        title.innerHTML = MODAL_I18N.simcard_disable;
+        text.innerHTML = MODAL_I18N.disabled_notice;
+        submitBtn.innerHTML = `<i class="material-icons">block</i> ${MODAL_I18N.btn_disable}`;
         submitBtn.style.backgroundColor = 'var(--danger-red)';
     } else {
         icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: #1db954;">settings_backup_restore</i>';
-        title.innerHTML = SIMCARD_I18N.simcard_enable;
-        text.innerHTML = SIMCARD_I18N.enable_notice;
-        submitBtn.innerHTML = `<i class="material-icons">check_circle</i> ${SIMCARD_I18N.btn_enable}`;
+        title.innerHTML = MODAL_I18N.simcard_enable;
+        text.innerHTML = MODAL_I18N.enable_notice;
+        submitBtn.innerHTML = `<i class="material-icons">check_circle</i> ${MODAL_I18N.btn_enable}`;
         submitBtn.style.backgroundColor = 'var(--primary-green)';
     }
     modal.style.display = 'flex';

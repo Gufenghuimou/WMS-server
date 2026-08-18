@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     countDisplay = document.getElementById('countDisplay');
 
     // 获取新的执行按钮 (因为没有ID，所以用 onclick 属性来定位)
-    scrapActionButton = document.querySelector('button[onclick="openSecurityModal()"]');
+    scrapActionButton = document.querySelector('button[onclick="openScrapModal()"]');
 
     // 1. 绑定扫码回车事件
     if (scanInput) {
@@ -259,110 +259,110 @@ window.updateUI = function() {
 // 🛡️ 报废安全锁引擎 (滑动解锁版)
 // ==========================================
 
-let isDraggingSlider = false;
-let startX = 0;
-let maxDrag = 0;
-const ZOOM_LEVEL = 0.67; // 对应 base.css 里的缩放
+// let isDraggingSlider = false;
+// let startX = 0;
+// let maxDrag = 0;
+// const ZOOM_LEVEL = 0.67; // 对应 base.css 里的缩放
 
-window.openSecurityModal = function() {
-    if (assetSet.size === 0) return;
+// window.openSecurityModal = function() {
+//     if (assetSet.size === 0) return;
 
-    const modal = document.getElementById('scrapSecurityModal');
-    modal.style.display = 'flex';
+//     const modal = document.getElementById('scrapSecurityModal');
+//     modal.style.display = 'flex';
 
-    // 重置滑块状态
-    resetSlider();
+//     // 重置滑块状态
+//     resetSlider();
 
-    // 初始化滑块参数
-    const handle = document.getElementById('sliderHandle');
-    const container = document.getElementById('sliderContainer');
-    maxDrag = container.clientWidth - handle.clientWidth - 6; // 6是左右padding补偿
+//     // 初始化滑块参数
+//     const handle = document.getElementById('sliderHandle');
+//     const container = document.getElementById('sliderContainer');
+//     maxDrag = container.clientWidth - handle.clientWidth - 6; // 6是左右padding补偿
 
-    // 绑定事件
-    handle.onmousedown = startSlide;
-};
+//     // 绑定事件
+//     handle.onmousedown = startSlide;
+// };
 
-function startSlide(e) {
-    isDraggingSlider = true;
-    startX = e.clientX;
-    document.onmousemove = onSlide;
-    document.onmouseup = stopSlide;
+// function startSlide(e) {
+//     isDraggingSlider = true;
+//     startX = e.clientX;
+//     document.onmousemove = onSlide;
+//     document.onmouseup = stopSlide;
 
-    // 移除过渡效果，让拖拽随动
-    document.getElementById('sliderHandle').style.transition = 'none';
-    document.getElementById('sliderBg').style.transition = 'none';
-}
+//     // 移除过渡效果，让拖拽随动
+//     document.getElementById('sliderHandle').style.transition = 'none';
+//     document.getElementById('sliderBg').style.transition = 'none';
+// }
 
-function onSlide(e) {
-    if (!isDraggingSlider) return;
+// function onSlide(e) {
+//     if (!isDraggingSlider) return;
 
-    // 核心计算：除以缩放倍率
-    let moveX = (e.clientX - startX) / ZOOM_LEVEL;
+//     // 核心计算：除以缩放倍率
+//     let moveX = (e.clientX - startX) / ZOOM_LEVEL;
 
-    // 边界控制
-    if (moveX < 0) moveX = 0;
-    if (moveX > maxDrag) moveX = maxDrag;
+//     // 边界控制
+//     if (moveX < 0) moveX = 0;
+//     if (moveX > maxDrag) moveX = maxDrag;
 
-    updateSliderPosition(moveX);
+//     updateSliderPosition(moveX);
 
-    // 检查是否滑到底了 (98% 就算成功)
-    if (moveX >= maxDrag * 0.98) {
-        unlockSuccess();
-    }
-}
+//     // 检查是否滑到底了 (98% 就算成功)
+//     if (moveX >= maxDrag * 0.98) {
+//         unlockSuccess();
+//     }
+// }
 
-function stopSlide() {
-    if (!isDraggingSlider) return;
-    isDraggingSlider = false;
-    document.onmousemove = null;
-    document.onmouseup = null;
+// function stopSlide() {
+//     if (!isDraggingSlider) return;
+//     isDraggingSlider = false;
+//     document.onmousemove = null;
+//     document.onmouseup = null;
 
-    // 如果没解锁成功，弹回去
-    if (!document.getElementById('sliderContainer').classList.contains('unlocked')) {
-        resetSlider(true);
-    }
-}
+//     // 如果没解锁成功，弹回去
+//     if (!document.getElementById('sliderContainer').classList.contains('unlocked')) {
+//         resetSlider(true);
+//     }
+// }
 
-function updateSliderPosition(x) {
-    const handle = document.getElementById('sliderHandle');
-    const bg = document.getElementById('sliderBg');
-    handle.style.left = (x + 3) + 'px';
-    bg.style.width = (x + 25) + 'px'; // 25是让背景稍微没过滑块中心
-}
+// function updateSliderPosition(x) {
+//     const handle = document.getElementById('sliderHandle');
+//     const bg = document.getElementById('sliderBg');
+//     handle.style.left = (x + 3) + 'px';
+//     bg.style.width = (x + 25) + 'px'; // 25是让背景稍微没过滑块中心
+// }
 
-function resetSlider(animate = false) {
-    const container = document.getElementById('sliderContainer');
-    const handle = document.getElementById('sliderHandle');
-    const bg = document.getElementById('sliderBg');
-    const text = document.getElementById('sliderText');
+// function resetSlider(animate = false) {
+//     const container = document.getElementById('sliderContainer');
+//     const handle = document.getElementById('sliderHandle');
+//     const bg = document.getElementById('sliderBg');
+//     const text = document.getElementById('sliderText');
 
-    container.classList.remove('unlocked');
-    text.innerText = SCRAP_I18N.slider_text || "Slide to Confirm";
+//     container.classList.remove('unlocked');
+//     text.innerText = SCRAP_I18N.slider_text || "Slide to Confirm";
 
-    if (animate) {
-        handle.style.transition = 'left 0.3s ease';
-        bg.style.transition = 'width 0.3s ease';
-    }
+//     if (animate) {
+//         handle.style.transition = 'left 0.3s ease';
+//         bg.style.transition = 'width 0.3s ease';
+//     }
 
-    handle.style.left = '3px';
-    bg.style.width = '0';
-}
+//     handle.style.left = '3px';
+//     bg.style.width = '0';
+// }
 
-function unlockSuccess() {
-    isDraggingSlider = false;
-    document.onmousemove = null;
+// function unlockSuccess() {
+//     isDraggingSlider = false;
+//     document.onmousemove = null;
 
-    const container = document.getElementById('sliderContainer');
-    container.classList.add('unlocked');
-    document.getElementById('sliderText').innerText = "RELEASE TO DESTROY"; // 这里也可以用 I18N
+//     const container = document.getElementById('sliderContainer');
+//     container.classList.add('unlocked');
+//     document.getElementById('sliderText').innerText = "RELEASE TO DESTROY"; // 这里也可以用 I18N
 
-    // 自动提交 (加个微小的延迟增加仪式感)
-    setTimeout(() => {
-        document.getElementById('scrapForm').submit();
-    }, 200);
-}
+//     // 自动提交 (加个微小的延迟增加仪式感)
+//     setTimeout(() => {
+//         document.getElementById('scrapForm').submit();
+//     }, 200);
+// }
 
-window.closeSecurityModal = function() {
-    document.getElementById('scrapSecurityModal').style.display = 'none';
-    resetSlider();
-};
+// window.closeSecurityModal = function() {
+//     document.getElementById('scrapSecurityModal').style.display = 'none';
+//     resetSlider();
+// };
