@@ -344,9 +344,11 @@ window.openActionModal = function(groupId, itemId) {
     rackName = rackName.replace(/'/g, "\\'").replace(/"/g, "&quot;");
 
     // 3. 更新弹窗里的标题
-    document.getElementById('actionModalCtrlNo').innerText = `Ctrl No: ${item.ctrl_no}`;
+    document.getElementById('actionModalCtrlNo').innerHTML = `<i class="material-icons" style="vertical-align: middle; color: var(--primary-blue);">tune</i> ${item.ctrl_no}`;
+    document.getElementById('actionModalPn').innerText = `${safePn}`;
+    document.getElementById('actionModalName').innerText = `${groupData.name}`;
 
-    // 4. 根据权限和状态动态生成 5 个按钮（因为现在在模态框里，按钮可以做成宽按钮，更好看）
+    // 4. 根据权限和状态动态生成 5 个按钮
     const isAdmin = (window.USER_ROLE === 'superadmin' || window.USER_ROLE === 'admin');
     let btnGroupHtml = '';
 
