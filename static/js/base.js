@@ -361,24 +361,23 @@ function initCustomSelects() {
 // 🌟 全局页面加载监控引擎
 // ==========================================
 window.addEventListener('load', function() {
-    const loader = document.getElementById('global-page-loader');
-
-    // 给系统一点缓冲时间（可选），让界面渲染更平滑。这里设置了 300ms 延时。
-    setTimeout(() => {
-        if (loader) {
-            // 1. 给遮罩层加 hidden 类，触发 CSS 的 0.5秒 渐隐淡出动画
-            loader.classList.add('hidden');
-
-            // 2. 拔除 body 的加载状态！瞬间激活全站所有按钮和侧边栏菜单
-            document.body.classList.remove('is-loading');
-
-            // 3. 彻底释放内存：等 0.5 秒淡出动画播完后，把遮罩层从流中移除
-            setTimeout(() => {
-                loader.style.display = 'none';
-            }, 500);
-        }
-    }, 300);
+    if (!window.DEFER_GLOBAL_LOADER) {
+        setTimeout(() => {
+            window.hideGlobalLoader();
+        }, 300);
+    }
 });
+
+window.hideGlobalLoader = function() {
+    const loader = document.getElementById('global-page-loader');
+    if (loader && !loader.classList.contains('hidden')) {
+        loader.classList.add('hidden');
+        document.body.classList.remove('is-loading');
+        setTimeout(() => {
+                loader.style.display = 'none';
+        }, 500);
+    }
+};
 
 // 页面加载完成后，立刻执行变身魔法
 document.addEventListener("DOMContentLoaded", initCustomSelects);

@@ -22,7 +22,7 @@
 {% block content %}
 <div class="dashboard-container">
 
-    <script>
+    {# <script>
         window.USER_ROLE = "{{ user.role }}";
         window.ASSET_DATA = {
             {% for pn1, group in items|groupby('pn_1') %}
@@ -46,9 +46,16 @@
             }{% if not loop.last %},{% endif %}
             {% endfor %}
         };
+    </script> #}
+
+    <script>
+        window.USER_ROLE = "{{ user.role }}";
+        window.ASSET_DATA = {};
+        window.SYS_VER = "{{ request.state.sys_ver }}";
+        window.DEFER_GLOBAL_LOADER = true;
     </script>
 
-    <div class="left-panel" id="assetCardList">
+    {# <div class="left-panel" id="assetCardList">
         {% if not items %}
             <div style="text-align:center; padding: 40px 20px; color: var(--text-muted);">
                 <i class="material-icons" style="font-size: 3rem; opacity: 0.5;">inbox</i>
@@ -209,9 +216,17 @@
 
             </div>
         {% endfor %}
+    </div> #}
+
+    <!-- ⚠️ 2. 清空左侧面板，删除所有 Jinja 循环，只留一个骨架屏或加载动画 -->
+    <div class="left-panel" id="assetCardList">
+        <div id="loadingIndicator" style="text-align:center; padding: 40px 20px; color: var(--text-muted);">
+            <i class="material-icons" style="font-size: 3rem; animation: spin 1s linear infinite;">autorenew</i>
+            <p>{{ t('base.generating', lang) }}...</p>
+        </div>
     </div>
 
-  <div class="right-panel">
+    <div class="right-panel">
         <div class="table-wrapper">
             <table class="detail-table">
                 <thead>
@@ -391,6 +406,9 @@
         btn_stop_deny: `{{ t('asset_view.btn_stop_deny', lang) }}`,
         btn_stop: "{{ t('asset_view.btn_stop', lang) }}",
         btn_reuse: "{{ t('asset_view.btn_reuse', lang) }}",
+        btn_require: "{{ t('asset_view.btn_require', lang) }}",
+        btn_cancel: "{{ t('asset_view.btn_cancel', lang) }}",
+        btn_save: "{{ t('asset_view.btn_save', lang) }}",
         loc_unassigned: "{{ t('asset_view.loc_unassigned', lang) }}",
         no_detail_data: "{{ t('asset_view.no_detail_data', lang) }}",
         toggle_out_title: "{{ t('asset_view.toggle_out_title', lang) }}",
@@ -421,6 +439,18 @@
         report_broken: "{{ t('asset_view.report_broken', lang) }}",
         btn_submit: "{{ t('asset_view.btn_submit', lang) }}",
         no_actions: "{{ t('asset_view.no_actions', lang) }}",
+        click_to_change_img: "{{ t('asset_view.click_to_change_img', lang) }}",
+        edit_pn1: "{{ t('asset_view.edit_pn1', lang) }}",
+        edit_pn2: "{{ t('asset_view.edit_pn2', lang) }}",
+        edit_dest: "{{ t('asset_view.edit_dest', lang) }}",
+        edit_name: "{{ t('asset_view.edit_name', lang) }}",
+        edit_remark: "{{ t('asset_view.edit_remark', lang) }}",
+        edit_desc1: "{{ t('asset_view.edit_desc1', lang) }}",
+        edit_desc2: "{{ t('asset_view.edit_desc2', lang) }}",
+        submit_requirement: "{{ t('asset_view.submit_requirement', lang) }}",
+        required_qty: "{{ t('asset_view.required_qty', lang) }}",
+        target_location: "{{ t('asset_view.target_location', lang) }}",
+        note: "{{ t('asset_view.note', lang) }}",
     };
 </script>
 <script src="/static/js/asset.js"></script>

@@ -1,6 +1,6 @@
 # /routers/asset.py
 from fastapi import Request, Form, UploadFile, File, Depends, BackgroundTasks, APIRouter
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from sqlmodel import Session, select, or_, desc, delete
 from typing import List, Optional
 from starlette.responses import RedirectResponse
@@ -27,7 +27,18 @@ router = APIRouter(tags=["Assets"])
 
 # -----------------------------资产信息--------------------------#
 
+# TemplateResponse 不能返回Json，所以TamplateResponse 和 JSONResponse 分开写
 @router.get("/asset", response_class=HTMLResponse)
+async def get_asset_page(request: Request, current_user: dict = Depends(get_current_user)):
+    with Session(engine) as session:
+        statement = select(AssetItem)
+        items = session.exec(statement).all()
+
+        categories = len(set(i.pn_1 for i in items))
+        total = len(items)
+    return templates.TemplateResponse(request, "asset.html", {'user': current_user, 'active_page': 'asset', "asset_categories_count": categories, "asset_total_count": total})
+
+@router.get("/api/asset")
 async def get_asset(request: Request, query: Optional[str] = None, current_user: dict = Depends(get_current_user)):
     with Session(engine) as session:
         statement = select(AssetItem)
@@ -44,14 +55,39 @@ async def get_asset(request: Request, query: Optional[str] = None, current_user:
                     AssetItem.location.like(f'%{query}%'),
                     AssetItem.remarks.like(f'%{query}%')
                 )
-            )
+            ).order_by(AssetItem.pn_1)
         else:
-            statement = statement.order_by(AssetItem.location)
+            statement = statement.order_by(AssetItem.pn_1)
         items = session.exec(statement).all()
-        categories = len(set(i.pn_1 for i in items))
-        total = len(items)
 
-    return templates.TemplateResponse(request,"asset.html",{'items': items, 'query': query, 'user': current_user, 'active_page': 'asset', 'asset_categories_count': categories, 'asset_total_count': total})
+        grouped_data = {}
+        for item in items:
+            pn1 = item.pn_1 or "UNKNOWN"
+            group_key = pn1.replace(" ", "-").replace("/", "-")
+            if group_key not in grouped_data:
+                grouped_data[group_key] = {
+                    "pn1": pn1,
+                    "pn2": item.pn_2 or "",
+                    "name": item.name or "",
+                    "description_1": item.description_1 or "",
+                    "description_2": item.description_2 or "",
+                    "use_for": item.use_for or "",
+                    "model": getattr(item, "model", ""),
+                    "has_image": getattr(item, "has_image", False),
+                    "items": []
+                }
+
+            grouped_data[group_key]["items"].append({
+                "id": item.id,
+                "ctrl_no": item.ctrl_no or "",
+                "location": item.location or "",
+                "first_in_date": str(item.first_in_date) if item.first_in_date else "",
+                "po_type": item.po_type or "",
+                "is_stock": bool(item.is_stock),
+                "is_stop": bool(item.is_stop)
+            })
+
+    return JSONResponse(content={"status": "success", "data": grouped_data})
 
 @router.post("/asset_out/{item_id}")
 async def asset_out(

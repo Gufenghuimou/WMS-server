@@ -63,7 +63,7 @@ window.uploadCardImage = function(inputElem, pn1, itemId) {
 
     reader.onload = function(e) {
         document.getElementById('cropImageTarget').src = e.target.result;
-        document.getElementById('cropModal').style.display = 'block';
+        document.getElementById('cropModal').style.display = 'flex';
 
         if (cropper) { cropper.destroy(); }
 
@@ -320,6 +320,74 @@ function stopSlide(e) {
 }
 
 // 滑动报废控制结束
+
+// Asset 操作按钮模态框控制开始
+window.openActionModal = function(groupId, itemId) {
+    let groupData = window.ASSET_DATA[groupId];
+    let item = groupData.items.find(i => i.id === itemId);
+    if (!item) return;
+
+    // 2. 准备安全字符串
+    let safePn = groupData.pn1 ? String(groupData.pn1).replace(/'/g, "\\'") : '';
+    let safeCtrl = item.ctrl_no.replace(/'/g, "\\'");
+    let rawLoc = item.location ? String(item.location).trim() : '';
+    let safeLoc = rawLoc.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+    let safeDate = item.first_in_date ? item.first_in_date.replace(/'/g,"\\'"): '';
+    let safePoType = item.po_type ? String(item.po_type).replace(/'/g, "\\'") : '';
+    let isStockStr = item.is_stock ? 'True' : 'False';
+    let isStopStr = item.is_stop ? 'True' : 'False';
+    let disabledStyle = item.is_stop ? 'opacity: 0.5; pointer-events: none;' : '';
+
+    let activeSibling = groupData.items.find(i => i.is_stock && i.location && i.location.toLowerCase() !== 'none' && i.location !== '-');
+    let siblingLoc = activeSibling ? activeSibling.location.replace(/'/g, "\\'").replace(/"/g, "&quot;") : '';
+    let rackName = rawLoc.includes('-') ? rawLoc.split('-')[0].toUpperCase() : rawLoc;
+    rackName = rackName.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+
+    // 3. 更新弹窗里的标题
+    document.getElementById('actionModalCtrlNo').innerText = `Ctrl No: ${item.ctrl_no}`;
+
+    // 4. 根据权限和状态动态生成 5 个按钮（因为现在在模态框里，按钮可以做成宽按钮，更好看）
+    const isAdmin = (window.USER_ROLE === 'superadmin' || window.USER_ROLE === 'admin');
+    let btnGroupHtml = '';
+
+    if (isAdmin) {
+        let btn1Bg = !item.is_stock ? '#1db954' : '#f39c12';
+        let btn1Icon = item.is_stock ? 'output' : 'login';
+        let btn1Text = item.is_stock ? ASSET_I18N.btn_take_out : ASSET_I18N.btn_return_in;
+        let btn1 = `<button class="btn-primary" style="background-color: ${btn1Bg}; ${disabledStyle}; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="closeActionModal(); openAssetToggleModal(${item.id}, '${isStockStr}', '${safeCtrl}', false, '', '${siblingLoc}')"><i class="material-icons">${btn1Icon}</i> ${btn1Text}</button>`;
+
+        let btn2 = `<button class="btn-primary" style="background-color: #3498db; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="closeActionModal(); openAssetItemEditModal(${item.id}, '${safePn}', '${safeCtrl}', '${safeLoc}', '${safeDate}', '${safePoType}')"><i class="material-icons">edit_note</i> ${ASSET_I18N.btn_edit}</button>`;
+        
+        let btn3 = '';
+        if (!item.is_stop && !item.is_stock) {
+            btn3 = `<button class="btn-primary" style="background-color: #bdc3c7; color: #fff; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="alert(ASSET_I18N.btn_stop_deny)"><i class="material-icons">do_not_disturb</i> ${ASSET_I18N.btn_stop}</button>`;
+        } else {
+            let btn3Bg = item.is_stop ? '#95a5a6' : 'var(--danger-red)';
+            let btn3Icon = item.is_stop ? 'settings_backup_restore' : 'do_not_disturb';
+            let btn3Text = item.is_stop ? ASSET_I18N.btn_reuse : ASSET_I18N.btn_stop;
+            btn3 = `<button class="btn-primary" style="background-color: ${btn3Bg}; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="closeActionModal(); openStopConfirmModal(${item.id}, '${safeCtrl}', '${isStopStr}', false, '${siblingLoc}')"><i class="material-icons">${btn3Icon}</i> ${btn3Text}</button>`;
+        }
+        btnGroupHtml = btn1 + btn2 + btn3;
+    } else {
+        if (!item.is_stock && !item.is_stop) {
+            let btn4 = `<button class="btn-primary" style="background-color: #1db954; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="closeActionModal(); openToggleModal(${item.id}, 'False', '${safeCtrl}', true, '${rackName}', '')"><i class="material-icons">assignment_return</i> ${ASSET_I18N.request_return_title}</button>`;
+            let btn5 = `<button class="btn-primary" style="background-color: var(--danger-red); width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="closeActionModal(); openStopConfirmModal(${item.id}, '${safeCtrl}', 'False', true, '${rackName}')"><i class="material-icons">build</i> ${ASSET_I18N.report_broken_title}</button>`;
+            btnGroupHtml = btn4 + btn5;
+        } else {
+            btnGroupHtml = `<span style="font-size:0.9rem; color:#aaa; padding: 20px 0;">${ASSET_I18N.no_actions}</span>`;
+        }
+    }
+
+    // 5. 注入按钮并显示模态框
+    document.getElementById('actionModalButtons').innerHTML = btnGroupHtml;
+    document.getElementById('actionModal').style.display = 'flex';
+}
+
+window.closeActionModal = function() {
+    document.getElementById('actionModal').style.display = 'none';
+};
+
+// Asset 操作按钮模态框控制结束
 
 // Asset出入库Modal控制
 
@@ -686,6 +754,7 @@ document.addEventListener('keydown', (e) => {
         if (window.closeQrModal) window.closeQrModal();
         if (window.closeCropModal) window.closeCropModal();
         if (window.closeScrapModal) window.closeScrapModal();
+        if (window.closeActionModal) window.closeActionModal();
         if (window.closeAssetToggleModal) window.closeAssetToggleModal();
         if (window.closeStopConfirmModal) window.closeStopConfirmModal();
         if (window.closeAssetItemEditModal) window.closeAssetItemEditModal();

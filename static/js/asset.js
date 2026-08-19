@@ -31,10 +31,10 @@ window.switchAssetType = function(groupId) {
             statusHtml = `<span style="background: rgba(231, 76, 60, 0.15); color: #c0392b; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap">${ASSET_I18N.status_out_stock}</span>`;
         }
 
-        let safePn = groupData.pn1 ? String(groupData.pn1).replace(/'/g, "\\'") : '';
-        let safeCtrl = item.ctrl_no.replace(/'/g, "\\'");
+        // let safePn = groupData.pn1 ? String(groupData.pn1).replace(/'/g, "\\'") : '';
+        // let safeCtrl = item.ctrl_no.replace(/'/g, "\\'");
         let rawLoc = item.location ? String(item.location).trim() : '';
-        let safeLoc = rawLoc.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+        // let safeLoc = rawLoc.replace(/'/g, "\\'").replace(/"/g, "&quot;");
         let rackName = "";
         if (rawLoc && rawLoc !== '-' && rawLoc.toLowerCase() !== 'none') {
             if (rawLoc.includes('-')) {
@@ -44,46 +44,55 @@ window.switchAssetType = function(groupId) {
             }
             rackName = rackName.replace(/'/g, "\\'").replace(/"/g, "&quot;");
         }
-        let safeDate = item.first_in_date ? item.first_in_date.replace(/'/g,"\\'"): '';
-        let safePoType = item.po_type ? String(item.po_type).replace(/'/g, "\\'") : '';
-        let isStockStr = item.is_stock ? 'True' : 'False';
-        let isStopStr = item.is_stop ? 'True' : 'False';
-        let disabledStyle = item.is_stop ? 'opacity: 0.5; pointer-events: none;' : '';
+        // let safeDate = item.first_in_date ? item.first_in_date.replace(/'/g,"\\'"): '';
+        // let safePoType = item.po_type ? String(item.po_type).replace(/'/g, "\\'") : '';
+        // let isStockStr = item.is_stock ? 'True' : 'False';
+        // let isStopStr = item.is_stop ? 'True' : 'False';
+        // let disabledStyle = item.is_stop ? 'opacity: 0.5; pointer-events: none;' : '';
 
         let poTypeHtml = '';
         if (item.po_type === 'common') { poTypeHtml = '<span style="font-size: 0.9rem; color: #333333; background-color: rgba(51, 51, 51, 0.15); padding: 4px 10px; white-space: nowrap; border-radius: 12px;">Common</span>'; }
         else if (item.po_type === 'reimburse') { poTypeHtml = '<span style="font-size: 0.9rem; color: #0899C2; background-color: rgba(8, 153, 194, 0.15); padding: 4px 10px; white-space: nowrap; border-radius: 12px;">Reimburse</span>'; }
         else if (item.po_type === 'consign') { poTypeHtml = '<span style="font-size: 0.9rem; color: #C20884; background-color: rgba(194, 8, 132, 0.15); padding: 4px 10px; white-space: nowrap; border-radius: 12px;">Consign</span>'; }
 
-        const isAdmin = (window.USER_ROLE === 'superadmin' || window.USER_ROLE === 'admin');
-        let btnGroupHtml = '';
-        if (isAdmin) {
-            let btn1Bg = !item.is_stock ? '#1db954' : '#f39c12';
-            let btn1Icon = item.is_stock ? 'output' : 'login';
-            let btn1Text = item.is_stock ? ASSET_I18N.btn_take_out : ASSET_I18N.btn_return_in;
-            let btn1 = `<button type="button" class="btn-primary btn-sm" title=" ${btn1Text}" style="background-color: ${btn1Bg}; ${disabledStyle};" onclick="openAssetToggleModal(${item.id}, '${isStockStr}', '${safeCtrl}', false, '', '${siblingLoc}')"><i class="material-icons" style="margin-top: 2px;">${btn1Icon}</i></button>`;
+        // const isAdmin = (window.USER_ROLE === 'superadmin' || window.USER_ROLE === 'admin');
+        // let btnGroupHtml = '';
+        // if (isAdmin) {
+        //     let btn1Bg = !item.is_stock ? '#1db954' : '#f39c12';
+        //     let btn1Icon = item.is_stock ? 'output' : 'login';
+        //     let btn1Text = item.is_stock ? ASSET_I18N.btn_take_out : ASSET_I18N.btn_return_in;
+        //     let btn1 = `<button type="button" class="btn-primary btn-sm" title=" ${btn1Text}" style="background-color: ${btn1Bg}; ${disabledStyle};" onclick="openAssetToggleModal(${item.id}, '${isStockStr}', '${safeCtrl}', false, '', '${siblingLoc}')"><i class="material-icons" style="margin-top: 2px;">${btn1Icon}</i></button>`;
 
-            let btn2 = `<button type="button" class="btn-primary btn-sm" title="${ASSET_I18N.btn_edit}" style="background-color: #ccc; color: #333;" onclick="openAssetItemEditModal(${item.id}, '${safePn}', '${safeCtrl}', '${safeLoc}', '${safeDate}', '${safePoType}')"><i class="material-icons" style="margin-top: 2px;">edit_note</i></button>`;
+        //     let btn2 = `<button type="button" class="btn-primary btn-sm" title="${ASSET_I18N.btn_edit}" style="background-color: #ccc; color: #333;" onclick="openAssetItemEditModal(${item.id}, '${safePn}', '${safeCtrl}', '${safeLoc}', '${safeDate}', '${safePoType}')"><i class="material-icons" style="margin-top: 2px;">edit_note</i></button>`;
 
-            let btn3 = '';
-            if (!item.is_stop && !item.is_stock) {
-                btn3 = `<button type="button" class="btn-primary btn-sm" title="${ASSET_I18N.btn_stop}" style="background-color: #bdc3c7; color: #fff; box-shadow: none;" onclick="alert(ASSET_I18N.btn_stop_deny)"><i class="material-icons" style="margin-top: 2px;">do_not_disturb</i></button>`;
-            } else {
-                let btn3Bg = item.is_stop ? '#95a5a6' : 'var(--danger-red)';
-                let btn3Icon = item.is_stop ? 'settings_backup_restore' : 'do_not_disturb';
-                let btn3Text = item.is_stop ? ASSET_I18N.btn_reuse : ASSET_I18N.btn_stop;
-                btn3 = `<button type="button" class="btn-primary btn-sm" title="${btn3Text}" style="background-color: ${btn3Bg};" onclick="openStopConfirmModal(${item.id}, '${safeCtrl}', '${isStopStr}', false, '${siblingLoc}')"><i class="material-icons" style="margin-top: 2px;">${btn3Icon}</i></button>`;
-            }
-            btnGroupHtml = btn1 + btn2 + btn3;
-        } else {
-            if (!item.is_stock && !item.is_stop) {
-                let btn4 = `<button type="button" class="btn-primary btn-sm" title="${ASSET_I18N.request_return_title}" style="background-color: #1db954;" onclick="openToggleModal(${item.id}, 'False', '${safeCtrl}', true, '${rackName}', '')"><i class="material-icons" style="margin-top: 2px;">assignment_return</i></button>`;
-                let btn5 = `<button type="button" class="btn-primary btn-sm" title="${ASSET_I18N.report_broken_title}" style="background-color: var(--danger-red);" onclick="openStopConfirmModal(${item.id}, '${safeCtrl}', 'False', true, '${rackName}')"><i class="material-icons" style="margin-top: 2px;">build</i></button>`;
-                btnGroupHtml = btn4 + btn5;
-            } else {
-                btnGroupHtml = `<span style="font-size:0.8rem; color:#aaa;">${ASSET_I18N.no_actions}</span>`;
-            }
-        }
+        //     let btn3 = '';
+        //     if (!item.is_stop && !item.is_stock) {
+        //         btn3 = `<button type="button" class="btn-primary btn-sm" title="${ASSET_I18N.btn_stop}" style="background-color: #bdc3c7; color: #fff; box-shadow: none;" onclick="alert(ASSET_I18N.btn_stop_deny)"><i class="material-icons" style="margin-top: 2px;">do_not_disturb</i></button>`;
+        //     } else {
+        //         let btn3Bg = item.is_stop ? '#95a5a6' : 'var(--danger-red)';
+        //         let btn3Icon = item.is_stop ? 'settings_backup_restore' : 'do_not_disturb';
+        //         let btn3Text = item.is_stop ? ASSET_I18N.btn_reuse : ASSET_I18N.btn_stop;
+        //         btn3 = `<button type="button" class="btn-primary btn-sm" title="${btn3Text}" style="background-color: ${btn3Bg};" onclick="openStopConfirmModal(${item.id}, '${safeCtrl}', '${isStopStr}', false, '${siblingLoc}')"><i class="material-icons" style="margin-top: 2px;">${btn3Icon}</i></button>`;
+        //     }
+        //     btnGroupHtml = btn1 + btn2 + btn3;
+        // } else {
+        //     if (!item.is_stock && !item.is_stop) {
+        //         let btn4 = `<button type="button" class="btn-primary btn-sm" title="${ASSET_I18N.request_return_title}" style="background-color: #1db954;" onclick="openToggleModal(${item.id}, 'False', '${safeCtrl}', true, '${rackName}', '')"><i class="material-icons" style="margin-top: 2px;">assignment_return</i></button>`;
+        //         let btn5 = `<button type="button" class="btn-primary btn-sm" title="${ASSET_I18N.report_broken_title}" style="background-color: var(--danger-red);" onclick="openStopConfirmModal(${item.id}, '${safeCtrl}', 'False', true, '${rackName}')"><i class="material-icons" style="margin-top: 2px;">build</i></button>`;
+        //         btnGroupHtml = btn4 + btn5;
+        //     } else {
+        //         btnGroupHtml = `<span style="font-size:0.8rem; color:#aaa;">${ASSET_I18N.no_actions}</span>`;
+        //     }
+        // }
+
+        // 按钮放进模态框，5个变一个，优化性能
+        let btnGroupHtml = `
+            <button type="button" class="btn-primary btn-sm" 
+                style="background-color: #f0f2f5; color: #555; box-shadow: none; border: 1px solid #ddd;" 
+                onclick="openActionModal('${groupId}', ${item.id})">
+            <i class="material-icons">more_horiz</i>
+        </button>
+        `;
 
         return `
         <tr>
@@ -513,16 +522,22 @@ function updateLocalAssetItem(updatedItem) {
 function updateCardFrontUI(cardElement, data) {
     if (!data) return;
 
-    let titleNode = cardElement.querySelector('h3');
+    let titleNode = cardElement.querySelector('.info-pn1');
     if (titleNode && data.pn_2 !== undefined) {
-        let pn1 = titleNode.innerText.split('|')[0].trim();
-        titleNode.innerText = `${pn1} | ${data.pn_2}`;
+        let pn1 = titleNode.innerText.trim();
+        titleNode.innerText = `${pn1}`;
+    }
+    let subtitleNode = cardElement.querySelector('.info-pn2');
+    if (subtitleNode) {
+        subtitleNode.innerText = `${data.pn_2}`;
     }
 
-    let nameNode = cardElement.querySelector('.right-part .card-header .card-info div:nth-child(2)');
+    let nameNode = cardElement.querySelector('info-name');
     if (nameNode && data.name !== undefined) nameNode.innerText = data.name || ASSET_I18N.unnamed;
 
-    let descDivs = cardElement.querySelectorAll('.right-part > div:nth-child(2) span, .right-part > div:nth-child(2) div');
+    // let descDivs = cardElement.querySelectorAll('.right-part > div:nth-child(2) span, .right-part > div:nth-child(2) div');
+    let descDivs = cardElement.querySelectorAll('.info-desc1, .info-usefor, .info-desc2');
+
     if (descDivs.length >= 3) {
         if (data.description_1 !== undefined) descDivs[0].innerText = `${ASSET_I18N.category_lbl} ${data.description_1 || '-'}`;
         if (data.use_for !== undefined) descDivs[1].innerText = `${ASSET_I18N.dest_lbl} ${data.use_for || '-'}`;
@@ -535,10 +550,19 @@ window.updateMiniChartUI = function (groupId) {
     let group = window.ASSET_DATA[groupId];
     let container = document.getElementById('chart-container-' + groupId);
     if (!group || !group.items || !container) return;
+
     let total_qty = group.items.length;
-    let broken_qty = group.items.filter(i => i.is_stop).length;
-    let used_qty = group.items.filter(i => !i.is_stock && !i.is_stop).length;
-    let good_qty = group.items.filter(i => i.is_stock && !i.is_stop).length;
+    let broken_qty = 0;
+    let used_qty = 0;
+    let good_qty = 0;
+
+    for (let i = 0; i < total_qty; i++) {
+        let item = group.items[i];
+        if (item.is_stop) broken_qty++;
+        else if (item.is_stock) good_qty++;
+        else used_qty++;
+    }
+
     let used_pct = total_qty > 0 ? (used_qty / total_qty) * 100 : 0;
     let good_pct = total_qty > 0 ? (good_qty / total_qty) * 100 : 0;
     let broken_pct = total_qty > 0 ? (broken_qty / total_qty) * 100 : 0;
@@ -554,4 +578,201 @@ window.updateMiniChartUI = function (groupId) {
             ${used_qty > 0 ? `<div style="width: ${used_pct}%; background: rgba(231, 76, 60, 0.5); transition: 0.3s;" title="${ASSET_I18N.using}: ${ used_qty }"></div>` : ''}
         </div>
     `
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    try {
+        const response = await fetch('/api/asset');
+        const result = await response.json();
+
+        window.ASSET_DATA = result.data;
+        renderAssetCards(result.data);
+    } catch (error) {
+        console.error("Data Loaded Fail", error);
+        document.getElementById('assetCardList').innerHTML = `<div style="text-align:center; color:red;">加载失败，请刷新重试</div>`;
+    } finally {
+        if (typeof window.hideGlobalLoader === 'function') {
+            setTimeout(window.hideGlobalLoader, 50);
+        }
+    }
+});
+
+function renderAssetCards(data) {
+    const isAdmin = (window.USER_ROLE === 'superadmin' || window.USER_ROLE === 'admin');
+    const listContainer = document.getElementById('assetCardList');
+    const groupKeys = Object.keys(data).sort((a, b) => a.localeCompare(b));
+
+    if (groupKeys.length === 0) {
+        listContainer.innerHTML = `
+            <div style="text-align:center; padding: 40px 20px; color: #999;">
+                <i class="material-icons" style="font-size: 3rem; opacity: 0.5;">inbox</i>
+                <p>暂无数据</p>
+            </div>`;
+        return;
+    }
+
+    let htmlString = '';
+    let count = 0;
+
+    for (let groupId of groupKeys) {
+        
+        let group = data[groupId];
+        let first = group.items[0]; // 获取组内第一个物品用于封面展示
+        
+        // 计算库存状态
+        let total_qty = group.items.length;
+        let broken_qty = 0; let used_qty = 0; let good_qty = 0;
+        for (let i = 0; i < total_qty; i++) {
+            if (group.items[i].is_stop) broken_qty++;
+            else if (group.items[i].is_stock) good_qty++;
+            else used_qty++;
+        }
+        let good_pct = total_qty > 0 ? (good_qty / total_qty) * 100 : 0;
+        let broken_pct = total_qty > 0 ? (broken_qty / total_qty) * 100 : 0;
+        let used_pct = total_qty > 0 ? (used_qty / total_qty) * 100 : 0;
+
+        let btnHtml = `
+                <button type="button" class="btn-primary" style="height: 26px; font-size: 0.75rem; padding: 0 10px; border-radius: 6px; background: transparent; color: ${isAdmin ? 'var(--text-muted)' : 'var(--primary-blue)'}; border: 1px solid ${isAdmin ? '#ccc' : 'var(--primary-blue)'}; box-shadow: none;" onclick="flipToEdit(event, 'card-${groupId}')">
+                    <i class="material-icons" style="font-size: 0.9rem;">${isAdmin ? 'edit' : 'add_shopping_cart'}</i> ${isAdmin ? ASSET_I18N.btn_edit : ASSET_I18N.btn_require}
+                </button>
+            `;
+
+        let imgChangeLabel = `<label style="font-size:0.75rem; color:#888; text-align:center;"> ${isAdmin ? ASSET_I18N.click_to_change_img : ''}</label>`;
+
+        let cardBackForm = null;
+        if (isAdmin) {
+            cardBackForm = `
+                <form method="post" action="/asset_edit_group/${ group.pn1 }" class="admin-edit-form" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div class="edit-form-grid">
+                        <div><label class="edit-label">${ASSET_I18N.edit_pn1}</label><input type="text" name="pn_1" class="edit-input" value="${ group.pn1 }" readonly style="background:#eee; cursor:not-allowed; color:#888;"></div>
+                        <div><label class="edit-label">${ASSET_I18N.edit_pn2}</label><input type="text" name="pn_2" class="edit-input" value="${ group.pn2 || '' }"></div>
+                        <div><label class="edit-label">${ASSET_I18N.edit_dest}</label><input type="text" name="use_for" class="edit-input" value="${ group.use_for || '' }"></div>
+
+                        <div style="grid-column: span 2;"><label class="edit-label">${ASSET_I18N.edit_name}</label><input type="text" name="name" class="edit-input" value="${ group.name || '' }"></div>
+                        <div><label class="edit-label">${ASSET_I18N.edit_remark}</label><input type="text" name="remarks" class="edit-input" value="${ group.remarks || '' }"></div>
+
+                        <div style="grid-column: span 1;"><label class="edit-label">${ASSET_I18N.edit_desc1}</label><input type="text" name="description_1" class="edit-input" value="${ group.description_1 || '' }"></div>
+                        <div style="grid-column: span 2;"><label class="edit-label">${ASSET_I18N.edit_desc2}</label><input type="text" name="description_2" class="edit-input" value="${ group.description_2 || '' }"></div>
+
+                        <div style="grid-column: span 1;"><label class="edit-label">Model</label><input type="text" name="model" class="edit-input" value="${ group.model || '' }"></div>
+                        <div style="display: flex; gap: 8px; grid-column: span 2; align-items: end; justify-content: flex-end;">
+                            <button type="button" class="btn-primary" style="background: #e0e0e0; color: #333; box-shadow: none;" onclick="cancelEdit(event, 'card-${groupId}')">${ASSET_I18N.btn_cancel}</button>
+                            <button type="submit" class="btn-primary" style="background: #1db954;">${ASSET_I18N.btn_save}</button>
+                        </div>
+                    </div>
+                </form>
+            `;
+        } else {
+            cardBackForm = `
+                <form method="post" action="/api/request_asset_by_pn/${ group.pn1 }" class="require-form" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                    <input type="hidden" name="matter" value="require">
+                    <div class="edit-form-grid" style="grid-template-columns: 1fr 1fr;">
+                        <div style="grid-column: span 2; margin-bottom: 5px;">
+                            <h4 style="margin: 0; color: var(--primary-blue); font-size: 1.1rem; display: flex; align-items: center; gap: 5px;">
+                                <i class="material-icons">add_shopping_cart</i> ${ASSET_I18N.submit_requirement}
+                            </h4>
+                        </div>
+
+                        <div><label class="edit-label"> ${ASSET_I18N.required_qty} <span style="color:red;">*</span></label><input type="number" name="req_qty" class="edit-input" min="1" required></div>
+                        <div><label class="edit-label"> ${ASSET_I18N.target_location} <span style="color:red;">*</span></label><input type="text" name="department" class="edit-input" required></div>
+                        <div style="grid-column: span 2;"><label class="edit-label"> ${ASSET_I18N.note} </label><input type="text" name="note" class="edit-input"></div>
+
+                        <div style="display: flex; gap: 8px; grid-column: span 2; align-items: end; justify-content: flex-end; margin-top: 15px;">
+                            <button type="button" class="btn-primary" style="background: #e0e0e0; color: #333; box-shadow: none;" onclick="cancelEdit(event, 'card-${groupId}')">${ASSET_I18N.btn_cancel}</button>
+                            <button type="submit" class="btn-primary" style="background: var(--primary-blue);">${ASSET_I18N.btn_save}</button>
+                        </div>
+                    </div>
+                </form>
+            `;
+        }
+
+
+        // 拼接搜索关键字
+        let searchKeys = `${group.pn1} ${group.pn2 || ""} ${group.name || ''} ${group.description_1 || ''}`.toLowerCase();
+
+        htmlString += `
+        <div class="asset-card" id="card-${groupId}" onclick="switchAssetType('${groupId}')" data-search-keys="${searchKeys}">
+            <div class="card-front">
+                <!-- 左侧图片部分 -->
+                <div class="left-part" style="flex-shrink: 0;">
+                    ${group.has_image ? 
+                        `<img class="card-img" src="/static/asset_images/${group.pn1}.jpg?t=${window.SYS_VER}" loading="lazy">` : 
+                        `<div class="card-img" style="display:flex; justify-content:center; align-items:center; background:#f8f9fa;"><i class="material-icons" style="font-size:2.2rem; color:#dcdcdc;">add_photo_alternate</i></div>`
+                    }
+                </div>
+                <!-- 右侧信息部分 -->
+                <div class="right-part" style="flex: 1; min-width: 0;">
+                    <div class="card-header">
+                        <div class="card-info">
+                            <div style="display:flex; justify-content:space-between;">
+                                <div style="display: flex; gap: 15px; align-items: baseline">
+                                    <h3 class="text-truncate font-monospace info-pn1" style="margin:0 0 4px 0; font-size:1.5rem; font-weight: bold; color: var(--text-main); max-width: 300px;">${group.pn1}</h3>
+                                    <h3 class="text-truncate font-monospace info-pn2" style="margin:0 0 4px 0; font-size:1.35rem; font-weight: s; color: var(--text-main); max-width: 300px;">${group.pn2 || ""}</h3>
+                                </div>
+                                <span style="font-size: 1.2rem; font-weight: bold; color: #2980b9; background: #eef2f5; padding: 2px 12px; border-radius: 10px; display: flex; align-items: center">${ total_qty }</span>
+                            </div>
+                            <div class="text-truncate info-name" style="font-size: 0.9rem; font-weight: 500;" title="${ group.name }">${ group.name || ASSET_I18N.dest_lbl }</div>
+                        </div>
+                    </div>
+
+                    <div style="font-size: 0.8rem; color: #666; margin-top: 4px; line-height: 1.5;">
+                        <div style="display:flex; justify-content:space-between;">
+                            <span class="text-truncate info-desc1" style="max-width: 300px;" title="${ group.description_1 }">${ASSET_I18N.category_lbl} ${ group.description_1 || '-' }</span>
+                            <span class="text-truncate info-usefor" style="max-width: 300px; color: var(--primary); font-weight: 600;" title="${ group.use_for }">${ASSET_I18N.dest_lbl} ${ group.use_for || '-' }</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span class="text-truncate info-desc2" style="max-width: 300px;" title="${ group.description_2 }">${ASSET_I18N.desc_lbl} ${ group.description_2 || '-' }</span>
+                            <span class="text-truncate info-model" style="max-width: 300px; color: var(--primary-blue); font-weight: 600;" title="model">MODEL: ${ group.model || '-' }</span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; border-top: 1px dashed #eee; padding-top: 5px;">
+
+                        <!-- Minichart部分 -->
+                        <div id="chart-container-${groupId}" style="flex: 1; margin-right: 20px; display: flex; flex-direction: column; justify-content: center;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: bold; margin-bottom: 5px; line-height: 1;">
+                                <span style="color: #1db954;">${ASSET_I18N.stocking}: ${ good_qty }</span>
+                                <span style="color: #95a5a6;">${ASSET_I18N.stopped}: ${ broken_qty }</span>
+                                <span style="color: #e74c3c;">${ASSET_I18N.using}: ${ used_qty }</span>
+                            </div>
+                            <div style="width: 100%; height: 6px; background: #ecf0f1; border-radius: 4px; display: flex; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">
+                                ${good_qty > 0 ? `<div style="width: ${good_pct}%; background: rgba(29, 185, 84, 0.5);"></div>` : ''}
+                                ${broken_qty > 0 ? `<div style="width: ${broken_pct}%; background: #95a5a6;"></div>` : ''}
+                                ${used_qty > 0 ? `<div style="width: ${used_pct}%; background: rgba(231, 76, 60, 0.5);"></div>` : ''}
+                            </div>
+                        </div>
+                        ${btnHtml}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-back" onclick="event.stopPropagation();">
+                <div style="width: 130px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                    ${imgChangeLabel}
+                    <div style="position:relative; cursor:pointer;" onclick="document.getElementById('edit-upload-${first.id}').click();">
+
+                        <img id="edit-preview-${group.pn1}" class="card-img" style="display:${!group.has_image ? 'none' : ''}; width:130px; height:130px; border-radius:8px; object-fit:cover; border: 1px solid #ddd;"
+                                src="${ group.has_image ? `/static/asset_images/${ group.pn1 }.jpg?t=${window.SYS_VER}` : 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}" loading="lazy"
+                                onerror="this.style.display='none'; document.getElementById('edit-placeholder-${first.id}').style.display='flex';">
+
+                        <div id="edit-placeholder-${first.id}" class="card-img" style="display:${group.has_image ? 'none' : 'flex'}; justify-content: center; align-items: center; background: #f8f9fa; color: #dcdcdc; border: 1px dashed #ddd; width:130px; height:130px; border-radius:8px;">
+                            <i class="material-icons" style="font-size: 2.2rem;">${group.has_image ? 'inventory_2' : 'add_photo_alternate'}</i>
+                        </div>
+
+                        <div style="position:absolute; bottom:5px; right:5px; background:rgba(0,0,0,0.5); color:#fff; border-radius:50%; width:24px; height:24px; display:flex; justify-content:center; align-items:center;"><i class="material-icons" style="font-size: 14px;">photo_camera</i></div>
+                    </div>
+                    ${isAdmin ? `<input type="file" id="edit-upload-${first.id}" style="display:none;" accept="image/*" onchange="uploadCardImage(this, '${group.pn1}', '${first.id}')">` : ''}
+                </div>
+                ${cardBackForm}
+            </div>
+        </div>`;
+        count++;
+    }
+
+    // 一次性渲染到页面中
+    listContainer.innerHTML = htmlString;
+    
+    // 默认点开第一张卡片
+    let firstCard = document.querySelector('.asset-card');
+    if (firstCard) firstCard.click();
 }

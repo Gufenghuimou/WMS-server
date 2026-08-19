@@ -69,6 +69,25 @@
     2. 资产工作流 Modal (Asset / Audit)
 ==============================================-->
 
+<!-- 把原来直接渲染进页面的按钮放到模态框中 -->
+<div id="actionModal" class="custom-modal" style="z-index: 1050;">
+    <div class="custom-modal-content" style="width: 320px; text-align: center; padding: 20px;">
+        <span class="close-modal" onclick="closeActionModal()">&times;</span>
+        <h3 style="margin-top: 0; color: var(--text-main); border-bottom: 1px solid #eee; padding-bottom: 10px; font-size: 1.1rem;">
+            <i class="material-icons" style="vertical-align: middle; color: var(--primary-blue);">tune</i> 操作面板
+        </h3>
+        <!-- 当前物品的信息展示 -->
+        <div style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">
+            <span id="actionModalCtrlNo" class="font-monospace" style="font-weight: bold; color: #333;"></span>
+        </div>
+        
+        <!-- 这里用来动态注入按钮 -->
+        <div id="actionModalButtons" style="display: flex; flex-direction: column; gap: 10px;">
+            <!-- 按钮会由 JS 动态生成 -->
+        </div>
+    </div>
+</div>
+
 <!-- 重复扫码确认Modal -->
 <div id="repeatedConfirmModal" class="custom-modal">
     <div class="custom-modal-content" style="width: 380px; text-align: center;">
