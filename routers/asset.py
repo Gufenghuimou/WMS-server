@@ -83,6 +83,7 @@ async def get_asset(request: Request, query: Optional[str] = None, current_user:
                 "location": item.location or "",
                 "first_in_date": str(item.first_in_date) if item.first_in_date else "",
                 "po_type": item.po_type or "",
+                "remarks": item.remarks or "",
                 "is_stock": bool(item.is_stock),
                 "is_stop": bool(item.is_stop)
             })
@@ -153,34 +154,30 @@ async def asset_edit_group(
         description_1: str = Form(""),
         description_2: str = Form(""),
         use_for: str = Form(""),
-        remarks: str = Form(""),
-        po_type: str = Form(""),
         model: str = Form("")
 ):
     lang = request.state.lang
     with Session(engine) as session:
-        items = session.exec(select(AssetItem).where(AssetItem.pn_1 == pn_1.strip())).all()
-        for item in items:
-            item.pn_2 = pn_2
-            item.name = name
-            item.description_1 = description_1
-            item.description_2 = description_2
-            item.use_for = use_for
-            item.remarks = remarks
-            item.model = model
-            session.add(item)
+        grouped_items = session.exec(select(AssetItem).where(AssetItem.pn_1 == pn_1.strip())).all()
+        for group in grouped_items:
+            group.pn_2 = pn_2
+            group.name = name
+            group.description_1 = description_1
+            group.description_2 = description_2
+            group.use_for = use_for
+            group.model = model
+            session.add(group)
         session.commit()
-        session.refresh(item)
+        session.refresh(group)
         return {'status': 'success',
                 'data': {
                     'pn_1': pn_1,
-                    'pn_2': item.pn_2,
-                    'name': item.name,
-                    'description_1': item.description_1,
-                    'description_2': item.description_2,
-                    'use_for': item.use_for,
-                    'remarks': item.remarks,
-                    'model': item.model
+                    'pn_2': group.pn_2,
+                    'name': group.name,
+                    'description_1': group.description_1,
+                    'description_2': group.description_2,
+                    'use_for': group.use_for,
+                    'model': group.model
                 },
                 'message': t_lang("do.success", lang)}
 
@@ -193,7 +190,8 @@ async def asset_edit_item(
         location: str = Form(...),
         first_in_date: str = Form(""),
         po_type: str = Form(""),
-        apply_po_to_all: Optional[str] = Form(None)
+        apply_po_to_all: Optional[str] = Form(None),
+        remarks: str = Form("")
 ):
     lang = request.state.lang
     with Session(engine) as session:
@@ -212,6 +210,7 @@ async def asset_edit_item(
                 for sib in siblings:
                     sib.po_type = po_type
                     session.add(sib)
+            item.remarks = remarks
             session.add(item)
             session.commit()
             session.refresh(item)
@@ -224,7 +223,8 @@ async def asset_edit_item(
                     'first_in_date': item.first_in_date,
                     'po_type': item.po_type,
                     'pn_1': item.pn_1,
-                    'batch_po_type': batch_po_type_returned
+                    'batch_po_type': batch_po_type_returned,
+                    'remarks': item.remarks
                 },
                 'message': t_lang("do.success", lang)}
 

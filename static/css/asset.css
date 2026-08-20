@@ -116,7 +116,7 @@
 }
 
 .card-img:hover {
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 
 .card-info { flex: 1; min-width: 0; }

@@ -61,9 +61,11 @@ window.uploadCardImage = function(inputElem, pn1, itemId) {
     currentCropContext.pn1 = pn1;
     currentCropContext.itemId = itemId;
 
+    console.log(itemId);
     reader.onload = function(e) {
         document.getElementById('cropImageTarget').src = e.target.result;
         document.getElementById('cropModal').style.display = 'flex';
+        document.getElementById('confirmCrop').setAttribute('onclick', 'confirmAssetCrop()');
 
         if (cropper) { cropper.destroy(); }
 
@@ -79,7 +81,7 @@ window.uploadCardImage = function(inputElem, pn1, itemId) {
     inputElem.value = '';
 };
 
-window.confirmCrop = function() {
+window.confirmAssetCrop = function() {
     if (!cropper || !currentCropContext.pn1) return;
 
     cropper.getCroppedCanvas({
@@ -100,6 +102,7 @@ window.confirmCrop = function() {
 
             if (data.status === 'success') {
                 closeCropModal();
+                document.getElementById('confirmCrop').onclick = null;
                 showToast('Image updated successfully!', 'success');
                 let freshUrl = data.url + '?t=' + new Date().getTime();
 
@@ -142,6 +145,7 @@ window.handleImageSelect = function(event) {
     reader.onload = function(e) {
         document.getElementById('cropImageTarget').src = e.target.result;
         document.getElementById('cropModal').style.display = 'block';
+        document.getElementById('confirmCrop').setAttribute('onclick', 'confirmInventoryCrop()');
 
         if (cropper) { cropper.destroy(); }
 
@@ -157,7 +161,7 @@ window.handleImageSelect = function(event) {
     event.target.value = '';
 };
 
-window.confirmCrop = function() {
+window.confirmInventoryCrop = function() {
     if (!cropper) return;
 
     cropper.getCroppedCanvas({
@@ -177,6 +181,7 @@ window.confirmCrop = function() {
         .then(data => {
             if(data.status === 'success') {
                 closeCropModal();
+                document.getElementById('confirmCrop').onclick = null;
                 showToast(data.message, 'success');
                 let freshUrl = data.url + '?t=' + new Date().getTime();
 
@@ -321,6 +326,32 @@ function stopSlide(e) {
 
 // 滑动报废控制结束
 
+// 图片展示Modal控制开始
+window.openShowImgModal = function(itemId, pn1, name) {
+    const modal = document.getElementById('showImgModal');
+    const imgPn = document.getElementById('showImgModalPn');
+    const imgText = document.getElementById('showImgModalText');
+    const imgMain = document.getElementById('showImgModalMain');
+    
+    let currentPage = document.querySelector('.nav-item.active');
+
+    imgPn.innerText = `${pn1}`;
+    imgText.innerHTML = `<span style="color: var(--text-muted); font-size: 0.95rem">${name}</span>`;
+    // console.log(currentPage);
+    if (currentPage.getAttribute('href') === '/all' || currentPage.getAttribute('href') === '/inventory_table') {
+        imgMain.innerHTML = `<img style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px;" src="/static/item_images/${itemId}.jpg?t=${window.SYS_VER}">`;
+    } else if (currentPage.getAttribute('href') === '/asset') {
+        imgMain.innerHTML = `<img style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px;" src="/static/asset_images/${pn1}.jpg?t=${window.SYS_VER}">`;
+    }
+
+    modal.style.display = 'flex';
+}
+
+window.closeShowImgModal = function() {
+    document.getElementById('showImgModal').style.display = 'none';
+}
+// 图片展示Modal控制结束
+
 // Asset 操作按钮模态框控制开始
 window.openActionModal = function(groupId, itemId) {
     let groupData = window.ASSET_DATA[groupId];
@@ -337,7 +368,8 @@ window.openActionModal = function(groupId, itemId) {
     let isStockStr = item.is_stock ? 'True' : 'False';
     let isStopStr = item.is_stop ? 'True' : 'False';
     let disabledStyle = item.is_stop ? 'opacity: 0.5; pointer-events: none;' : '';
-
+    let remarks = item.remarks ? String(item.remarks) : '';
+    
     let activeSibling = groupData.items.find(i => i.is_stock && i.location && i.location.toLowerCase() !== 'none' && i.location !== '-');
     let siblingLoc = activeSibling ? activeSibling.location.replace(/'/g, "\\'").replace(/"/g, "&quot;") : '';
     let rackName = rawLoc.includes('-') ? rawLoc.split('-')[0].toUpperCase() : rawLoc;
@@ -358,7 +390,7 @@ window.openActionModal = function(groupId, itemId) {
         let btn1Text = item.is_stock ? ASSET_I18N.btn_take_out : ASSET_I18N.btn_return_in;
         let btn1 = `<button class="btn-primary" style="background-color: ${btn1Bg}; ${disabledStyle}; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="closeActionModal(); openAssetToggleModal(${item.id}, '${isStockStr}', '${safeCtrl}', false, '', '${siblingLoc}')"><i class="material-icons">${btn1Icon}</i> ${btn1Text}</button>`;
 
-        let btn2 = `<button class="btn-primary" style="background-color: #3498db; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="closeActionModal(); openAssetItemEditModal(${item.id}, '${safePn}', '${safeCtrl}', '${safeLoc}', '${safeDate}', '${safePoType}')"><i class="material-icons">edit_note</i> ${ASSET_I18N.btn_edit}</button>`;
+        let btn2 = `<button class="btn-primary" style="background-color: #3498db; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="closeActionModal(); openAssetItemEditModal(${item.id}, '${safePn}', '${safeCtrl}', '${safeLoc}', '${safeDate}', '${safePoType}', '${remarks}')"><i class="material-icons">edit_note</i> ${ASSET_I18N.btn_edit}</button>`;
         
         let btn3 = '';
         if (!item.is_stop && !item.is_stock) {
@@ -513,7 +545,7 @@ window.closeStopConfirmModal = function() {
 
 // Asset编辑Modal开始
 
-window.openAssetItemEditModal = function(itemId, pn, ctrlNo, location, dateStr, poType) {
+window.openAssetItemEditModal = function(itemId, pn, ctrlNo, location, dateStr, poType, remarks) {
     const modal = document.getElementById('assetItemEditModal');
 
     document.getElementById('assetItemEditForm').action = `/asset_edit_item/${itemId}`;
@@ -524,6 +556,7 @@ window.openAssetItemEditModal = function(itemId, pn, ctrlNo, location, dateStr, 
     document.getElementById('editDate').value = (dateStr === 'None' || !dateStr) ? '' : dateStr;
     document.getElementById('editPoType').value = (poType === 'None' || !poType) ? '' : poType;
     document.getElementById('applyPoToAllCheckbox').checked= false;
+    document.getElementById('editRemarks').value = remarks || '';
 
     modal.style.display = 'flex';
 };
@@ -756,6 +789,7 @@ document.addEventListener('keydown', (e) => {
         if (window.closeQrModal) window.closeQrModal();
         if (window.closeCropModal) window.closeCropModal();
         if (window.closeScrapModal) window.closeScrapModal();
+        if (window.closeShowImgModal) window.closeShowImgModal();
         if (window.closeActionModal) window.closeActionModal();
         if (window.closeAssetToggleModal) window.closeAssetToggleModal();
         if (window.closeStopConfirmModal) window.closeStopConfirmModal();

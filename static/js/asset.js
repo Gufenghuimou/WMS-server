@@ -31,10 +31,7 @@ window.switchAssetType = function(groupId) {
             statusHtml = `<span style="background: rgba(231, 76, 60, 0.15); color: #c0392b; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap">${ASSET_I18N.status_out_stock}</span>`;
         }
 
-        // let safePn = groupData.pn1 ? String(groupData.pn1).replace(/'/g, "\\'") : '';
-        // let safeCtrl = item.ctrl_no.replace(/'/g, "\\'");
         let rawLoc = item.location ? String(item.location).trim() : '';
-        // let safeLoc = rawLoc.replace(/'/g, "\\'").replace(/"/g, "&quot;");
         let rackName = "";
         if (rawLoc && rawLoc !== '-' && rawLoc.toLowerCase() !== 'none') {
             if (rawLoc.includes('-')) {
@@ -44,51 +41,16 @@ window.switchAssetType = function(groupId) {
             }
             rackName = rackName.replace(/'/g, "\\'").replace(/"/g, "&quot;");
         }
-        // let safeDate = item.first_in_date ? item.first_in_date.replace(/'/g,"\\'"): '';
-        // let safePoType = item.po_type ? String(item.po_type).replace(/'/g, "\\'") : '';
-        // let isStockStr = item.is_stock ? 'True' : 'False';
-        // let isStopStr = item.is_stop ? 'True' : 'False';
-        // let disabledStyle = item.is_stop ? 'opacity: 0.5; pointer-events: none;' : '';
 
         let poTypeHtml = '';
         if (item.po_type === 'common') { poTypeHtml = '<span style="font-size: 0.9rem; color: #333333; background-color: rgba(51, 51, 51, 0.15); padding: 4px 10px; white-space: nowrap; border-radius: 12px;">Common</span>'; }
         else if (item.po_type === 'reimburse') { poTypeHtml = '<span style="font-size: 0.9rem; color: #0899C2; background-color: rgba(8, 153, 194, 0.15); padding: 4px 10px; white-space: nowrap; border-radius: 12px;">Reimburse</span>'; }
         else if (item.po_type === 'consign') { poTypeHtml = '<span style="font-size: 0.9rem; color: #C20884; background-color: rgba(194, 8, 132, 0.15); padding: 4px 10px; white-space: nowrap; border-radius: 12px;">Consign</span>'; }
 
-        // const isAdmin = (window.USER_ROLE === 'superadmin' || window.USER_ROLE === 'admin');
-        // let btnGroupHtml = '';
-        // if (isAdmin) {
-        //     let btn1Bg = !item.is_stock ? '#1db954' : '#f39c12';
-        //     let btn1Icon = item.is_stock ? 'output' : 'login';
-        //     let btn1Text = item.is_stock ? ASSET_I18N.btn_take_out : ASSET_I18N.btn_return_in;
-        //     let btn1 = `<button type="button" class="btn-primary btn-sm" title=" ${btn1Text}" style="background-color: ${btn1Bg}; ${disabledStyle};" onclick="openAssetToggleModal(${item.id}, '${isStockStr}', '${safeCtrl}', false, '', '${siblingLoc}')"><i class="material-icons" style="margin-top: 2px;">${btn1Icon}</i></button>`;
-
-        //     let btn2 = `<button type="button" class="btn-primary btn-sm" title="${ASSET_I18N.btn_edit}" style="background-color: #ccc; color: #333;" onclick="openAssetItemEditModal(${item.id}, '${safePn}', '${safeCtrl}', '${safeLoc}', '${safeDate}', '${safePoType}')"><i class="material-icons" style="margin-top: 2px;">edit_note</i></button>`;
-
-        //     let btn3 = '';
-        //     if (!item.is_stop && !item.is_stock) {
-        //         btn3 = `<button type="button" class="btn-primary btn-sm" title="${ASSET_I18N.btn_stop}" style="background-color: #bdc3c7; color: #fff; box-shadow: none;" onclick="alert(ASSET_I18N.btn_stop_deny)"><i class="material-icons" style="margin-top: 2px;">do_not_disturb</i></button>`;
-        //     } else {
-        //         let btn3Bg = item.is_stop ? '#95a5a6' : 'var(--danger-red)';
-        //         let btn3Icon = item.is_stop ? 'settings_backup_restore' : 'do_not_disturb';
-        //         let btn3Text = item.is_stop ? ASSET_I18N.btn_reuse : ASSET_I18N.btn_stop;
-        //         btn3 = `<button type="button" class="btn-primary btn-sm" title="${btn3Text}" style="background-color: ${btn3Bg};" onclick="openStopConfirmModal(${item.id}, '${safeCtrl}', '${isStopStr}', false, '${siblingLoc}')"><i class="material-icons" style="margin-top: 2px;">${btn3Icon}</i></button>`;
-        //     }
-        //     btnGroupHtml = btn1 + btn2 + btn3;
-        // } else {
-        //     if (!item.is_stock && !item.is_stop) {
-        //         let btn4 = `<button type="button" class="btn-primary btn-sm" title="${ASSET_I18N.request_return_title}" style="background-color: #1db954;" onclick="openToggleModal(${item.id}, 'False', '${safeCtrl}', true, '${rackName}', '')"><i class="material-icons" style="margin-top: 2px;">assignment_return</i></button>`;
-        //         let btn5 = `<button type="button" class="btn-primary btn-sm" title="${ASSET_I18N.report_broken_title}" style="background-color: var(--danger-red);" onclick="openStopConfirmModal(${item.id}, '${safeCtrl}', 'False', true, '${rackName}')"><i class="material-icons" style="margin-top: 2px;">build</i></button>`;
-        //         btnGroupHtml = btn4 + btn5;
-        //     } else {
-        //         btnGroupHtml = `<span style="font-size:0.8rem; color:#aaa;">${ASSET_I18N.no_actions}</span>`;
-        //     }
-        // }
-
         // 按钮放进模态框，5个变一个，优化性能
         let btnGroupHtml = `
-            <button type="button" class="btn-primary btn-sm" 
-                style="background-color: #f0f2f5; color: #555; box-shadow: none; border: 1px solid #ddd;" 
+            <button type="button" class="btn-primary" 
+                style="background-color: #f0f2f5; color: #555; box-shadow: none; border: 1px solid #ddd; height: 28px; padding: 0 5px; border-radius: 6px; font-size: 0.75rem;" 
                 onclick="openActionModal('${groupId}', ${item.id})">
             <i class="material-icons">more_horiz</i>
         </button>
@@ -96,6 +58,7 @@ window.switchAssetType = function(groupId) {
 
         return `
         <tr>
+            <td style="display: flex; gap: 10px; justify-content: center; white-space: nowrap;">${btnGroupHtml}</td>
             <td class="font-monospace" style="font-weight: 600; font-size: 1.15rem; white-space: nowrap;">${item.ctrl_no}</td>
             <td>
                 <span style="cursor:pointer; color:var(--primary); font-weight: 500; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;" 
@@ -107,7 +70,7 @@ window.switchAssetType = function(groupId) {
             <td style="font-size: 0.9rem; color: #555; white-space: nowrap;">${item.first_in_date || '-'}</td>
             <td style="white-space: nowrap; text-align: center;">${statusHtml}</td>
             <td style="font-size: 0.75rem; white-space: nowrap; text-align: center;">${poTypeHtml}</td>
-            <td style="display: flex; gap: 10px; justify-content: center; white-space: nowrap;">${btnGroupHtml}</td>
+            <td style="font-size: 0.9rem; color: #555; white-space: nowrap;">${item.remarks || '-'}</td>
         </tr>
         `;
     }).join('');
@@ -132,146 +95,6 @@ window.switchAssetType = function(groupId) {
         }
     }
 };
-
-// Modals Control
-// window.openToggleModal = function(itemId, isStockStr, ctrlNo, isUserRequest = false, defaultRack = '', originalLoc = '') {
-//     const modal = document.getElementById('toggleModal');
-//     const form = document.getElementById('toggleForm');
-//     const hintBox = document.getElementById('toggleHintBox');
-//     const locInput = document.getElementById('locInput');
-//     const title = document.getElementById('toggleTitle');
-//     const adminLocBox = locInput.parentElement;
-//     const userFieldsBox = document.getElementById('toggleUserFields');
-//     const toggleDeptInput = document.getElementById('toggleDept');
-
-//     if (isUserRequest) {
-//         form.action = `/api/request_asset/${ctrlNo}`;
-//         title.innerHTML = `<i class="material-icons" style="color:#1db954;">assignment_return</i> ${ASSET_I18N.request_return_title}`;
-//         hintBox.innerHTML = `${ASSET_I18N.request_return} <strong>${ctrlNo}</strong>.`;
-//         adminLocBox.style.display = 'none';
-//         locInput.required = false;
-//         userFieldsBox.style.display = 'block';
-//         toggleDeptInput.required = true;
-//         toggleDeptInput.value = defaultRack;
-//         toggleDeptInput.placeholder = defaultRack;
-//     } else {
-//         form.action = `/asset_out/${itemId}`;
-//         adminLocBox.style.display = 'block';
-//         userFieldsBox.style.display = 'none';
-//         toggleDeptInput.required = false;
-//         toggleDeptInput.value = '';
-//         if (isStockStr === 'True') {
-//             title.innerHTML = `<i class="material-icons" style="color:#f39c12;">output</i> ${ASSET_I18N.toggle_out_title}`;
-//             hintBox.innerHTML = ASSET_I18N.toggle_out_hint;
-//             locInput.placeholder = ASSET_I18N.toggle_out_ph;
-//             locInput.value = '';
-//             locInput.required = true;
-//         } else {
-//             title.innerHTML = `<i class="material-icons" style="color:#1db954;">keyboard_return</i> ${ASSET_I18N.toggle_in_title}`;
-//             hintBox.innerHTML = ASSET_I18N.toggle_in_hint;
-//             locInput.placeholder = originalLoc ? originalLoc : ASSET_I18N.toggle_in_ph;
-//             locInput.value = originalLoc;
-//             locInput.required = false;
-//         }
-//     }
-
-//     modal.style.display = 'flex';
-// };
-
-// window.closeToggleModal = function() {
-//     document.getElementById('toggleModal').style.display = 'none';
-// };
-
-// window.openStopConfirmModal = function(itemId, ctrlNo, isStopStr, isUserRequest = false, defaultRack = '') {
-//     const modal = document.getElementById('stopConfirmModal');
-//     const form = document.getElementById('stopForm');
-//     const title = document.getElementById('stopModalTitle');
-//     const text = document.getElementById('stopModalText');
-//     const icon = document.getElementById('stopModalIcon');
-//     const locReuseContainer = document.getElementById('locReuseContainer');
-//     const locReuse = document.getElementById('locReuse');
-//     const submitBtn = document.getElementById('stopSubmitBtn');
-//     const radio = document.getElementById('raisonRadio')
-//     const userFieldsBox = document.getElementById('stopUserFields');
-//     const stopDeptInput = document.getElementById('stopDept');
-
-//     if (isUserRequest) {
-//         form.action = `/api/request_asset/${ctrlNo}`;
-//         icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red);">build</i>';
-//         title.innerText = `${ASSET_I18N.report_broken_title}`;
-//         text.innerHTML = `${ASSET_I18N.report_broken} <strong>${ctrlNo}</strong>`;
-//         radio.style.display = 'none';
-//         radio.querySelectorAll('input').forEach(input => {input.required = false;});
-//         userFieldsBox.style.display = 'block';
-//         stopDeptInput.required = true;
-//         stopDeptInput.value = defaultRack;
-//         stopDeptInput.placeholder = defaultRack;
-//         submitBtn.style.backgroundColor = 'var(--danger-red)';
-//         submitBtn.innerHTML = `<i class="material-icons">send</i> ${ASSET_I18N.btn_submit}`;
-//     } else {
-//         form.action = `/api/asset_stop_toggle/${itemId}`;
-//         userFieldsBox.style.display = 'none';
-//         stopDeptInput.required = false;
-//         stopDeptInput.value = '';
-//         if (isStopStr === 'True') {
-//             icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: #1db954;">settings_backup_restore</i>';
-//             title.innerText = ASSET_I18N.stop_reuse_title;
-//             text.innerHTML = ASSET_I18N.stop_reuse_text.replace('{ctrlNo}', ctrlNo);
-//             locReuseContainer.style.display = 'block';
-//             locReuse.placeholder = defaultRack;
-//             locReuse.required = true;
-//             locReuse.value = defaultRack;
-//             radio.style.display = 'none';
-//             radio.querySelectorAll('input').forEach(i => i.required = false);
-//             submitBtn.style.backgroundColor = '#1db954';
-//             submitBtn.innerHTML = `<i class="material-icons">check_circle</i> ${ASSET_I18N.btn_reuse}`;
-//         } else {
-//             icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red);">do_not_disturb_on</i>';
-//             title.innerText = ASSET_I18N.stop_freeze_title;
-//             text.innerHTML = ASSET_I18N.stop_freeze_text.replace('{ctrlNo}', ctrlNo);
-//             locReuseContainer.style.display = 'none';
-//             locReuse.placeholder = '';
-//             locReuse.value = '';
-//             radio.style.display = 'flex';
-//             radio.querySelectorAll('input').forEach(i => i.required = true);
-//             submitBtn.style.backgroundColor = 'var(--danger-red)';
-//             submitBtn.innerHTML = `<i class="material-icons">block</i> ${ASSET_I18N.btn_stop}`;
-//         }
-//     }
-
-//     modal.style.display = 'flex';
-// };
-
-// window.closeStopConfirmModal = function() {
-//     document.getElementById('stopConfirmModal').style.display = 'none';
-// };
-
-// window.openItemEditModal = function(itemId, pn, ctrlNo, location, dateStr, poType) {
-//     const modal = document.getElementById('itemEditModal');
-
-//     document.getElementById('itemEditForm').action = `/asset_edit_item/${itemId}`;
-//     document.getElementById('modalCtrlNoDisplay').innerText = `[${ctrlNo}]`;
-//     document.getElementById('editPn').value = pn || '';
-//     document.getElementById('editCtrlNo').value = ctrlNo || '';
-//     document.getElementById('editLocation').value = (location === 'None' || !location) ? '' : location;
-//     document.getElementById('editDate').value = (dateStr === 'None' || !dateStr) ? '' : dateStr;
-//     document.getElementById('editPoType').value = (poType === 'None' || !poType) ? '' : poType;
-//     document.getElementById('applyPoToAllCheckbox').checked= false;
-
-//     modal.style.display = 'flex';
-// };
-
-// window.closeItemEditModal = function() {
-//     document.getElementById('itemEditModal').style.display = 'none';
-// };
-
-// document.addEventListener('keydown', (e) => {
-//     if (e.key === 'Escape') {
-//         if(window.closeToggleModal) window.closeToggleModal();
-//         if(window.closeStopConfirmModal) window.closeStopConfirmModal();
-//         if(window.closeItemEditModal) window.closeItemEditModal();
-//     }
-// });
 
 // Initialization & Events
 document.addEventListener("DOMContentLoaded", () => {
@@ -309,6 +132,11 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 window.flipToEdit = function(event, cardId) {
+    document.querySelectorAll('.asset-card').forEach(card => {
+        card.classList.remove('is-flipped');
+        card.style.height = '';
+    });
+
     event.stopPropagation();
     let card = document.getElementById(cardId);
     if (!card) return;
@@ -336,97 +164,9 @@ window.cancelEdit = function(event, cardId) {
         if (!card.classList.contains('is-flipped')) {
             card.style.height = '';
         }
-    }, 600);
+    }, 300);
 };
 
-// Image Cropper Engine
-// let cropper = null;
-// let currentCropContext = { pn1: null, itemId: null };
-
-// window.uploadCardImage = function(inputElem, pn1, itemId) {
-//     if (!inputElem.files || inputElem.files.length === 0) return;
-
-//     let file = inputElem.files[0];
-//     let reader = new FileReader();
-
-//     currentCropContext.pn1 = pn1;
-//     currentCropContext.itemId = itemId;
-
-//     reader.onload = function(e) {
-//         document.getElementById('cropImageTarget').src = e.target.result;
-//         document.getElementById('cropModal').style.display = 'block';
-
-//         if (cropper) { cropper.destroy(); }
-
-//         let image = document.getElementById('cropImageTarget');
-//         cropper = new Cropper(image, {
-//             aspectRatio: 1 / 1,
-//             viewMode: 1,
-//             autoCropArea: 0.9,
-//             dragMode: 'move',
-//         });
-//     };
-//     reader.readAsDataURL(file);
-//     inputElem.value = '';
-// };
-
-// window.confirmCrop = function() {
-//     if (!cropper || !currentCropContext.pn1) return;
-
-//     cropper.getCroppedCanvas({
-//         maxWidth: 800,
-//         maxHeight: 800,
-//         imageSmoothingEnabled: true,
-//         imageSmoothingQuality: 'high',
-//     }).toBlob(async function(blob) {
-//         let formData = new FormData();
-//         formData.append('file', blob, 'image.jpg');
-
-//         try {
-//             let res = await fetch(`/api/asset_upload_image/${encodeURIComponent(currentCropContext.pn1)}`, {
-//                 method: 'POST',
-//                 body: formData
-//             });
-//             let data = await res.json();
-
-//             if (data.status === 'success') {
-//                 closeCropModal();
-//                 showToast('Image updated successfully!', 'success');
-//                 let freshUrl = data.url + '?t=' + new Date().getTime();
-
-//                 let previewBack = document.getElementById(`edit-preview-${currentCropContext.itemId}`);
-//                 let placeholderBack = document.getElementById(`edit-placeholder-${currentCropContext.itemId}`);
-//                 if (previewBack) {
-//                     previewBack.src = freshUrl;
-//                     previewBack.style.display = 'block';
-//                 }
-//                 if (placeholderBack) placeholderBack.style.display = 'none';
-
-//                 let cardFront = document.getElementById(`card-${currentCropContext.pn1.replace(/ /g, '-').replace(/\//g, '-')}`);
-//                 if (cardFront) {
-//                     let imgFront = cardFront.querySelector('.left-part img.card-img');
-//                     let placeholderFront = cardFront.querySelector('.left-part div.card-img');
-
-//                     if (imgFront) {
-//                         imgFront.src = freshUrl;
-//                         imgFront.style.display = 'block';
-//                     }
-//                     if (placeholderFront) placeholderFront.style.display = 'none';
-//                 }
-//             } else {
-//                 showToast(ASSET_I18N.upload_fail, 'error');
-//             }
-//         } catch(e) {
-//             showToast(ASSET_I18N.upload_net_err, 'error');
-//         }
-
-//     }, 'image/jpeg', 0.8);
-// };
-
-// window.closeCropModal = function() {
-//     document.getElementById('cropModal').style.display = 'none';
-//     if(cropper) cropper.destroy();
-// };
 
 // Global Ajax Interceptor
 document.addEventListener('submit', async function(e) {
@@ -648,8 +388,7 @@ function renderAssetCards(data) {
                         <div><label class="edit-label">${ASSET_I18N.edit_pn2}</label><input type="text" name="pn_2" class="edit-input" value="${ group.pn2 || '' }"></div>
                         <div><label class="edit-label">${ASSET_I18N.edit_dest}</label><input type="text" name="use_for" class="edit-input" value="${ group.use_for || '' }"></div>
 
-                        <div style="grid-column: span 2;"><label class="edit-label">${ASSET_I18N.edit_name}</label><input type="text" name="name" class="edit-input" value="${ group.name || '' }"></div>
-                        <div><label class="edit-label">${ASSET_I18N.edit_remark}</label><input type="text" name="remarks" class="edit-input" value="${ group.remarks || '' }"></div>
+                        <div style="grid-column: span 3;"><label class="edit-label">${ASSET_I18N.edit_name}</label><input type="text" name="name" class="edit-input" value="${ group.name || '' }"></div>
 
                         <div style="grid-column: span 1;"><label class="edit-label">${ASSET_I18N.edit_desc1}</label><input type="text" name="description_1" class="edit-input" value="${ group.description_1 || '' }"></div>
                         <div style="grid-column: span 2;"><label class="edit-label">${ASSET_I18N.edit_desc2}</label><input type="text" name="description_2" class="edit-input" value="${ group.description_2 || '' }"></div>
@@ -695,10 +434,16 @@ function renderAssetCards(data) {
             <div class="card-front">
                 <!-- 左侧图片部分 -->
                 <div class="left-part" style="flex-shrink: 0;">
-                    ${group.has_image ? 
-                        `<img class="card-img" src="/static/asset_images/${group.pn1}.jpg?t=${window.SYS_VER}" loading="lazy">` : 
-                        `<div class="card-img" style="display:flex; justify-content:center; align-items:center; background:#f8f9fa;"><i class="material-icons" style="font-size:2.2rem; color:#dcdcdc;">add_photo_alternate</i></div>`
-                    }
+                    <img class="card-img" 
+                         src="${group.has_image ? `/static/asset_images/${group.pn1}.jpg?t=${window.SYS_VER}` : 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}" 
+                         style="display: ${group.has_image ? 'block' : 'none'}; cursor: pointer;" 
+                         loading="lazy" 
+                         onclick="openShowImgModal('${groupId}', '${group.pn1}', '${group.name}')"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    
+                    <div class="card-img" style="display: ${group.has_image ? 'none' : 'flex'}; justify-content:center; align-items:center; background:#f8f9fa;">
+                        <i class="material-icons" style="font-size:2.2rem; color:#dcdcdc;">add_photo_alternate</i>
+                    </div>
                 </div>
                 <!-- 右侧信息部分 -->
                 <div class="right-part" style="flex: 1; min-width: 0;">
@@ -751,7 +496,7 @@ function renderAssetCards(data) {
                     ${imgChangeLabel}
                     <div style="position:relative; cursor:pointer;" onclick="document.getElementById('edit-upload-${first.id}').click();">
 
-                        <img id="edit-preview-${group.pn1}" class="card-img" style="display:${!group.has_image ? 'none' : ''}; width:130px; height:130px; border-radius:8px; object-fit:cover; border: 1px solid #ddd;"
+                        <img id="edit-preview-${first.id}" class="card-img" style="display:${!group.has_image ? 'none' : 'flex'}; width:130px; height:130px; border-radius:8px; object-fit:cover; border: 1px solid #ddd;"
                                 src="${ group.has_image ? `/static/asset_images/${ group.pn1 }.jpg?t=${window.SYS_VER}` : 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}" loading="lazy"
                                 onerror="this.style.display='none'; document.getElementById('edit-placeholder-${first.id}').style.display='flex';">
 

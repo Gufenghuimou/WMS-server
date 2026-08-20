@@ -34,7 +34,7 @@
         </div>
         <div style="display: flex; gap: 10px; justify-content: flex-end;">
             <button type="button" onclick="closeCropModal()" style="padding: 8px 20px; border-radius: 6px; border: none; background: #95a5a6; color: white; cursor: pointer;">取消</button>
-            <button type="button" onclick="confirmCrop()" style="padding: 8px 20px; border-radius: 6px; border: none; background: var(--primary-blue); color: white; font-weight: bold; cursor: pointer;">确认裁剪</button>
+            <button type="button" onclick="" id="confirmCrop" style="padding: 8px 20px; border-radius: 6px; border: none; background: var(--primary-blue); color: white; font-weight: bold; cursor: pointer;">确认裁剪</button>
         </div>
     </div>
 </div>
@@ -64,6 +64,15 @@
     </div>
 </div>
 
+<!-- 图片大尺寸展示的modal -->
+<div id="showImgModal" class="custom-modal">
+    <div class="custom-modal-content" style="text-align: center; width: 50vw; height: 80vh; overflow:hidden;">
+        <span class="close-modal" onclick="closeShowImgModal()">&times;</span>
+        <h3 id="showImgModalPn" class="font-monospace" style="margin: 0; color: var(--text-main); border-bottom: 1px solid #eee; padding-bottom: 10px; font-size: 1.35rem;"></h3>
+        <div id="showImgModalText" style="margin-top: 10px; margin-bottom: 15px; box-sizing: border-box;"></div>
+        <div id="showImgModalMain" style="width: 100%; flex: 1; min-height: 0; display: flex; justify-content: center; align-items: center;"></div>
+    </div>
+</div>
 
 <!-- =============================================
     2. 资产工作流 Modal (Asset / Audit)
@@ -181,24 +190,24 @@
             <i class="material-icons" style="font-size: 1.1rem; color: #3498db; vertical-align: middle;">edit_note</i>
             {{ t('asset_view.modal_item_title', lang) }} <span id="modalCtrlNoDisplay" style="color:#888; font-size:0.85rem; margin-left:10px;"></span>
         </h4>
-        <form id="assetItemEditForm" method="post" action="" style="display: flex; gap: 15px; align-items: flex-end; margin: 0;">
-            <div style="display: flex; flex-direction: column; gap: 6px;">
+        <form id="assetItemEditForm" method="post" action="" style="display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(2, 1fr); gap: 15px; align-items: flex-end; margin: 0;">
+            <div style="display: flex; flex-direction: column; gap: 6px; grid-column: span 1">
                 <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;"> PN</label>
                 <input type="text" name="pn_1" id="editPn" class="edit-input" style="width: 160px;" required>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div style="display: flex; flex-direction: column; gap: 6px; grid-column: span 1">
                 <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('asset_view.modal_item_ctrl', lang) }}</label>
                 <input type="text" name="ctrl_no" id="editCtrlNo" class="edit-input" style="width: 160px;" required>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div style="display: flex; flex-direction: column; gap: 6px; grid-column: span 1">
                 <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('asset_view.modal_item_loc', lang) }}</label>
                 <input type="text" name="location" id="editLocation" class="edit-input" style="width: 160px;" placeholder="{{ t('asset_view.modal_item_loc_ph', lang) }}">
             </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div style="display: flex; flex-direction: column; gap: 6px; grid-column: span 1">
                 <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('asset_view.modal_item_date', lang) }}</label>
                 <input type="date" name="first_in_date" id="editDate" class="edit-input" style="width: 140px;">
             </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div style="display: flex; flex-direction: column; gap: 6px; grid-column: span 1">
                 <div style="display: flex; gap: 6px; align-items: flex-end;">
                     <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">PO Type</label>
                     <label style="display: flex; align-items: flex-end; gap: 2px; font-size: 0.85rem; color: #e67e22; cursor: pointer; user-select: none;">
@@ -213,7 +222,11 @@
                     <option value="consign">Consign</option>
                 </select>
             </div>
-            <div style="display: flex; gap: 8px; margin-left: 10px;">
+            <div style="display: flex; flex-direction: column; gap: 6px; grid-column: span 4;">
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;"> Remarks</label>
+                <input type="text" name="remarks" id="editRemarks" class="edit-input">
+            </div>
+            <div style="display: flex; gap: 8px; margin-left: 10px; grid-column: span 1;">
                 <button type="button" class="btn-primary" style="background: #e0e0e0; color: #555; box-shadow: none; height: 33px; line-height: 1; padding: 0 15px;" onclick="closeAssetItemEditModal()">{{ t('asset_view.btn_cancel_modal', lang) }}</button>
                 <button type="submit" class="btn-primary" style="background: #3498db; height: 33px; line-height: 1; padding: 0 15px;">{{ t('asset_view.btn_save_changes', lang) }}</button>
             </div>

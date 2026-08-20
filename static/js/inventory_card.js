@@ -84,8 +84,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let autoPlayTimer = null;
 
     function startAutoPlay() {
+        const isModal = false;
+        document.querySelectorAll('.custom-modal').forEach(modal => {
+            if (window.getComputedStyle(modal).display !== 'none') {
+                isModal = true;
+            }
+        });
         if (document.documentElement.matches(':hover')) return;
-
+        if (isModal) return;
+        
         if (autoPlayTimer) clearInterval(autoPlayTimer);
         autoPlayTimer = setInterval(() => {
             if (document.querySelector('.item-card.is-flipped')) return;

@@ -83,7 +83,7 @@
                                 <div class="detail-inner">
                                     <div class="detail-image-box">
                                         {% if item.has_image %}
-                                            <img class="lazy-image" data-src="/static/item_images/{{ item.id }}.jpg?t={{ request.state.sys_ver }}" loading="lazy" alt="Item Image">
+                                            <img class="lazy-image" data-src="/static/item_images/{{ item.id }}.jpg?t={{ request.state.sys_ver }}" loading="lazy" alt="Item Image" onclick="openShowImgModal('{{ item.id }}', '{{ item.pn_1 }}', '{{item.name}}')">
                                         {% endif %}
                                     </div>
                                     <div class="detail-text">
@@ -145,8 +145,8 @@
         </table>
     </div>
 </div>
-{# 
-<div id="scrapModal" class="modal-overlay">
+
+{# <div id="scrapModal" class="modal-overlay">
     <div class="modal-box" style="width: 380px; text-align: center; padding: 30px 25px;">
         <i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red); margin-bottom: 10px; width: auto; height: auto; line-height: 1;">report_problem</i>
         <h3 style="margin-top: 0; color: #333; font-size: 1.3rem;">{{ t('asset_scrap.modal_title', lang) }}</h3>
@@ -167,8 +167,8 @@
             <button type="button" class="btn-primary" style="background: #f1f3f4; color: #555; box-shadow: none;" onclick="closeScrapModal()">{{ t('asset_scrap.btn_think_again', lang) }}</button>
         </div>
     </div>
-</div>
-{% endblock %} #}
+</div> #}
+{% endblock %}
 
 {% block extra_js %}
 <script>
@@ -176,6 +176,8 @@
         net_err_save: "{{ t('table.net_err_save', lang) }}",
         scrap_warn: `{{ t('card.scrap_warn', lang) }}`
     };
+    window.USER_ROLE = "{{ user.role }}";
+    window.SYS_VER = "{{ request.state.sys_ver }}";
 </script>
 <script src="/static/js/inventory_table.js"></script>
 {% endblock %}
