@@ -1,7 +1,7 @@
 <link rel="stylesheet" href="/static/css/global_modal.css">
 
 <!-- =============================================
-    1. 全局调用的 Modal (二维码、图像裁剪、报废)
+    1. 全局调用的 Modal
 ==============================================-->
 
 <!-- 二维码生成的Modal -->
@@ -15,6 +15,75 @@
         <canvas id="qrcodeCanvas" style="margin: 0 auto; display: block; border: 1px solid #eee; padding: 10px; border-radius: 8px;"></canvas>
         <div style="font-size: 0.75rem; color: #aaa; margin-top: 15px;">
             <i class="material-icons" style="font-size: 0.9rem; vertical-align: middle;">timer</i>{{ t('base.qr_time_note', lang) }}
+        </div>
+    </div>
+</div>
+
+<!-- 打印标签的Modal -->
+<div id="printModal" class="custom-modal" style="z-index:5000;">
+    <div class="custom-modal-content" style="text-align: center; width: 610px; overflow:hidden;">
+        <span class="close-modal" onclick="closeReprintModal()">&times;</span>
+        <h3 style="margin: 0; color: var(--primary-blue); font-size: 1.1rem; margin-bottom:15px;">
+            <i class="material-icons" style="vertical-align: middle;">print</i> {{ t('reprint.page_title', lang) }}
+        </h3>
+        <div class="reprint-container">
+            <div style="background: #fdfefe; border-bottom: 1px solid #dcdde1; padding-bottom: 10px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; gap: 5px;">
+                <div style="display: flex; align-items: center; gap: 8px; color: #7f8c8d;">
+                    <i class="material-icons" style="font-size: 1.35rem;" id="printerStatusIcon">print_disabled</i>
+                    {# <span style="font-weight: bold; font-size: 0.9rem; white-space: nowrap">{{ t('reprint.config_title', lang) }}</span> #}
+                </div>
+
+                <form id="printerConfigForm" style="display: flex; gap: 10px; align-items: center; margin: 0;" onsubmit="savePrinterConfig(event)">
+                    <input type="text" id="printerIp" class="big-input" style="width: 180px; padding: 8px 12px; font-size: 0.9rem;" placeholder="{{ t('reprint.ph_ip', lang) }}" required>
+                    <span style="color:#aaa;">:</span>
+                    <input type="number" id="printerPort" class="big-input" style="width: 100px; padding: 8px 12px; font-size: 0.9rem;" placeholder="{{ t('reprint.ph_port', lang) }}" required>
+
+                    <button type="submit" class="btn-primary" style="padding: 8px 15px; font-size: 0.85rem; height: auto;">{{ t('reprint.btn_save_config', lang) }}</button>
+                    <button type="button" class="btn-primary" style="padding: 8px 15px; font-size: 0.85rem; height: auto; background: #95a5a6; box-shadow: none;" onclick="checkPrinterStatus()">{{ t('reprint.btn_test', lang) }}</button>
+                </form>
+            </div>
+            <div class="tab-box">
+                <button class="tab-btn active" id="tabInv" onclick="switchMode('inv')">{{ t('reprint.tab_inv', lang) }}</button>
+                <button class="tab-btn" id="tabAsset" onclick="switchMode('asset')">{{ t('reprint.tab_asset', lang) }}</button>
+            </div>
+
+            <div id="formInv">
+                <div class="input-container" style="display: flex; gap:15px; justify-content:space-between;">
+                    <div class="form-group">
+                        <label>{{ t('reprint.lbl_inv_pn1', lang) }}</label>
+                        <input type="text" id="invPn1" class="big-input" placeholder="{{ t('reprint.ph_inv_pn1', lang) }}" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>{{ t('reprint.lbl_inv_pn2', lang) }}</label>
+                        <input type="text" id="invPn2" class="big-input readonly-input" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>{{ t('reprint.lbl_inv_name', lang) }}</label>
+                    <input type="text" id="invName" class="big-input readonly-input" readonly>
+                </div>
+                <div id="invStatus" class="status-msg"></div>
+                <button class="btn-primary" style="width:100%; height: 50px; font-size: 1.2rem; background: #2c3e50;" onclick="doPrint('inv')">{{ t('reprint.btn_print_now', lang) }}</button>
+            </div>
+
+            <div id="formAsset" style="display: none;">
+                <div class="input-container" style="display: flex; gap:15px; justify-content:space-between;">
+                    <div class="form-group">
+                        <label>{{ t('reprint.lbl_asset_ctrl', lang) }}</label>
+                        <input type="text" id="assetCtrl" class="big-input" placeholder="{{ t('reprint.ph_asset_ctrl', lang) }}" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>{{ t('reprint.lbl_asset_pn1', lang) }}</label>
+                        <input type="text" id="assetPn1" class="big-input readonly-input" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>{{ t('reprint.lbl_asset_name', lang) }}</label>
+                    <input type="text" id="assetName" class="big-input readonly-input" readonly>
+                </div>
+                <div id="assetStatus" class="status-msg"></div>
+                <button class="btn-primary" style="width:100%; height: 50px; font-size: 1.2rem; background: #2c3e50;" onclick="doPrint('asset')">{{ t('reprint.btn_print_now', lang) }}</button>
+            </div>
         </div>
     </div>
 </div>
@@ -433,8 +502,20 @@
         btn_disable: "{{ t('simcard.btn_disable', lang) }}",
         simcard_enable: "{{ t('simcard.simcard_enable', lang) }}",
         enable_notice: "{{ t('simcard.disable_notice', lang) }}",
-        btn_enable: "{{ t('simcard.btn_enable', lang) }}",
-
+        btn_enable: "{{ t('simcard.btn_enable', lang) }}"
+    };
+    const REPRINT_I18N = {
+        msg_querying: "{{ t('reprint.msg_querying', lang) }}",
+        msg_correct_pn2: "{{ t('reprint.msg_correct_pn2', lang) }}",
+        msg_match_success: "{{ t('reprint.msg_match_success', lang) }}",
+        msg_net_fail: "{{ t('reprint.msg_net_fail', lang) }}",
+        alert_no_pn1: "{{ t('reprint.alert_no_pn1', lang) }}",
+        alert_no_ctrl: "{{ t('reprint.alert_no_ctrl', lang) }}",
+        alert_print_success: "{{ t('reprint.alert_print_success', lang) }}",
+        alert_print_fail: "{{ t('reprint.alert_print_fail', lang) }}",
+        alert_empty_ip: "{{ t('reprint.alert_empty_ip', lang) }}",
+        alert_save_fail: "{{ t('reprint.alert_save_fail', lang) }}",
+        alert_save_net_err: "{{ t('reprint.alert_save_net_err', lang) }}"
     };
 </script>
 <script src="/static/js/global_modal.js"></script>

@@ -46,6 +46,213 @@ window.closeQrModal = function() {
 
 // qrModal控制结束
 
+// 打印标签Modal控制开始
+window.openReprintModal = function() {
+    document.getElementById('printModal').style.display = 'flex';
+}
+
+window.closeReprintModal = function() {
+    document.getElementById('printModal').style.display = 'none';
+}
+// 功能函数
+let currentMode = 'inv';
+let timeoutId = null;
+
+function switchMode(mode) {
+    currentMode = mode;
+    document.getElementById('tabInv').classList.toggle('active', mode === 'inv');
+    document.getElementById('tabAsset').classList.toggle('active', mode === 'asset');
+    document.getElementById('formInv').style.display = mode === 'inv' ? 'block' : 'none';
+    document.getElementById('formAsset').style.display = mode === 'asset' ? 'block' : 'none';
+
+    if(mode === 'inv') document.getElementById('invPn1').focus();
+    if(mode === 'asset') document.getElementById('assetCtrl').focus();
+}
+
+// 1. 消耗品自动完成与纠偏逻辑
+const invInput = document.getElementById('invPn1');
+invInput.addEventListener('keydown', async function (event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        const val = this.value.trim().toUpperCase();
+        const status = document.getElementById('invStatus');
+        const pn2 = document.getElementById('invPn2');
+        const name = document.getElementById('invName');
+
+    if (!val) { status.innerHTML = ''; pn2.value = ''; name.value = ''; return; }
+    status.innerHTML = `<span style="color:#888;">${REPRINT_I18N.msg_querying}</span>`;
+
+    try {
+        let res = await fetch(`/api/item/${val}`);
+        let data = await res.json();
+
+        if (data.error) {
+            status.innerHTML = `<span class="msg-error">❌ ${data.error}</span>`;
+            pn2.value = ''; name.value = '';
+        } else {
+            // 自动纠偏：如果用户把 PN2 输入到了框里
+            if (data.matched_by === 'pn_2') {
+                status.innerHTML = `<span class="msg-warning">${REPRINT_I18N.msg_correct_pn2}</span>`;
+                invInput.value = data.pn_1; // 强制替换成真实的 PN1
+                pn2.value = data.pn_2 || '';
+            } else {
+                status.innerHTML = `<span class="msg-success">${REPRINT_I18N.msg_match_success}</span>`;
+                invInput.value = data.pn_1;
+                pn2.value = data.pn_2 || '';
+            }
+            name.value = data.name || '-';
+        }
+    } catch (err) {
+        status.innerHTML = `<span class="msg-error"> ${REPRINT_I18N.msg_net_fail}</span>`;
+    }
+    }
+});
+
+// 2. 资产自动完成逻辑
+const assetInput = document.getElementById('assetCtrl');
+assetInput.addEventListener('keydown', async function(event) {
+    if (event.key === 'Enter') {
+    event.preventDefault();
+    const val = this.value.trim().toUpperCase();
+    this.value = val; // 强制大写
+    const status = document.getElementById('assetStatus');
+    const pn1 = document.getElementById('assetPn1');
+    const name = document.getElementById('assetName');
+
+    if (!val) { status.innerHTML = ''; pn1.value = ''; name.value = ''; return; }
+    status.innerHTML = `<span style="color:#888;">${REPRINT_I18N.msg_querying}</span>`;
+
+    try {
+        let res = await fetch(`/api/asset_info/${val}`);
+        let data = await res.json();
+
+        if (data.error) {
+            status.innerHTML = `<span class="msg-error">❌ ${data.error}</span>`;
+            pn1.value = ''; name.value = '';
+        } else {
+            status.innerHTML = `<span class="msg-success">${REPRINT_I18N.msg_match_success}</span>`;
+            pn1.value = data.pn_1 || '';
+            name.value = data.name || '-';
+        }
+    } catch (err) {
+        status.innerHTML = `<span class="msg-error"> ${REPRINT_I18N.msg_net_fail}</span>`;
+    }
+    }
+});
+
+// 3. 发送打印任务
+async function doPrint(mode) {
+    let formData = new FormData();
+
+    if (mode === 'inv') {
+        let pn1 = document.getElementById('invPn1').value;
+        let pn2 = document.getElementById('invPn2').value;
+        if (!pn1) return alert(REPRINT_I18N.alert_no_pn1);
+        formData.append('right_barcode', pn1);
+        formData.append('left_text', pn2);
+    } else {
+        let ctrl = document.getElementById('assetCtrl').value;
+        let pn1 = document.getElementById('assetPn1').value;
+        if (!ctrl) return alert(REPRINT_I18N.alert_no_ctrl);
+        formData.append('right_barcode', ctrl);
+        formData.append('left_text', pn1);
+    }
+
+    try {
+        let res = await fetch('/api/trigger_print', { method: 'POST', body: formData });
+        let data = await res.json();
+
+        if (data.status === 'success') {
+            showToast(data.message, 'success');
+            // 打印成功后清空框，准备扫下一个
+            if(mode === 'inv') {
+                document.getElementById('invPn1').value = '';
+                document.getElementById('invPn1').dispatchEvent(new Event('input'));
+                document.getElementById('invPn1').focus();
+            } else {
+                document.getElementById('assetCtrl').value = '';
+                document.getElementById('assetCtrl').dispatchEvent(new Event('input'));
+                document.getElementById('assetCtrl').focus();
+            }
+        }
+    } catch (e) {
+        alert(REPRINT_I18N.alert_print_fail);
+    }
+}
+
+// 打印机配置
+// 页面加载时自动获取当前配置并检测连通性
+document.addEventListener('DOMContentLoaded', () => {
+    checkPrinterStatus();
+});
+
+async function checkPrinterStatus() {
+    const icon = document.getElementById('printerStatusIcon');
+    if (icon) icon.innerHTML = 'sync';
+
+    try {
+        let res = await fetch('/api/printer_status');
+        let data = await res.json();
+
+        // 填充输入框的当前值
+        const ipInput = document.getElementById('printerIp');
+        const portInput = document.getElementById('printerPort');
+        if (ipInput && data.config) ipInput.value = data.config.ip;
+        if (portInput && data.config) portInput.value = data.config.port;
+
+        // 更新状态 UI
+        if (data.status === 'online') {
+            if (icon) {
+                icon.innerHTML = 'print';
+                icon.style.color = '#1db954';
+            }
+        } else {
+            if (icon) {
+                icon.innerHTML = 'print_disabled';
+                icon.style.color = '#e74c3c';
+            }
+            console.warn("打印机离线:", data.detail);
+        }
+    } catch (e) {
+        if (icon) {
+            icon.innerHTML = 'error_outline';
+            icon.style.color = '#e74c3c';
+        }
+    }
+}
+
+async function savePrinterConfig(e) {
+    e.preventDefault();
+
+    let ip = document.getElementById('printerIp').value.trim();
+    let port = document.getElementById('printerPort').value.trim();
+
+    if (!ip || !port) return alert(REPRINT_I18N.alert_empty_ip);
+
+    let formData = new FormData();
+    formData.append('ip', ip);
+    formData.append('port', port);
+
+    try {
+        let res = await fetch('/api/update_printer_config', {
+            method: 'POST',
+            body: formData
+        });
+        let data = await res.json();
+
+        if (data.status === 'success') {
+            showToast(data.message, 'success');
+            checkPrinterStatus(); // 保存后立即重新测试连通性
+        } else {
+            alert(REPRINT_I18N.alert_save_fail + (data.message || "未知错误"));
+        }
+    } catch (err) {
+        alert(REPRINT_I18N.alert_save_net_err);
+    }
+}
+
+// 打印标签Modal控制结束
+
 // cropModal控制开始
 
 let cropper = null;
@@ -787,6 +994,7 @@ window.closeActiveToggleModal = function() {
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         if (window.closeQrModal) window.closeQrModal();
+        if (window.closeReprintModal) window.closeReprintModal();
         if (window.closeCropModal) window.closeCropModal();
         if (window.closeScrapModal) window.closeScrapModal();
         if (window.closeShowImgModal) window.closeShowImgModal();

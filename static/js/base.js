@@ -516,12 +516,12 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
 
     // 1. 安全绑定标签补印按钮的点击事件 (找不到按钮也不会报错)
-    const reprintBtn = document.getElementById('openReprint');
-    if (reprintBtn) {
-        reprintBtn.addEventListener('click', function () {
-            window.open('/reprint', '_blank');
-        });
-    }
+    // const reprintBtn = document.getElementById('openReprint');
+    // if (reprintBtn) {
+    //     reprintBtn.addEventListener('click', function () {
+    //         window.open('/reprint', '_blank');
+    //     });
+    // }
 
     // 2. 精简版打印机呼吸灯检测逻辑 (只变色，不需要文字)
     async function checkPrinterStatus() {

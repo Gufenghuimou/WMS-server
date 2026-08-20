@@ -49,7 +49,6 @@
             <table class="adv-table" id="advancedTable">
                 <thead>
                     <tr>
-                        <th style="width: 150px; text-align:center;"> {{ t('simcard.action', lang) }}</th>
                         <th onclick="sortTable(0, 'string')" style="width: 250px;"> ICCID <i class="material-icons sort-icon">unfold_more</i></th>
                         <th onclick="sortTable(1, 'string')" style="width: 100px;"> {{ t('simcard.carrier', lang) }} <i class="material-icons sort-icon">unfold_more</i></th>
                         <th style="width: 200px;"> {{ t('simcard.number', lang) }}</th>
@@ -58,36 +57,13 @@
                         <th onclick="sortTable(5, 'string')" style="width: 100px;"> {{ t('simcard.project', lang) }} <i class="material-icons sort-icon">unfold_more</i></th>
                         <th style="width: 100px;"> {{ t('simcard.status', lang) }} </th>
                         <th> {{ t('simcard.note', lang) }} </th>
+                        <th style="width: 150px; text-align:center;"> {{ t('simcard.action', lang) }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in items %}
                     <tr class="main-row" data-id="{{ item.id }}" id="row-{{ item.id }}">
-                        <td class="action-buttons">
-                            {% if item.is_active %}
-                            <button type="button" class="btn-primary btn-sm" title="Active" style="background-color: #e74c3c; color: #fff;"
-                                    onclick="openActiveToggleModal({{ item.id }}, 'True')"><i class="material-icons" style="margin-top: 2px;">do_not_disturb</i></button>
-                            {% else %}
-                            <button type="button" class="btn-primary btn-sm" title="Active" style="background-color: #95a5a6; color: #fff;"
-                                    onclick="openActiveToggleModal({{ item.id }}, 'False')"><i class="material-icons" style="margin-top: 2px;">settings_backup_restore</i></button>
-                            {% endif %}
-
-                            <button type="button" class="btn-primary btn-sm" title="Edit" style="background-color: #ccc; color: #333;"
-                                    onclick="openSimcardItemEditModal({{ item.id }}, '{{ item.icc_id }}', '{{ item.carrier }}', '{{ item.phone_number }}', '{{ item.location or '' }}', '{{ item.direct_user or '' }}', '{{ item.project or '' }}', '{{ item.note or '' }}')"><i class="material-icons" style="margin-top: 2px;">edit_note</i></button>
-
-                            {% if item.is_active %}
-                                {% if item.is_stock %}
-                                <button type="button" class="btn-primary btn-sm" title="Out" style="background-color: #1db954; color: #fff;"
-                                        onclick="openSimcardToggleModal({{ item.id }}, 'True')"><i class="material-icons" style="margin-top: 2px;">keyboard_return</i></button>
-                                {% else %}
-                                <button type="button" class="btn-primary btn-sm" title="Out" style="background-color: #f39c12; color: #fff;"
-                                        onclick="openSimcardToggleModal({{ item.id }}, 'False')"><i class="material-icons" style="margin-top: 2px;">output</i></button>
-                                {% endif %}
-                            {% else %}
-                            <button type="button" class="btn-primary btn-sm" title="Out" style="background-color: var(--danger-red); color: #fff;"
-                                    onclick="openScrapModal({{ item.id }}, 'False')"><i class="material-icons" style="margin-top: 2px;">delete</i></button>
-                            {% endif %}
-                        </td>
+                        
                         <td class="font-monospace icc-id">
                             {% if item.icc_id and item.icc_id|length > 5 %}
                                 {{ item.icc_id[:-5] }} {{ item.icc_id[-5:] }}
@@ -117,6 +93,31 @@
                             {% endif %}
                         </td>
                         <td>{{ item.note }}</td>
+                        <td class="action-buttons">
+                            {% if item.is_active %}
+                            <button type="button" class="btn-primary btn-sm" title="Active" style="background-color: #e74c3c; color: #fff;"
+                                    onclick="openActiveToggleModal({{ item.id }}, 'True')"><i class="material-icons" style="margin-top: 2px;">do_not_disturb</i></button>
+                            {% else %}
+                            <button type="button" class="btn-primary btn-sm" title="Active" style="background-color: #95a5a6; color: #fff;"
+                                    onclick="openActiveToggleModal({{ item.id }}, 'False')"><i class="material-icons" style="margin-top: 2px;">settings_backup_restore</i></button>
+                            {% endif %}
+
+                            <button type="button" class="btn-primary btn-sm" title="Edit" style="background-color: #ccc; color: #333;"
+                                    onclick="openSimcardItemEditModal({{ item.id }}, '{{ item.icc_id }}', '{{ item.carrier }}', '{{ item.phone_number }}', '{{ item.location or '' }}', '{{ item.direct_user or '' }}', '{{ item.project or '' }}', '{{ item.note or '' }}')"><i class="material-icons" style="margin-top: 2px;">edit_note</i></button>
+
+                            {% if item.is_active %}
+                                {% if item.is_stock %}
+                                <button type="button" class="btn-primary btn-sm" title="Out" style="background-color: #1db954; color: #fff;"
+                                        onclick="openSimcardToggleModal({{ item.id }}, 'True')"><i class="material-icons" style="margin-top: 2px;">keyboard_return</i></button>
+                                {% else %}
+                                <button type="button" class="btn-primary btn-sm" title="Out" style="background-color: #f39c12; color: #fff;"
+                                        onclick="openSimcardToggleModal({{ item.id }}, 'False')"><i class="material-icons" style="margin-top: 2px;">output</i></button>
+                                {% endif %}
+                            {% else %}
+                            <button type="button" class="btn-primary btn-sm" title="Out" style="background-color: var(--danger-red); color: #fff;"
+                                    onclick="openScrapModal({{ item.id }}, 'False')"><i class="material-icons" style="margin-top: 2px;">delete</i></button>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
