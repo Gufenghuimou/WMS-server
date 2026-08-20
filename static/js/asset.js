@@ -427,7 +427,8 @@ function renderAssetCards(data) {
 
 
         // 拼接搜索关键字
-        let searchKeys = `${group.pn1} ${group.pn2 || ""} ${group.name || ''} ${group.description_1 || ''}`.toLowerCase();
+        let itemKeys = group.items.map(item => `${item.ctrl_no} ${item.location || ''}`).join(' ');
+        let searchKeys = `${group.pn1} ${group.pn2 || ""} ${group.name || ''} ${group.description_1 || ''} ${itemKeys}`.toLowerCase();
 
         htmlString += `
         <div class="asset-card" id="card-${groupId}" onclick="switchAssetType('${groupId}')" data-search-keys="${searchKeys}">
