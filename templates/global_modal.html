@@ -79,10 +79,10 @@
 ==============================================-->
 
 <!-- 把原来直接渲染进页面的按钮放到模态框中 -->
-<div id="actionModal" class="custom-modal" style="z-index: 4000;">
-    <div class="custom-modal-content" style="width: 400px; text-align: center; padding: 20px;">
+<div id="actionModal" class="custom-modal" style="z-index: 1000;">
+    <div class="custom-modal-content" style="width: 400px; text-align: left; padding: 20px;">
         <span class="close-modal" onclick="closeActionModal()">&times;</span>
-        <h3 id="actionModalCtrlNo" class="font-monospace"  style="margin-top: 0; color: var(--text-main); border-bottom: 1px solid #eee; padding-bottom: 10px; font-size: 1.35rem;"></h3>
+        <h3 id="actionModalCtrlNo" class="font-monospace" style="margin-top: 0; color: var(--text-main); border-bottom: 1px solid #eee; padding-bottom: 10px; font-size: 1.35rem; align-self: flex-start;"></h3>
         <!-- 当前物品的信息展示 -->
         <div style="font-size: 1.15rem; margin-bottom: 15px;">
             <div id="actionModalPn" class="font-monospace" style="font-weight: bold; color: var(--text-main);"></div>
