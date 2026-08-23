@@ -23,7 +23,7 @@
 <div id="printModal" class="custom-modal" style="z-index:5000;">
     <div class="custom-modal-content" style="text-align: center; width: 610px; overflow:hidden;">
         <span class="close-modal" onclick="closeReprintModal()">&times;</span>
-        <h3 style="margin: 0; color: var(--primary-blue); font-size: 1.1rem; margin-bottom:15px;">
+        <h3 style="margin: 0; color: var(--primary-blue); font-size: 1.1rem; margin-bottom:15px; align-self: flex-start;">
             <i class="material-icons" style="vertical-align: middle;">print</i> {{ t('reprint.page_title', lang) }}
         </h3>
         <div class="reprint-container">
@@ -143,11 +143,7 @@
     </div>
 </div>
 
-<!-- =============================================
-    2. 资产工作流 Modal (Asset / Audit)
-==============================================-->
-
-<!-- 把原来直接渲染进页面的按钮放到模态框中 -->
+<!-- 单项功能按钮的模态框 -->
 <div id="actionModal" class="custom-modal" style="z-index: 1000;">
     <div class="custom-modal-content" style="width: 400px; text-align: left; padding: 20px;">
         <span class="close-modal" onclick="closeActionModal()">&times;</span>
@@ -164,6 +160,10 @@
         </div>
     </div>
 </div>
+
+<!-- =============================================
+    2. 资产工作流 Modal (Asset / Audit)
+==============================================-->
 
 <!-- 重复扫码确认Modal -->
 <div id="repeatedConfirmModal" class="custom-modal">
@@ -502,7 +502,8 @@
         btn_disable: "{{ t('simcard.btn_disable', lang) }}",
         simcard_enable: "{{ t('simcard.simcard_enable', lang) }}",
         enable_notice: "{{ t('simcard.disable_notice', lang) }}",
-        btn_enable: "{{ t('simcard.btn_enable', lang) }}"
+        btn_enable: "{{ t('simcard.btn_enable', lang) }}",
+        btn_scrap: "{{ t('card.scrap', lang) }}"
     };
     const REPRINT_I18N = {
         msg_querying: "{{ t('reprint.msg_querying', lang) }}",

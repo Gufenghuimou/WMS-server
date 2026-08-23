@@ -707,6 +707,13 @@ document.addEventListener('DOMContentLoaded', fetchChatHistory);
         resetSlider(); // 锁屏时重置滑块状态
     }
 
+    // 页面刷新时直接解锁
+    window.addEventListener('DOMContentLoaded', () => {
+        isScreenLocked = false;
+        document.getElementById('screen-lock-overlay').style.display = 'none';
+        localStorage.setItem('eam_last_active', Date.now().toString());
+    });
+
     // 监听交互，重置倒计时
     ['keydown', 'click', 'touchstart'].forEach(evt => {
         document.addEventListener(evt, () => {

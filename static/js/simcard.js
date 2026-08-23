@@ -319,3 +319,71 @@ function updateTableRow(data) {
         setTimeout(() => row.style.backgroundColor = "", 800)
     }
 }
+
+// 从后端捞取数据
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const response = await fetch('/api/simcard');
+        const result = await response.json();
+
+        window.SIMCARD_DATA = result.data;
+        window.SIMCARD_TOTAL = result.simcard_total_count;
+        renderSimcard(result.data);
+    } catch (error) {
+        console.error("Data Loaded Fail", error);
+        document.querySelector('.table-header').innerHTML = `<div style="text-align:center; color:red;">加载失败，请刷新重试</div>`;
+    } finally {
+        if (typeof window.hideGlobalLoader === 'function') {
+            setTimeout(window.hideGlobalLoader, 50);
+        }
+    }
+});
+
+function renderSimcard(data) {
+    const simcardTable = document.getElementById('advancedTable');
+    if (data.length === 0) {
+        simcardTable.innerHTML = `
+            <div style="text-align:center; padding: 40px 20px; color: #999;">
+                <i class="material-icons" style="font-size: 3rem; opacity: 0.5;">inbox</i>
+                <p>暂无数据</p>
+            </div>
+        `;
+        return;
+    }
+
+    const rowsHtml = data.map(item => {
+        let statusHtml = item.is_active ? (item.is_stock ? `class="status-badge-stock">在库</span>` : `<span class="status-badge-out">已借出</span>`) : `<span class="status-badge-stop">停用</span>`;
+        let betterIcc = ``;
+        if (data.icc_id && data.icc_id.length > 5) {
+            betterIcc = `${item.icc_id.slice(0, -5)} ${item.icc_id.slice(-5)}`;
+        } else {
+            betterIcc = `${item.icc_id}`;
+        }
+
+        let btnGroupHtml = `
+            <button type="button" class="btn-primary" 
+                style="background-color: #f0f2f5; color: #555; box-shadow: none; border: 1px solid #ddd; height: 28px; padding: 0 5px; border-radius: 6px; font-size: 0.75rem;" 
+                onclick="openActionModal('${item.icc_id}', ${item.phone_number})">
+            <i class="material-icons">more_horiz</i>
+        </button>
+        `;
+
+        return `
+            <tr class="main-row" data-id="${item.id}" id="row-${item.id}">
+                <td class="font-monospace icc-id">${betterIcc}</td>
+                <td>${item.carrier}</td>
+                <td class='font-monospace phone_number'>${item.phone_number}</td>
+                <td style="cursor: pointer; color: var(--primary); font-weight: 500; white-space: nowrap;" onclick="openFooterMap('{{ item.location }}')">
+                    <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.95rem;">
+                        <i class="material-icons" style="font-size: 1rem;">place</i>
+                        ${item.location}
+                    </span>
+                </td>
+                <td>${ item.direct_user }</td>
+                <td>${ item.project }</td>
+                <td>${ statusHtml }</td>
+                <td>${ item.note }</td>
+                <td style="display: flex; gap: 10px; justify-content: center; white-space: nowrap;">${btnGroupHtml}</td>
+        `;
+    });
+}

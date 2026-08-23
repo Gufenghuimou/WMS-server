@@ -1,6 +1,6 @@
 # /routers/simcard.py
 from fastapi import Request, Form, UploadFile, File, Depends, APIRouter
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from sqlmodel import Session, select, or_, desc, delete
 from typing import Optional, List
 from starlette.responses import RedirectResponse, StreamingResponse
@@ -18,11 +18,38 @@ from core import templates, t_lang
 router = APIRouter(tags=["Simcard"])
 
 
+# @router.get("/simcard", response_class=HTMLResponse)
+# async def get_simcard(request: Request, query: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+#     with Session(engine) as session:
+#         statement = select(PhysicalSimCard)
+
+#         if query:
+#             statement = statement.where(
+#                 or_(
+#                     PhysicalSimCard.icc_id.like(f'%{query}%'),
+#                     PhysicalSimCard.carrier.like(f'%{query}%'),
+#                     PhysicalSimCard.phone_number.like(f'%{query}%'),
+#                     PhysicalSimCard.location.like(f'%{query}%'),
+#                     PhysicalSimCard.direct_user.like(f'%{query}%'),
+#                     PhysicalSimCard.project.like(f'%{query}%'),
+#                     PhysicalSimCard.note.like(f'%{query}%')
+#                 )
+#             )
+#         else:
+#             statement = statement.order_by(PhysicalSimCard.project)
+#         items = session.exec(statement).all()
+#         total = len(items)
+
+#     return templates.TemplateResponse(request, "simcard.html", {"request": request, "items": items, 'query': query, 'user': current_user, 'active_page': 'simcard', 'simcard_total_count': total})
+
 @router.get("/simcard", response_class=HTMLResponse)
-async def get_simcard(request: Request, query: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+async def get_simcard(request: Request, current_user: dict = Depends(get_current_user)):
+    return templates.TemplateResponse(request, "simcard.html", {'user': current_user, 'active_page': 'simcard'})
+
+@router.get("/api/simcard")
+async def get_simcard_api(request: Request, query: Optional[str] = None, current_user: dict = Depends(get_current_user)):
     with Session(engine) as session:
         statement = select(PhysicalSimCard)
-
         if query:
             statement = statement.where(
                 or_(
@@ -40,7 +67,7 @@ async def get_simcard(request: Request, query: Optional[str] = None, current_use
         items = session.exec(statement).all()
         total = len(items)
 
-    return templates.TemplateResponse(request, "simcard.html", {"request": request, "items": items, 'query': query, 'user': current_user, 'active_page': 'simcard', 'simcard_total_count': total})
+    return JSONResponse(content={"status": "success", "data": items, "simcard_total_count": total})
 
 @router.post("/simcard_out/{item_id}")
 async def simcard_out(

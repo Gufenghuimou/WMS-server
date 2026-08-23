@@ -627,7 +627,6 @@ window.openActionModal = function(groupId, itemId) {
 window.closeActionModal = function() {
     document.getElementById('actionModal').style.display = 'none';
 };
-
 // Asset 操作按钮模态框控制结束
 
 // Asset出入库Modal控制
@@ -892,6 +891,39 @@ window.closeAssetApproveModal = function() {
 };
 
 // 资产审批Modal 结束
+
+// Simcard 操作按钮Modal 开始
+window.openActionModalSimcard = function(item) {
+    let safeIccid = item.icc_id.replace(/\s+/g, "");
+
+    document.getElementById('actionModalCtrlNo').innerHTML = `<i class="material-icons" style="vertical-align: middle; color: var(--primary-blue);">tune</i> ${item.ctrl_no}`;
+    document.getElementById('actionModalPn').innerText = `${safeIccid}`;
+    document.getElementById('actionModalName').innerText = `${item.phone_number}`;
+
+    const isAdmin = (window.USER_ROLE === 'superadmin' || window.USER_ROLE === 'admin');
+    let btnGroupHtml = '';
+
+    if (isAdmin) {
+        let btn1Bg = item.is_active ? (!item.is_stock ? '#1db954' : '#f39c12') : 'var(--danger-red)';
+        let btn1Icon = item.is_active ? (item.is_stock ? 'output' : 'login') : 'delete';
+        let btn1Text = item.is_active ? (item.is_stock ? ASSET_I18N.btn_take_out : ASSET_I18N.btn_return_in) : MODAL_I18N.btn_scrap;
+        let btn1func = item.is_active ? "openSimcardToggleModal(${item.id}, '${item.is_stock}')" : "openScrapModal(${item.id})"
+        let btn1 = `<button class="btn-primary" style="background-color: ${btn1Bg}; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick=${btn1func}}><i class="material-icons">${btn1Icon}</i> ${btn1Text}</button>`;
+
+        let btn2 = `<button class="btn-primary" style="background-color: #3498db; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="openSimcardItemEditModal(${item.id}, '${item.icc_id}', '${item.carrier}', '${item.phone_number}', '${item.location || ""}', '${item.direct_user || ""}', '${item.project || ""}', '${item.note || ""}')"><i class="material-icons">edit_note</i> ${ASSET_I18N.btn_edit}</button>`;
+
+        let btn3Bg = item.is_active ? '#e74c3c' : '#95a5a6';
+        let btn3Icon = item.is_active ? 'do_not_disturb' : 'settings_backup_restore';
+        let btn3 = `<button type="button" class="btn-primary" title="Active" style="background-color: ${btn3Bg}; color: #fff;" onclick="openActiveToggleModal(${item.id}, '${item.is_active}')"><i class="material-icons" style="margin-top: 2px;">${btn3Icon}</i></button>`;
+        
+        btnGroupHtml = btn1 + btn2 + btn3;
+    }
+
+    document.getElementById('actionModalButtons').innerHTML = btnGroupHtml;
+    document.getElementById('actionModal').style.display = 'flex';
+}
+
+// Simcard 操作按钮Modal 结束 关闭逻辑通用
 
 // Simcard 分配Modal 开始
 

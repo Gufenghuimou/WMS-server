@@ -84,12 +84,12 @@
                         <td>
                             {% if item.is_active %}
                                 {% if item.is_stock %}
-                                <span style="background: rgba(29, 185, 84, 0.15); color: #158e40; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap">在库</span>
+                                <span class="status-badge-stock">在库</span>
                                 {% else %}
-                                <span style="background: rgba(231, 76, 60, 0.15); color: #c0392b; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap">已借出</span>
+                                <span class="status-badge-out">已借出</span>
                                 {% endif %}
                             {% else %}
-                            <span style="background: rgba(149, 165, 166, 0.15); color: #7f8c8d; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; text-decoration: line-through; white-space: nowrap">停用</span>
+                            <span class="status-badge-stop">停用</span>
                             {% endif %}
                         </td>
                         <td>{{ item.note }}</td>
@@ -287,6 +287,10 @@
         btn_disable: "{{ t('simcard.btn_disable', lang) }}",
         btn_enable: "{{ t('simcard.btn_enable', lang) }}"
     };
+
+    window.USER_ROLE = "{{ user.role }}";
+    window.SIMCARD_DATA = {};
+    window.DEFER_GLOBAL_LOADER = true;
 </script>
 <script src="/static/js/simcard.js"></script>
 {% endblock %}
