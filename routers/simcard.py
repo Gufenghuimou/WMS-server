@@ -67,7 +67,7 @@ async def get_simcard_api(request: Request, query: Optional[str] = None, current
         items = session.exec(statement).all()
         total = len(items)
 
-    return JSONResponse(content={"status": "success", "data": items, "simcard_total_count": total})
+    return {"status": "success", "data": items, "simcard_total_count": total}
 
 @router.post("/simcard_out/{item_id}")
 async def simcard_out(

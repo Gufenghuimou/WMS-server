@@ -109,7 +109,7 @@
 </div>
 
 <!-- 报废滑动确认Modal -->
-<div id="scrapModal" class="custom-modal">
+<div id="scrapModal" class="custom-modal" style="z-index: 9999;">
     <div class="custom-modal-content" style="width: 380px; text-align: center; border-top: 6px solid var(--danger-red, #d93025);">
         <span class="close-modal" onclick="closeScrapModal()">&times;</span>
         <i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red); margin-bottom: 10px; width: auto; height: auto; line-height: 1;">report_problem</i>
@@ -149,7 +149,7 @@
         <span class="close-modal" onclick="closeActionModal()">&times;</span>
         <h3 id="actionModalCtrlNo" class="font-monospace" style="margin-top: 0; color: var(--text-main); border-bottom: 1px solid #eee; padding-bottom: 10px; font-size: 1.35rem; align-self: flex-start;"></h3>
         <!-- 当前物品的信息展示 -->
-        <div style="font-size: 1.15rem; margin-bottom: 15px;">
+        <div style="font-size: 1.15rem; margin: 0 0 15px 15px; align-self: flex-start;">
             <div id="actionModalPn" class="font-monospace" style="font-weight: bold; color: var(--text-main);"></div>
             <span id="actionModalName" style="color: var(--text-muted); font-size: 0.95rem"></span>
         </div>

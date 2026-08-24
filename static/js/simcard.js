@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tBody = document.querySelector('#advancedTable tbody');
     if (!tBody) return;
     const mainRows = tBody.querySelectorAll('.main-row');
+    console.log(mainRows);
     mainRows.forEach(mainRow => {
         mainRow._cachedSearchText = mainRow.textContent.toLowerCase();
     });
@@ -62,204 +63,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// // 定义滑动报废变量
-// let isDraggingSlider = false;
-// let startX = 0;
-// let maxDrag = 0;
-// const ZOOM_LEVEL = 0.67;
+document.addEventListener('DOMContentLoaded', () => {
+    const globalSearch = document.getElementById('globalSearch');
+    let searchTimeout;
+    if (globalSearch) {
+        globalSearch.addEventListener('input', function(e) {
+            let term = e.target.value.toLowerCase().trim();
+            clearTimeout(searchTimeout);
 
-// // Modals Control
+            searchTimeout = setTimeout(() => {
+                if (term === '') {
+                    renderSimcard(window.SIMCARD_DATA);
+                    return;
+                }
 
-// window.openToggleModal = function(itemId, isStockStr) {
-//     const modal = document.getElementById('toggleModal');
-//     const form = document.getElementById('toggleForm');
-//     const title = document.getElementById('toggleTitle');
-//     const hintBox = document.getElementById('toggleHintBox');
-//     const fieldBox = document.getElementById('toggleFields');
-//     const locInput = document.getElementById('locInput');
-//     const userInput = document.getElementById('userInput');
-//     const projectInput = document.getElementById('projectInput');
+                let filterData = window.SIMCARD_DATA.filter(item => {
+                    let searchKey = `${item.icc_id || ''} ${item.carrier || ''} ${item.phone_number || ''} ${item.location || ''} ${item.direct_user || ''} ${item.project || ''} ${item.note || ''}`.toLowerCase();
+                    return searchKey.includes(term)
+                });
 
-//     form.action = `/simcard_out/${itemId}`
-
-//     if (isStockStr === 'True') {
-//         title.innerHTML = `<i class="material-icons" style="color:#1db954;">output</i> ${ASSET_I18N.toggle_out_title}`;
-//         hintBox.innerHTML = ASSET_I18N.toggle_out_hint;
-//         fieldBox.style.display = 'flex';
-//         locInput.value = '';
-//         locInput.required = true;
-//         userInput.value = '';
-//         projectInput.value = '';
-//     } else {
-//         title.innerHTML = `<i class="material-icons" style="color:#f39c12;">keyboard_return</i> ${ASSET_I18N.toggle_in_title}`;
-//         hintBox.innerHTML = ASSET_I18N.toggle_in_hint;
-//         fieldBox.style.display = 'none';
-//         locInput.value = '';
-//         locInput.required = false;
-//         userInput.value = '';
-//         projectInput.value = '';
-//     }
-//     modal.style.display = 'flex';
-// }
-
-// window.openItemEditModal = function(itemId, icc, carrier, phone, loc, user, proj, note) {
-//     const modal = document.getElementById('itemEditModal');
-//     document.getElementById('itemEditForm').action = `/simcard_edit/${itemId}`;
-
-//     document.getElementById('editIccid').value = icc;
-//     document.getElementById('editCarrier').value = carrier;
-//     document.getElementById('editPhone').value = phone;
-//     document.getElementById('editLoc').value = loc;
-//     document.getElementById('editUser').value = user || '';
-//     document.getElementById('editProject').value = proj || '';
-//     document.getElementById('editNote').value = note || '';
-
-//     modal.style.display = 'flex';
-// }
-
-// window.openActiveToggleModal = function(itemId, isActiveStr) {
-//     const modal = document.getElementById('activeToggleModal');
-//     const form = document.getElementById('activeToggleForm');
-//     const title = document.getElementById('activeModalTitle');
-//     const text = document.getElementById('activeModalText');
-//     const icon = document.getElementById('activeModalIcon');
-//     const submitBtn = document.getElementById('activeSubmitBtn');
-
-//     form.action = `/simcard_active_toggle/${itemId}`;
-
-//     if (isActiveStr === 'True') {
-//         icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red);">do_not_disturb_on</i>';
-//         title.innerHTML = SIMCARD_I18N.simcard_disable;
-//         text.innerHTML = SIMCARD_I18N.disabled_notice;
-//         submitBtn.innerHTML = `<i class="material-icons">block</i> ${SIMCARD_I18N.btn_disable}`;
-//         submitBtn.style.backgroundColor = 'var(--danger-red)';
-//     } else {
-//         icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: #1db954;">settings_backup_restore</i>';
-//         title.innerHTML = SIMCARD_I18N.simcard_enable;
-//         text.innerHTML = SIMCARD_I18N.enable_notice;
-//         submitBtn.innerHTML = `<i class="material-icons">check_circle</i> ${SIMCARD_I18N.btn_enable}`;
-//         submitBtn.style.backgroundColor = 'var(--primary-green)';
-//     }
-//     modal.style.display = 'flex';
-// }
-
-// window.openScrapModal = function(itemId, isActiveStr) {
-//     const modal = document.getElementById('scrapModal');
-//     const form = document.getElementById('scrapForm');
-
-//     form.action = `/simcard_delete/${itemId}`
-//     if (isActiveStr === 'True') return;
-
-//     resetSlider();
-//     modal.style.display = 'flex';
-
-//     const handle = document.getElementById('sliderHandle');
-//     const container = document.getElementById('sliderContainer');
-//     maxDrag = container.clientWidth - handle.clientWidth - 6;
-
-//     handle.onmousedown = startSlide;
-// }
-
-// window.closeToggleModal = function() {
-//     document.getElementById('toggleModal').style.display = 'none';
-// }
-
-// window.closeItemEditModal = function() {
-//     document.getElementById('itemEditModal').style.display = 'none';
-// }
-
-// window.closeActiveToggleModal = function() {
-//     document.getElementById('activeToggleModal').style.display = 'none';
-// }
-
-// window.closeScrapModal = function() {
-//     document.getElementById('scrapModal').style.display = 'none';
-//     resetSlider();
-// }
-
-// document.addEventListener('keydown', (e) => {
-//     if (e.key === 'Escape') {
-//         closeToggleModal();
-//         closeItemEditModal();
-//         closeActiveToggleModal();
-//         closeScrapModal();
-//     }
-// });
-
-// // scrapModal 滑动控制
-
-// function resetSlider(animate = false) {
-//     const container = document.getElementById('sliderContainer');
-//     const handle = document.getElementById('sliderHandle');
-//     const bg = document.getElementById('sliderBg');
-//     const text = document.getElementById('sliderText');
-
-//     container.classList.remove('unlocked');
-//     text.innerText = '滑动以确认';
-
-//     if (animate) {
-//         handle.style.transition = 'left 0.3s ease';
-//         bg.style.transition = 'width 0.3s ease';
-//     }
-
-//     handle.style.left = '3px';
-//     bg.style.width = '0';
-// }
-
-// function unlockSuccess() {
-//     isDraggingSlider = false;
-//     document.onmousemove = null;
-
-//     const container = document.getElementById('sliderContainer');
-//     container.classList.add('unlocked');
-//     document.getElementById('sliderText').innerText = '释放以报废';
-
-//     setTimeout(() => {
-//         document.getElementById('scrapForm').submit();
-//     }, 200);
-// }
-
-// function updateSliderPosition(x) {
-//     const handle = document.getElementById('sliderHandle');
-//     const bg = document.getElementById('sliderBg');
-//     handle.style.left = (x + 3) + 'px';
-//     bg.style.width = (x + 25) + 'px';
-// }
-
-// function onSlide(e) {
-//     if (!isDraggingSlider) return;
-//     let moveX = (e.clientX - startX) / ZOOM_LEVEL;
-
-//     if (moveX < 0) moveX = 0;
-//     if (moveX > maxDrag) moveX = maxDrag;
-
-//     updateSliderPosition(moveX);
-
-//     if (moveX >= maxDrag * 0.98) {
-//         unlockSuccess();
-//     }
-// }
-
-// function startSlide(e) {
-//     isDraggingSlider = true;
-//     startX = e.clientX;
-//     document.onmousemove = onSlide;
-//     document.onmouseup = stopSlide;
-
-//     document.getElementById('sliderHandle').style.transition = 'none';
-//     document.getElementById('sliderBg').style.transition = 'none';
-// }
-
-// function stopSlide(e) {
-//     if (!isDraggingSlider) return;
-//     isDraggingSlider = false;
-//     document.onmousemove = null;
-//     document.onmouseup = null;
-
-//     if (!document.getElementById('sliderContainer').classList.contains('unlocked')) {
-//         resetSlider(true);
-//     }
-// }
+                renderSimcard(filterData);
+            }, 300);
+        });
+    }
+});
 
 // AJAX
 
@@ -278,6 +105,7 @@ document.addEventListener('submit', async function(e){
         let result = await response.json();
         if (result.status === 'success') {
             showToast(result.message, 'success');
+            closeActionModal();
             closeSimcardToggleModal();
             closeSimcardEditModal();
             closeActiveToggleModal();
@@ -292,32 +120,20 @@ document.addEventListener('submit', async function(e){
 
 function updateTableRow(data) {
     if (!data || !data.id) return;
-    let row = document.getElementById(`row-${data.id}`);
-    if (!row) return;
+    let index = window.SIMCARD_DATA.findIndex(i => i.id === data.id);
+    if (index !== -1) {
+        window.SIMCARD_DATA[index] = {...window.SIMCARD_DATA[index], ...data};
+    }
+    renderSimcard(window.SIMCARD_DATA);
 
-    let tds = row.querySelectorAll('td');
-    if (data.icc_id !== undefined) {
-        let icc = String(data.icc_id).trim();
-        if (icc.length > 5) {
-            tds[0].innerText = icc.slice(0, -5) + ' ' + icc.slice(-5);
-        } else {
-            tds[0].innerText = icc;
+    setTimeout(() => {
+        let row = document.getElementById(`row-${data.id}`);
+        if (row) {
+            row.style.transition = "background-color 0.5s ease";
+            row.style.backgroundColor = '#d4edda';
+            setTimeout(() => row.style.backgroundColor = "", 800)
         }
-    }
-    if (data.carrier !== undefined) tds[1].innerText = data.carrier;
-    if (data.phone_number !== undefined) tds[2].innerText = data.phone_number;
-    if (data.location !== undefined) tds[3].innerHTML = `<span style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.95rem;"><i class="material-icons" style="font-size: 1rem;">place</i> ${data.location}</span>`;
-    if (data.direct_user !== undefined) tds[4].innerText = data.direct_user;
-    if (data.project !== undefined) tds[5].innerText = data.project;
-    if (data.is_stock !== undefined) tds[6].innerHTML = data.is_stock ? `<span style="background: rgba(29, 185, 84, 0.15); color: #158e40; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap">在库</span>` : `<span style="background: rgba(231, 76, 60, 0.15); color: #c0392b; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap">已借出</span>`;
-    if (data.note !== undefined) tds[7].innerText = data.note;
-    if (data.is_stock !== undefined || data.is_active !== undefined) {
-        window.location.reload();
-    } else {
-        row.style.transition = "background-color 0.5s ease";
-        row.style.backgroundColor = '#d4edda';
-        setTimeout(() => row.style.backgroundColor = "", 800)
-    }
+    }, 50);
 }
 
 // 从后端捞取数据
@@ -340,40 +156,44 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function renderSimcard(data) {
-    const simcardTable = document.getElementById('advancedTable');
-    if (data.length === 0) {
-        simcardTable.innerHTML = `
-            <div style="text-align:center; padding: 40px 20px; color: #999;">
-                <i class="material-icons" style="font-size: 3rem; opacity: 0.5;">inbox</i>
-                <p>暂无数据</p>
-            </div>
+    const tBody = document.getElementById('simcardTbody');
+    if (!tBody) return;
+    if (!data || data.length === 0) {
+        tBody.innerHTML = `
+            <tr>
+                <td colspan="9" style="text-align:center; padding: 40px 20px; color: #999;">
+                    <i class="material-icons" style="font-size: 3rem; opacity: 0.5;">inbox</i>
+                    <p>暂无数据</p>
+                </td>
+            </tr>
         `;
         return;
     }
 
     const rowsHtml = data.map(item => {
-        let statusHtml = item.is_active ? (item.is_stock ? `class="status-badge-stock">在库</span>` : `<span class="status-badge-out">已借出</span>`) : `<span class="status-badge-stop">停用</span>`;
+        let statusHtml = item.is_active ? (item.is_stock ? `<span class="status-badge-stock">在库</span>` : `<span class="status-badge-out">已借出</span>`) : `<span class="status-badge-stop">停用</span>`;
         let betterIcc = ``;
-        if (data.icc_id && data.icc_id.length > 5) {
-            betterIcc = `${item.icc_id.slice(0, -5)} ${item.icc_id.slice(-5)}`;
+        if (item.icc_id && item.icc_id.length > 5) {
+            betterIcc = item.icc_id.slice(0, -5) +' '+ item.icc_id.slice(-5);
         } else {
-            betterIcc = `${item.icc_id}`;
+            betterIcc = item.icc_id;
         }
 
         let btnGroupHtml = `
             <button type="button" class="btn-primary" 
                 style="background-color: #f0f2f5; color: #555; box-shadow: none; border: 1px solid #ddd; height: 28px; padding: 0 5px; border-radius: 6px; font-size: 0.75rem;" 
-                onclick="openActionModal('${item.icc_id}', ${item.phone_number})">
+                onclick="openSimcardActionModal(${item.id})">
             <i class="material-icons">more_horiz</i>
         </button>
         `;
 
         return `
             <tr class="main-row" data-id="${item.id}" id="row-${item.id}">
+                <td style="display: flex; gap: 10px; justify-content: center; white-space: nowrap;">${btnGroupHtml}</td>
                 <td class="font-monospace icc-id">${betterIcc}</td>
                 <td>${item.carrier}</td>
                 <td class='font-monospace phone_number'>${item.phone_number}</td>
-                <td style="cursor: pointer; color: var(--primary); font-weight: 500; white-space: nowrap;" onclick="openFooterMap('{{ item.location }}')">
+                <td style="cursor: pointer; color: var(--primary); font-weight: 500; white-space: nowrap;" onclick="openFooterMap('${item.location}')">
                     <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.95rem;">
                         <i class="material-icons" style="font-size: 1rem;">place</i>
                         ${item.location}
@@ -383,7 +203,39 @@ function renderSimcard(data) {
                 <td>${ item.project }</td>
                 <td>${ statusHtml }</td>
                 <td>${ item.note }</td>
-                <td style="display: flex; gap: 10px; justify-content: center; white-space: nowrap;">${btnGroupHtml}</td>
+            </tr>
         `;
+    }).join('');
+
+    document.getElementById('simcardTbody').innerHTML = rowsHtml;
+    updateSimcardStates(data);
+}
+
+function updateSimcardStates(items) {
+    let total = items.length;
+    let using = 0;
+    let stopped = 0;
+
+    items.forEach(item => {
+        if (!item.is_active) stopped++;
+        else if (!item.is_stock) using++;
     });
+    let usable = total - using - stopped;
+    let usableWidth = (usable / total) * 100
+    let stoppedWidth = (stopped / total) * 100
+    let usingWidth = (using / total) * 100
+
+    document.querySelector('h2').innerHTML = `${total}`;
+    document.getElementById('simcardChart').innerHTML = `
+        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: bold; margin-bottom: 5px; line-height: 1; width: 100%;">
+            <span style="color: #1db954; width: ${usableWidth}%; min-width: 40px; text-align: left;">${SIMCARD_I18N.simcard_usable}: ${usable}</span>
+            <span style="color: #95a5a6; width: ${stoppedWidth}%; min-width: 40px; text-align: center;">${SIMCARD_I18N.simcard_stopped}: ${stopped}</span>
+            <span style="color: #e74c3c; width: ${usingWidth}%; min-width: 40px; text-align: right;">${SIMCARD_I18N.simcard_using}: ${using}</span>
+        </div>
+        <div style="width: 100%; height: 6px; background: #ecf0f1; border-radius: 4px; display: flex; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">
+            <div style="width: ${usableWidth}%; background: rgba(29, 185, 84, 0.5); transition: 0.3s;" title="${SIMCARD_I18N.simcard_usable}: ${usable}"></div>
+            <div style="width: ${stoppedWidth}%; background: #95a5a6; transition: 0.3s;" title="${SIMCARD_I18N.simcard_stopped}: ${stopped}"></div>
+            <div style="width: ${usingWidth}%; background: rgba(231, 76, 60, 0.5); transition: 0.3s;" title="${SIMCARD_I18N.simcard_using}: ${using}"></div>
+        </div>
+    `;
 }
