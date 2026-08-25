@@ -146,6 +146,15 @@ async def simcard_edit(
         item.project = project
         item.note = note
         session.add(item)
+        log = PhysicalSimCardLog(
+            icc_id=item.icc_id,
+            phone_number=item.phone_number,
+            target_loc=item.location,
+            target_user=item.direct_user,
+            target_project=item.project,
+            action='Edit'
+        )
+        session.add(log)
         session.commit()
         session.refresh(item)
     return {
@@ -293,10 +302,14 @@ async def simcard_delete(request: Request, item_id: int, current_user: dict = De
 
 @router.get("/simcard_history", response_class=HTMLResponse)
 async def simcard_history(request: Request, current_user: dict = Depends(get_current_user)):
+    return templates.TemplateResponse(request, "simcard_history.html", {'user': current_user, 'active_page': 'simcard_history'})
+
+@router.get("/api/simcard_history")
+async def get_simcard_history(request: Request, current_user: dict = Depends(get_current_user)):
     with Session(engine) as session:
         statement = select(PhysicalSimCardLog).order_by(desc(PhysicalSimCardLog.id))
         logs = session.exec(statement).all()
-    return templates.TemplateResponse(request, "simcard_history.html", {'logs': logs, 'user': current_user, 'active_page': 'simcard_history'})
+    return {'status': 'success', 'data': logs}
 
 @router.get("/simcard_history/export")
 def simcard_history_export(current_user: dict = Depends(get_current_user)):

@@ -35,33 +35,33 @@ window.sortTable = function(columnIndex, dataType) {
 
 // 全局搜索
 
-document.addEventListener('DOMContentLoaded', () => {
-    const tBody = document.querySelector('#advancedTable tbody');
-    if (!tBody) return;
-    const mainRows = tBody.querySelectorAll('.main-row');
-    console.log(mainRows);
-    mainRows.forEach(mainRow => {
-        mainRow._cachedSearchText = mainRow.textContent.toLowerCase();
-    });
+// document.addEventListener('DOMContentLoaded', () => {
+//     const tBody = document.querySelector('#advancedTable tbody');
+//     if (!tBody) return;
+//     const mainRows = tBody.querySelectorAll('.main-row');
+//     console.log(mainRows);
+//     mainRows.forEach(mainRow => {
+//         mainRow._cachedSearchText = mainRow.textContent.toLowerCase();
+//     });
 
-    const globalSearch = document.getElementById('globalSearch');
-    let searchTimeout;
+//     const globalSearch = document.getElementById('globalSearch');
+//     let searchTimeout;
 
-    if (globalSearch) {
-        globalSearch.addEventListener('input', function(e) {
-            let term = e.target.value.toLowerCase().trim();
+//     if (globalSearch) {
+//         globalSearch.addEventListener('input', function(e) {
+//             let term = e.target.value.toLowerCase().trim();
 
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                mainRows.forEach(mainRow => {
-                    let rowText = mainRow._cachedSearchText || "";
-                    let isMatch = rowText.includes(term);
-                    mainRow.style.display = isMatch ? '' : 'none';
-                });
-            }, 250);
-        });
-    }
-});
+//             clearTimeout(searchTimeout);
+//             searchTimeout = setTimeout(() => {
+//                 mainRows.forEach(mainRow => {
+//                     let rowText = mainRow._cachedSearchText || "";
+//                     let isMatch = rowText.includes(term);
+//                     mainRow.style.display = isMatch ? '' : 'none';
+//                 });
+//             }, 250);
+//         });
+//     }
+// });
 
 document.addEventListener('DOMContentLoaded', () => {
     const globalSearch = document.getElementById('globalSearch');
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 let filterData = window.SIMCARD_DATA.filter(item => {
                     let searchKey = `${item.icc_id || ''} ${item.carrier || ''} ${item.phone_number || ''} ${item.location || ''} ${item.direct_user || ''} ${item.project || ''} ${item.note || ''}`.toLowerCase();
-                    return searchKey.includes(term)
+                    return searchKey.includes(term);
                 });
 
                 renderSimcard(filterData);
@@ -172,9 +172,9 @@ function renderSimcard(data) {
 
     const rowsHtml = data.map(item => {
         let statusHtml = item.is_active ? (item.is_stock ? `<span class="status-badge-stock">在库</span>` : `<span class="status-badge-out">已借出</span>`) : `<span class="status-badge-stop">停用</span>`;
-        let betterIcc = ``;
+        let betterIcc;
         if (item.icc_id && item.icc_id.length > 5) {
-            betterIcc = item.icc_id.slice(0, -5) +' '+ item.icc_id.slice(-5);
+            betterIcc = item.icc_id.slice(0, -5) + ' ' + item.icc_id.slice(-5);
         } else {
             betterIcc = item.icc_id;
         }
@@ -207,7 +207,7 @@ function renderSimcard(data) {
         `;
     }).join('');
 
-    document.getElementById('simcardTbody').innerHTML = rowsHtml;
+    tBody.innerHTML = rowsHtml;
     updateSimcardStates(data);
 }
 

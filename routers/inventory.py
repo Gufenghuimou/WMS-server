@@ -445,21 +445,28 @@ async def view_history(request: Request, current_user: dict = Depends(get_curren
 
     return templates.TemplateResponse(request, "history.html", {'logs': logs, 'user': current_user, 'active_page': 'history'})
 
+@router.get("/api/history")
+async def get_history(request: Request, current_user: dict = Depends(get_current_user)):
+    with Session(engine) as session:
+        statement = select(HistoryLog).order_by(desc(HistoryLog.id))
+        logs = session.exec(statement).all()
+    return {'status': 'success', 'data': logs}
+
 @router.post("/undo/{log_id}")
 async def undo_history_log(request: Request, log_id: int, current_user: dict = Depends(get_current_user)):
     lang = request.state.lang
     with Session(engine) as session:
         log = session.get(HistoryLog, log_id)
         if not log:
-            return HTMLResponse('No logs found.', status_code=404)
+            return {'status': 'error', 'message': 'No Logs Found'}
 
         if log.note and ('Undo Record' in log.note or 'Imported Log' in log.note or 'Scrapped' in log.note):
-            return RedirectResponse(url= "/history", status_code=303)
+            return {'status': 'error', 'message': 'Cannot undo this log'}
 
         statement = select(InventoryItem).where(InventoryItem.pn_1 == log.pn_1)
         item = session.exec(statement).first()
         if not item:
-            return HTMLResponse(t_lang("do.undo_fail", lang), status_code=404)
+            return {'status': 'error', 'message': t_lang("do.undo_fail", lang)}
 
         revert_qty = -log.change_qty
         item.stock = (item.stock or 0) + revert_qty
@@ -487,7 +494,7 @@ async def undo_history_log(request: Request, log_id: int, current_user: dict = D
         update_single_usage(session, log.pn_1)
         session.commit()
 
-    return RedirectResponse(url= "/history", status_code=303)
+    return {'status': 'success', 'message': 'Log Undone'}
 
 @router.post("/import_history_excel")
 async def import_history_excel(request: Request, file: UploadFile = File(...), current_user: User = Depends(get_current_user)):
@@ -558,12 +565,19 @@ async def view_audit(request: Request, current_user: dict = Depends(get_current_
         total = len(records)
         completed = sum(1 for r in records if r.status != 'Pending')
         progress = int((completed / total * 100)) if total > 0 else 0
+    return templates.TemplateResponse(request, "audit.html", {"records": records, "total": total, "progress": progress, "completed": completed, "user": current_user, "active_page": "audit"})
+
+@router.get("/api/audit")
+async def get_audit(request: Request, current_user: dict = Depends(get_current_user)):
+    with Session(engine) as session:
+        statement = select(AuditRecord).order_by(AuditRecord.expected_location)
+        records = session.exec(statement).all()
 
         grouped = defaultdict(list)
         for r in records:
             loc = r.actual_location or r.expected_location or 'Unallocated'
             grouped[loc].append(r)
-    return templates.TemplateResponse(request, "audit.html", {"records": records, "total": total, "progress": progress, "completed": completed, "grouped": grouped, "user": current_user, "active_page": "audit"})
+    return {'status': 'success', 'data': grouped}
 
 @router.post("/audit/start")
 async def start_audit(request: Request, current_user: dict = Depends(get_current_user)):
@@ -611,7 +625,7 @@ async def submit_audit(
         if actual_stock == record.expected_stock and loc_match:
             record.status = "Matched"
         else:
-            record.status = "Mismatched"
+            record.status = "Issue"
 
         session.add(record)
         session.commit()
@@ -651,7 +665,7 @@ async def submit_audit_by_pn(
         if actual_stock == record.expected_stock and loc_match:
             record.status = "Matched"
         else:
-            record.status = "Mismatched"
+            record.status = "Issue"
 
         session.add(record)
         session.commit()
@@ -668,6 +682,36 @@ async def submit_audit_by_pn(
             'remarks': record.remarks,
         }
     }
+
+@router.post("/audit/commit")
+async def commit_audit(request: Request, current_user: dict = Depends(get_current_user)):
+    with Session(engine) as session:
+        records = session.exec(select(AuditRecord).where(AuditRecord.status != 'Pending')).all()
+        for r in records:
+            item = session.exec(select(InventoryItem).where(InventoryItem.id == r.item_id)).first()
+            if item:
+                location_changed = (item.location != r.actual_location)
+                qty_changed = (item.stock != r.actual_stock)
+
+                if location_changed or qty_changed:
+                    diff = r.actual_stock - item.stock
+                    item.stock = r.actual_stock
+                    item.location = r.actual_location
+                    log = HistoryLog(
+                        pn_1=item.pn_1,
+                        pn_2=item.pn_2,
+                        name=item.name,
+                        change_qty=diff,
+                        applicant='System',
+                        department='-',
+                        note='Stock Correction'
+                    )
+                    session.add(log)
+                session.add(item)
+        session.commit()
+    referer = request.headers.get("referer", "")
+    target_url = "/mobile/audit_inventory" if "mobile" in referer else "/audit"
+    return RedirectResponse(url=target_url, status_code=303)
 
 @router.get("/audit/export")
 def export_audit(request: Request, current_user: dict = Depends(get_current_user)):

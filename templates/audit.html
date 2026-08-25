@@ -14,6 +14,12 @@
             </button>
         </form>
 
+        <form action="/audit/commit" method="post" style="margin: 0;" onsubmit="return confirm('{{ t('asset_audit.confirm_commit', lang) }}');">
+            <button type="submit" class="btn-primary" style="background-color: var(--primary-green);">
+                <i class="material-icons" style="font-size: 1.2rem; margin-right: 5px;">done_all</i> {{ t('asset_audit.btn_commit', lang) }}
+            </button>
+        </form>
+
         <a href="/audit/export" style="text-decoration: none;">
             <button class="btn-primary" style="border-radius: 20px; display: flex; align-items: center; gap: 5px;">
                 <i class="material-icons" style="font-size: 1.2rem;">file_download</i> {{ t('audit.export_report', lang) }}
@@ -42,66 +48,28 @@
         </div>
     </div>
 
-    <div class="audit-list-wrapper">
-        {% for loc, items in grouped.items() %}
-        {% set is_all_done = (items | rejectattr('status', 'equalto', 'Pending') | list | length) == items|length %}
-        <div class="location-block {% if is_all_done %}collapsed{% endif %}" data-loc="{{ loc | lower }}">
-            <div class="location-header" onclick="this.parentElement.classList.toggle('collapsed')">
-                <h3>
-                    <i class="material-icons collapse-icon">expand_more</i>
-                    <i class="material-icons" style="font-size: 1.2rem;">place</i> {{ loc }}
-                </h3>
-                <span class="status-badge {% if is_all_done %}all-done{% endif %}">{{ t('audit.total_items', lang) | replace('{count}', items|length) }}</span>
-            </div>
-
-            {% for item in items %}
-            <form class="audit-form" id="auditForm_{{ item.id }}" action="/audit/submit/{{ item.id }}" method="post"></form>
-            {% endfor %}
-            <table class="audit-table">
-                <thead style="position: sticky; top: 0; background: #f1f5f9; z-index: 10; box-shadow: inset 0 -2px 0 var(--border-color);">
-                    <tr>
-                        <th style="width: 140px;">{{ t('audit.th_pn1', lang) }}</th>
-                        <th style="width: 140px;">PN2</th> <th style="min-width: 250px;">{{ t('audit.th_name', lang) }}</th>
-                        <th style="width: 80px; text-align: center;">{{ t('audit.th_book_qty', lang) }}</th>
-                        <th style="width: 100px; ">{{ t('audit.th_actual_qty', lang) }}</th>
-                        <th style="width: 100px;">{{ t('audit.th_actual_loc', lang) }}</th>
-                        <th style="width: 150px;">{{ t('audit.th_remarks', lang) }}</th>
-                        <th style="width: 80px; text-align: center;">{{ t('audit.th_status', lang) }}</th>
-                        <th style="width: 80px; text-align: center;">{{ t('audit.th_action', lang) }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in items %}
-                    <tr id="row-{{ item.id }}" data-pn1="{{ item.pn_1 | lower }}" data-pn2="{{ (item.pn_2 or '') | lower }}">
-                        <td><strong>{{ item.pn_1 }}</strong></td>
-                        <td class="font-monospace" style="color: #555;">{{ item.pn_2 or '-' }}</td> <td>
-                            <div style="font-weight: 500;">{{ item.name }}</div>
-                            <div style="font-size: 0.75rem; color: #999;">{{ item.description_2 or '' }}</div>
-                        </td>
-                        <td style="text-align: center; background: #fafafa;">{{ item.expected_stock }}</td>
-                        <td><input type="number" form="auditForm_{{ item.id }}" name="actual_stock" value="{{ item.actual_stock if item.actual_stock is not none else item.expected_stock }}" style="height: 28px;"></td>
-                        <td><input type="text" form="auditForm_{{ item.id }}" name="actual_location" value="{{ item.actual_location or item.expected_location }}" style="height: 28px;"></td>
-                        <td><input type="text" form="auditForm_{{ item.id }}" name="remarks" value="{{ item.remarks or '' }}" style="height: 28px;"></td>
-                        <td style="text-align: center;">
-                            <span id="status-{{ item.id }}" class="status-badge status-{{ item.status | lower | default('pending') }}">
-                                {{ item.status or t('audit.status_uncounted', lang) }}
-                            </span>
-                        </td>
-                        <td style="text-align: center;">
-                            <button type="submit" form="auditForm_{{ item.id }}" class="btn-primary" style="border-radius: 12px; background-color: var(--primary-blue); display: flex; align-items: center; justify-content: center; width: 36px; height: 32px; padding: 0;">
-                                <i class="material-icons" style="font-size: 1.1rem; margin:0;">save</i>
-                            </button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% endfor %}
-    </div>
+    <div class="audit-list-wrapper"></div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="/static/js/audit.js"></script>
+<script>
+    const AUDIT_I18N = {
+        th_pn1: "{{ t('audit.th_pn1', lang) }}",
+        th_name: "{{ t('audit.th_name', lang) }}",
+        th_book_qty: "{{ t('audit.th_book_qty', lang) }}",
+        th_actual_qty: "{{ t('audit.th_actual_qty', lang) }}",
+        th_actual_loc: "{{ t('audit.th_actual_loc', lang) }}",
+        th_remarks: "{{ t('audit.th_remarks', lang) }}",
+        th_status: "{{ t('audit.th_status', lang) }}",
+        th_action: "{{ t('audit.th_action', lang) }}",
+        status_uncounted: "{{ t('audit.status_uncounted', lang) }}",
+        total_items: "{{ t('audit.total_items', lang) }}",
+        scan_desc: "{{ t('audit.scan_desc', lang) }}"
+    };
+    window.INV_AUDIT_DATA = {};
+    window.USER_ROLE = "{{ user.role }}";
+    window.DEFER_GLOBAL_LOADER = true;
+</script>
 {% endblock %}

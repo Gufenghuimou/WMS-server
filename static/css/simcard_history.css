@@ -66,3 +66,39 @@ table tbody tr:hover td {
     font-weight: 600;
     font-size: 1.15rem;
 }
+
+.color-return {
+    color: #0f9d58; font-weight: 600; background: rgba(15, 157, 88, 0.1);
+    padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;
+}   /* 绿：在库/归还 */
+
+.color-out {
+    color: #e67e22; font-weight: 600; background: rgba(230, 126, 34, 0.1);
+    padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;
+}  /* 橙：出借 */
+
+.color-scrap {
+    color: #d93025; font-weight: 600; background: rgba(217, 48, 37, 0.1);
+    padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;
+    text-decoration: line-through;
+} /* 红：报废 */
+
+.color-init {
+    color: #1a73e8; font-weight: 600; background: rgba(26, 115, 232, 0.1);
+    padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;
+}  /* 蓝：建档 */
+
+.color-edit {
+    color: #8e44ad; font-weight: 600; background-color: rgba(142, 68, 173, 0.1);
+    padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;
+}
+
+.color-disable {
+    color: #ff532e; font-weight: 600; background: rgba(255, 83, 46, 0.1);
+    padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;
+}
+
+.color-enable {
+    color: #9ACD32; font-weight: 600; background: rgba(154, 205, 50, 0.1);
+    padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;
+}

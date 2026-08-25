@@ -31,7 +31,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for log in logs %}
+            {# {% for log in logs %}
             {% set is_undone = '已撤销' in (log.note or '')  or 'Undone' in (log.note or '') %}
             {% set is_undo_log = '撤销记录' in (log.note or '')  or 'Undo Record' in (log.note or '') %}
 
@@ -59,7 +59,7 @@
                     {% endif %}
                 </td>
             </tr>
-            {% endfor %}
+            {% endfor %} #}
         </tbody>
     </table>
 </div>
@@ -67,4 +67,13 @@
 
 {% block extra_js %}
 <script src="/static/js/history.js"></script>
+<script>
+    const HISTORY_I18N = {
+        undo: "{{ t('history.undo', lang) }}",
+        confirm_undo: "{{ t('history.confirm_undo', lang) }}"
+    };
+    window.USER_ROLE = "{{ user.role }}";
+    window.HISTORY_DATA = {};
+    window.DEFER_GLOBAL_LOADER = true;
+</script>
 {% endblock %}

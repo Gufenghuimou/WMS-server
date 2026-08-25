@@ -4,33 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const doneAudio = new Audio('../static/sound/done.mp3');
     const noticeAudio = new Audio('../static/sound/notice.mp3');
 
-    // 渲染页面时将折叠的group丢到后面去 将未盘点的物品拉到group最上端
-    const auditContainer = document.getElementById('auditContainer');
-    if (auditContainer) {
-        const blocks = auditContainer.querySelectorAll('.location-block');
-        blocks.forEach(block => {
-            if (block.classList.contains('collapsed')) {
-                auditContainer.appendChild(block);
-                const statusBadge = block.querySelector('.status-badge');
-                if (!statusBadge) return;
-                statusBadge.style.backgroundColor = '#e6f4ea';
-                statusBadge.style.color = '#1e8e3e';
-            }
-            const groupedTable = block.querySelector('tbody');
-            const rows = groupedTable.querySelectorAll('tr');
-            rows.forEach(row => {
-                const rowStatus = row.querySelector('.status-badge');
-                if (!rowStatus) return;
-                if (rowStatus.classList.contains('status-done') || rowStatus.classList.contains('status-warn')) {
-                    groupedTable.appendChild(row);
-                }
-            })
-        });
-    }
-
-    // ==========================================
-    // 1. 极速无刷新扫码引擎 (Ajax 联动)
-    // ==========================================
+    // 扫码定位
     const locInput = document.getElementById('scanLocation');
     const barcodeInput = document.getElementById('scanBarcode');
     const resultBox = document.getElementById('scanResult');
@@ -39,15 +13,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // 页面加载后自动对焦到库位输入框
         locInput.focus();
 
-        // 🌟 修改点：库位框按回车，定位对应群组并跳到扫码框
+        // 库位框按回车，定位对应群组并跳到扫码框
         locInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                let locVal = this.value.trim();
+                let locVal = this.value.trim().toLowerCase();
 
                 if (locVal !== '') {
-                    // 注意：你的 HTML 模板里 {{ loc | lower }} 做了小写处理，所以这里也要转小写匹配
-                    let targetBlock = document.querySelector(`.location-block[data-loc="${locVal.toLowerCase()}"]`);
+                    let targetBlock = document.querySelector(`.location-block[data-loc="${locVal}"]`);
 
                     if (targetBlock) {
                         // 1. 自动展开该折叠面板
@@ -93,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     let targetRow = document.getElementById(`row-${ctrlNo}`);
                     if (targetRow) {
                         targetRow.querySelector('.cell-actual-loc').innerText = currentLoc;
+                        targetRow._cachedSearchText = targetRow.innerText.toLowerCase();
                         targetRow.querySelector('.cell-time').innerText = new Date().toISOString().split('T')[0];
 
                         let badge = targetRow.querySelector('.cell-status');
@@ -275,13 +249,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // ==========================================
-    // 2. 性能优化版全局搜索 (防抖 + DOM 缓存)
-    // ==========================================
-    document.querySelectorAll('.location-block tbody tr').forEach(row => {
-        row._cachedSearchText = row.innerText.toLowerCase();
-    });
 
+    // 全局搜索
     let searchTimeout;
     const globalSearch = document.getElementById('globalSearch');
 
@@ -292,10 +261,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             searchTimeout = setTimeout(() => {
                 if (term === "") {
-                    document.querySelectorAll('.location-block').forEach(block => block.style.display = 'block');
-                    document.querySelectorAll('tbody tr').forEach(row => row.style.display = '');
+                    // document.querySelectorAll('.location-block').forEach(block => block.style.display = 'block');
+                    // document.querySelectorAll('tbody tr').forEach(row => row.style.display = '');
                     return;
                 }
+
+                let firstMatch = null;
 
                 document.querySelectorAll('.location-block').forEach(block => {
                     let locName = (block.getAttribute('data-loc') || "").toLowerCase();
@@ -307,59 +278,190 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (rowText.includes(term) || blockMatches) {
                             row.style.display = '';
                             hasVisibleRow = true;
-                        } else {
-                            row.style.display = 'none';
+                            if (!firstMatch) firstMatch = row;
                         }
                     });
 
-                    block.style.display = (blockMatches || hasVisibleRow) ? 'block' : 'none';
-                    if (hasVisibleRow && term !== "") {
+                    if (hasVisibleRow && blockMatches) {
                         block.classList.remove('collapsed');
                     }
                 });
-            }, 250);
+
+                if (firstMatch) {
+                    firstMatch.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    void firstMatch.offsetWidth;
+                }
+            }, 400);
         });
-    }
-
-    // ==========================================
-    // 3. 终极修复版：恢复滚动条位置
-    // ==========================================
-    let pos = sessionStorage.getItem('assetAuditScroll');
-    if (pos) {
-        setTimeout(() => {
-            let scrollBox = document.querySelector('.content-scroll-area');
-            if (scrollBox) scrollBox.scrollTo(0, parseInt(pos));
-        }, 50);
-        sessionStorage.removeItem('assetAuditScroll');
-    }
-});
-
-// 记录滚动条位置
-window.addEventListener('beforeunload', () => {
-    let scrollBox = document.querySelector('.content-scroll-area');
-    if (scrollBox) {
-        sessionStorage.setItem('assetAuditScroll', scrollBox.scrollTop);
     }
 });
 
 // 弹出地图
-document.querySelectorAll('.location-header h3').forEach(h3 => {
-    h3.addEventListener('click', function(e) {
+const auditContainer = document.getElementById('auditContainer');
+if (auditContainer) {
+    auditContainer.addEventListener('click', function(e) {
+        let h3 = e.target.closest('.location-header h3');
+        if (!h3) return;
         if (e.target.classList.contains('collapse-icon')) return;
         e.stopPropagation();
         
-        let block = this.closest('.location-block');
+        let block = h3.closest('.location-block');
         let rawLoc = block ? block.getAttribute('data-loc') : '';
         let safeLoc = rawLoc.replace(/'/g, "\\'").replace(/"/g, "&quot;");
         let rackName = "";
-        if (rawLoc && rawLoc !== '-' && rawLoc.toLowerCase() !== 'none' && rawLoc !== 'unallocated') {
-            if (rawLoc.includes('-')) {
-                rackName = rawLoc.split('-')[0].toUpperCase();
+        if (safeLoc && safeLoc !== '-' && safeLoc.toLowerCase() !== 'none' && safeLoc !== 'unallocated') {
+            if (safeLoc.includes('-')) {
+                rackName = safeLoc.split('-')[0].toUpperCase();
             } else {
-                rackName = rawLoc.toUpperCase();
+                rackName = safeLoc.toUpperCase();
             }
             rackName = rackName.replace(/'/g, "\\'").replace(/"/g, "&quot;");
             if (window.openFooterMap) window.openFooterMap(rackName);
         }
     });
+}
+    
+// 后端数据捞取
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const response = await fetch('/api/get_asset_audit');
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            const aduitData = result.data;
+            window.ASSET_AUDIT_DATA = aduitData.grouped;
+            window.auditedLocations = aduitData.audited_locations;
+
+            renderAssetAudit(aduitData.grouped);
+        }
+    } catch (error) {
+        console.error("Data Loaded Fail", error);
+        document.querySelector('tbody').innerHTML = `<div style="text-align:center; color:red;">加载失败，请刷新重试</div>`;
+    } finally {
+        if (typeof window.hideGlobalLoader === 'function') {
+            setTimeout(window.hideGlobalLoader, 50);
+        }
+    }
 });
+
+function renderAssetAudit(data) {
+    const auditList = document.getElementById('auditContainer');
+    if (!auditList) return;
+
+    if (!data || Object.keys(data).length === 0) {
+        auditList.innerHTML = `
+            <tr>
+                <td colspan="9" style="text-align:center; padding: 40px 20px; color: #999;">
+                    <i class="material-icons" style="font-size: 3rem; opacity: 0.5;">inbox</i>
+                    <p>暂无数据</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    const sortedLoc = Object.entries(data).sort((a, b) => {
+        const itemsA = a[1];
+        const itemsB = b[1];
+        let isAllDoneA = itemsA.every(item => item.status && item.status.toLowerCase() !== 'pending');
+        let isAllDoneB = itemsB.every(item => item.status && item.status.toLowerCase() !== 'pending');
+
+        if (isAllDoneA && !isAllDoneB) return 1;
+        if (!isAllDoneA && isAllDoneB) return -1
+        return 0;
+    });
+    const blockHtml = sortedLoc.map(([loc, items]) => {
+        items.sort((a, b) => {
+            let isPendingA = !a.status || a.status.toLowerCase() === 'pending';
+            let isPendingB = !b.status || b.status.toLowerCase() === 'pending';
+            if (isPendingA && !isPendingB) return -1;
+            if (!isPendingA && isPendingB) return 1;
+            return 0;
+        });
+        let isAllDone = items.every(item => item.status && item.status.toLowerCase() !== 'pending');
+        let collapsedClass = isAllDone ? 'collapsed' : '';
+        let allDoneClass = isAllDone ? 'all-done' : '';
+
+        let rowsHtml = items.map(item => {
+            let statusBadge = ``;
+            if (item.status.toLowerCase() === 'pending') {
+                statusBadge = `<span class="status-badge status-miss cell-status">${ASSET_AUDIT_I18N.status_miss}</span>`;
+            } else {
+                if (item.actual_location.toLowerCase() !== item.expected_location.toLowerCase()) {
+                    statusBadge = `<span class="status-badge status-warn cell-status">${ASSET_AUDIT_I18N.status_warn}</span>`;
+                } else {
+                    statusBadge = `<span class="status-badge status-done cell-status">${ASSET_AUDIT_I18N.status_done}</span>`;
+                }
+            }
+            return `
+                <tr id="row-${item.ctrl_no}">
+                    <td class="font-monospace"><strong style="font-size: 1.15rem;">${item.ctrl_no}</strong></td>
+                    <td>${item.pn_1}</td>
+                    <td><div style="font-weight: 500;" class="text-truncate">${item.name}</div></td>
+                    <td style="color: var(--text-muted);">${item.expected_location || '-'}</td>
+                    <td class="cell-actual-loc" style="font-weight: 600; color: var(--primary);">${item.status === 'Completed' ? item.actual_location : '-'}</td>
+                    <td style="text-align: center;">${statusBadge}</td>
+                    <td class="cell-time" style="text-align: center; color: var(--text-muted);">${item.scanned_at || '-'}</td>
+                </tr>
+            `;
+        }).join('');
+
+        return `
+            <div class="location-block ${collapsedClass}" data-loc="${loc.toLocaleLowerCase() || ASSET_AUDIT_I18N.unassigned}">
+            <div class="location-header" onclick="this.parentElement.classList.toggle('collapsed')">
+                <h3>
+                    <i class="material-icons collapse-icon">expand_more</i>
+                    <i class="material-icons loc-label" style="font-size: 1.2rem;">place</i> ${loc || 'Unallocated'}
+                </h3>
+                <span class="status-badge ${allDoneClass}">${(ASSET_AUDIT_I18N.total_devices).replace('{count}', items.length)}</span>
+            </div>
+
+            <table class="audit-table">
+                <thead>
+                    <tr>
+                        <th style="width: 12%;">${ASSET_AUDIT_I18N.th_ctrl_no}</th>
+                        <th style="width: 12%;">${ASSET_AUDIT_I18N.th_pn1}</th>
+                        <th style="width: 36%;">${ASSET_AUDIT_I18N.th_name}</th>
+                        <th style="width: 10%;">${ASSET_AUDIT_I18N.th_expected_loc}</th>
+                        <th style="width: 10%;">${ASSET_AUDIT_I18N.th_actual_loc}</th>
+                        <th style="width: 10%; text-align: center;">${ASSET_AUDIT_I18N.th_status}</th>
+                        <th style="width: 10%; text-align: center;">${ASSET_AUDIT_I18N.th_time}</th>
+                    </tr>
+                </thead>
+                <tbody>${rowsHtml}</tbody>
+            </table>
+        </div>
+        `;
+    }).join('');
+
+    auditList.innerHTML = blockHtml;
+
+    // 遍历缓存页面
+    document.querySelectorAll('.location-block tbody tr').forEach(row => {
+        row._cachedSearchText = row.innerText.toLowerCase();
+    });
+    
+    // // 渲染页面时将折叠的group丢到后面去 将未盘点的物品拉到group最上端
+    // const auditContainer = document.getElementById('auditContainer');
+    // if (auditContainer) {
+    //     const blocks = auditContainer.querySelectorAll('.location-block');
+    //     blocks.forEach(block => {
+    //         if (block.classList.contains('collapsed')) {
+    //             auditContainer.appendChild(block);
+    //             const statusBadge = block.querySelector('.status-badge');
+    //             if (!statusBadge) return;
+    //             statusBadge.style.backgroundColor = '#e6f4ea';
+    //             statusBadge.style.color = '#1e8e3e';
+    //         }
+    //         const groupedTable = block.querySelector('tbody');
+    //         const rows = groupedTable.querySelectorAll('tr');
+    //         rows.forEach(row => {
+    //             const rowStatus = row.querySelector('.status-badge');
+    //             if (!rowStatus) return;
+    //             if (rowStatus.classList.contains('status-done') || rowStatus.classList.contains('status-warn')) {
+    //                 groupedTable.appendChild(row);
+    //             }
+    //         })
+    //     });
+    // }
+}

@@ -48,7 +48,7 @@
     </div>
 
     <div id="auditContainer" class="locations-scroll-area">
-        {% for loc, items in grouped.items() %}
+        {# {% for loc, items in grouped.items() %}
         {% set is_all_done = (items | rejectattr('status', 'equalto', 'Pending') | list | length) == items|length %}
 
         <div class="location-block {% if is_all_done %}collapsed{% endif %}" data-loc="{{ (loc or t('asset_audit.unassigned', lang)) | lower }}">
@@ -104,7 +104,7 @@
                 </tbody>
             </table>
         </div>
-        {% endfor %}
+        {% endfor %} #}
     </div>
 </div>
 {# <div id="repeatedConfirmModal" class="modal-overlay">
@@ -125,16 +125,28 @@
     const ASSET_AUDIT_I18N = {
         err_no_loc: "{{ t('asset_audit.err_no_loc', lang) }}",
         scan_warn: "{{ t('asset_audit.scan_warn', lang) }}",
+        status_miss: "{{ t('asset_audit.status_miss', lang) }}",
         status_warn: "{{ t('asset_audit.status_warn', lang) }}",
         status_done: "{{ t('asset_audit.status_done', lang) }}",
         net_error: "{{ t('asset_audit.net_error', lang) }}",
         reprint: "{{ t('title.reprint', lang) }}",
         alert_print_success: "{{ t('reprint.alert_print_success', lang) }}",
         alert_print_fail: "{{ t('reprint.alert_print_fail', lang) }}",
-        repeated_text: "{{ t('asset_audit.repeated_text', lang) | safe }}"
+        repeated_text: "{{ t('asset_audit.repeated_text', lang) | safe }}",
+        th_ctrl_no: "{{ t('asset_audit.th_ctrl_no', lang) }}",
+        th_pn1: "{{ t('asset_audit.th_pn1', lang) }}",
+        th_name: "{{ t('asset_audit.th_name', lang) }}",
+        th_expected_loc: "{{ t('asset_audit.th_expected_loc', lang) }}",
+        th_actual_loc: "{{ t('asset_audit.th_actual_loc', lang) }}",
+        th_status: "{{ t('asset_audit.th_status', lang) }}",
+        th_time: "{{ t('asset_audit.th_time', lang) }}",
+        unassigned: "{{ t('asset_audit.unassigned', lang) }}",
+        total_devices: "{{ t('asset_audit.total_devices', lang) }}"
     };
-
-    window.auditedLocations = {{ audited_locations| safe }};
+    window.USER_ROLE = "{{ user.role }}";
+    window.DEFER_GLOBAL_LOADER = true;
+    window.ASSET_AUDIT_DATA = {};
+    window.auditedLocations = '';
 </script>
 <script src="/static/js/asset_audit.js"></script>
 {% endblock %}

@@ -88,7 +88,7 @@ async def get_asset(request: Request, query: Optional[str] = None, current_user:
                 "is_stop": bool(item.is_stop)
             })
 
-    return JSONResponse(content={"status": "success", "data": grouped_data})
+    return {"status": "success", "data": grouped_data}
 
 @router.post("/asset_out/{item_id}")
 async def asset_out(
@@ -751,8 +751,14 @@ async def asset_history(request: Request, current_user: dict = Depends(get_curre
     with Session(engine) as session:
         statement = select(AssetLog).order_by(desc(AssetLog.id))
         logs = session.exec(statement).all()
-
     return templates.TemplateResponse(request, "asset_history.html", {'logs': logs, 'user': current_user, 'active_page': 'asset_history'})
+
+@router.get("/api/asset_history")
+async def get_asset_history(request: Request, current_user: dict = Depends(get_current_user)):
+    with Session(engine) as session:
+        statement = select(AssetLog).order_by(desc(AssetLog.id))
+        logs = session.exec(statement).all()
+    return {'status': 'success', 'data': logs}
 
 @router.get("/asset_history/export")
 def asset_history_export(request: Request, current_user: dict = Depends(get_current_user)):
@@ -821,21 +827,75 @@ async def asset_history_import(request: Request, file: UploadFile = File(...), c
 
 @router.get("/asset_audit/dashboard", response_class=HTMLResponse)
 async def view_asset_audit(request: Request, current_user: dict = Depends(get_current_user)):
+    return templates.TemplateResponse(request, "asset_audit.html", {"request": request, "user": current_user, "active_page": "asset_audit"})
+
+# @router.get("/asset_audit/dashboard", response_class=HTMLResponse)
+# async def view_asset_audit(request: Request, current_user: dict = Depends(get_current_user)):
+#     with Session(engine) as session:
+#         statement = select(AssetAuditRecord).order_by(AssetAuditRecord.expected_location)
+#         records = session.exec(statement).all()
+#         total = len(records)
+#         completed = sum(1 for r in records if r.status != 'Pending')
+#         progress = int((completed / total * 100)) if total > 0 else 0
+
+#         statement_missing = select(AssetAuditRecord).where(AssetAuditRecord.status == 'Pending')
+#         missing = session.exec(statement_missing).all()
+
+#         statement_misplaced = select(AssetAuditRecord).where(
+#             AssetAuditRecord.status == 'Completed',
+#             AssetAuditRecord.expected_location != AssetAuditRecord.actual_location
+#         )
+#         misplaced = session.exec(statement_misplaced).all()
+
+#         location_status = {}
+#         for r in records:
+#             locs_to_check = [r.expected_location, r.actual_location]
+#             for loc in locs_to_check:
+#                 if not loc:
+#                     continue
+#                 if '-' in loc:
+#                     loc = loc.split('-')[0]
+#                 if loc not in location_status:
+#                     location_status[loc] = True
+#                 if r.status == 'Pending':
+#                     location_status[loc] = False
+#         audited_locations = [loc for loc, is_completed in location_status.items() if is_completed]
+
+#         grouped = defaultdict(list)
+#         for r in records:
+#             loc = r.actual_location or r.expected_location
+#             grouped[loc].append(r)
+#     return templates.TemplateResponse(request, "asset_audit.html", {
+#         "records": records,
+#         'missing': missing,
+#         'misplaced': misplaced,
+#         "total": total,
+#         "progress": progress,
+#         "completed": completed,
+#         "grouped": grouped,
+#         "user": current_user,
+#         "active_page": "asset_audit",
+#         "audited_locations": json.dumps(audited_locations)
+#         })
+
+@router.get("/api/get_asset_audit")
+async def get_asset_audit(request: Request, current_user: dict = Depends(get_current_user)):
     with Session(engine) as session:
         statement = select(AssetAuditRecord).order_by(AssetAuditRecord.expected_location)
         records = session.exec(statement).all()
         total = len(records)
-        completed = sum(1 for r in records if r.status != 'Pending')
+        completed = 0
+        missing = []
+        misplaced = []
+
+        for r in records:
+            if r.status != 'Pending':
+                completed += 1
+            if r.status == 'Pending':
+                missing.append(r)
+            if r.status == 'Completed' and r.expected_location != r.actual_location:
+                misplaced.append(r)
         progress = int((completed / total * 100)) if total > 0 else 0
-
-        statement_missing = select(AssetAuditRecord).where(AssetAuditRecord.status == 'Pending')
-        missing = session.exec(statement_missing).all()
-
-        statement_misplaced = select(AssetAuditRecord).where(
-            AssetAuditRecord.status == 'Completed',
-            AssetAuditRecord.expected_location != AssetAuditRecord.actual_location
-        )
-        misplaced = session.exec(statement_misplaced).all()
 
         location_status = {}
         for r in records:
@@ -855,18 +915,21 @@ async def view_asset_audit(request: Request, current_user: dict = Depends(get_cu
         for r in records:
             loc = r.actual_location or r.expected_location
             grouped[loc].append(r)
-    return templates.TemplateResponse(request, "asset_audit.html", {
-        "records": records,
-        'missing': missing,
-        'misplaced': misplaced,
-        "total": total,
-        "progress": progress,
-        "completed": completed,
-        "grouped": grouped,
-        "user": current_user,
-        "active_page": "asset_audit",
-        "audited_locations": json.dumps(audited_locations)
-        })
+
+    return {
+        'status': 'success',
+        'data': {
+            'grouped': grouped,
+            'stats': {
+                'total': total,
+                'completed': completed,
+                'progress': progress,
+                'missing_count': len(missing),
+                'misplaced_count': len(misplaced)
+            },
+            'audited_locations': audited_locations
+        }
+    }
 
 @router.post("/asset_audit/start")
 async def start_audit(request: Request, current_user: dict = Depends(get_current_user)):

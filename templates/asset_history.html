@@ -32,7 +32,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for log in logs %}
+            {# {% for log in logs %}
 
             {% set action_text = t('asset_history.status_change', lang) %}
             {% set badge_class = 'color-init' %}
@@ -91,7 +91,7 @@
                     {{ t('asset_history.no_record', lang) }}
                 </td>
             </tr>
-            {% endif %}
+            {% endif %} #}
         </tbody>
     </table>
 </div>
@@ -99,4 +99,19 @@
 
 {% block extra_js %}
 <script src="/static/js/asset_history.js"></script>
+<script>
+    const ASSET_HIS_I18N = {
+        status_init: "{{ t('asset_history.status_init', lang) }}",
+        status_scrap: "{{ t('asset_history.status_scrap', lang) }}",
+        status_stopped: "{{ t('asset_history.status_stopped', lang) }}",
+        status_enable: "{{ t('asset_history.status_enable', lang) }}",
+        status_correction: "{{ t('asset_history.status_correction', lang) }}",
+        status_return: "{{ t('asset_history.status_return', lang) }}",
+        status_takeout: "{{ t('asset_history.status_takeout', lang) }}",
+        status_change: "{{ t('asset_history.status_change', lang) }}"
+    };
+    window.USER_ROLE = "{{ user.role }}";
+    window.ASSET_HIS_DATA = {};
+    window.DEFER_GLOBAL_LOADER = true;
+</script>
 {% endblock %}
