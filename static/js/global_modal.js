@@ -560,9 +560,9 @@ window.closeShowImgModal = function() {
 // 图片展示Modal控制结束
 
 // Asset 操作按钮模态框控制开始
-window.openActionModal = function(groupId, itemId) {
-    const response = fetch(`/api/status_check/${itemId}`);
-    const result = response.json();
+window.openActionModal = async function(groupId, itemId) {
+    const response = await fetch(`/api/status_check/${itemId}`, {method: 'POST'});
+    const result = await response.json();
 
     if (result.status !== 'success') {
         showToast(result.message, 'error');

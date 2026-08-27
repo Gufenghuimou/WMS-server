@@ -7,8 +7,8 @@ window.switchAssetType = function(groupId) {
     let tbody = document.getElementById('dynamicDetailTbody');
     let groupData = window.ASSET_DATA[groupId];
 
-    let activeSibling = groupData.items.find(i => i.is_stock && i.location && i.location.toLowerCase() !== 'none' && i.location !== '-');
-    let siblingLoc = activeSibling ? activeSibling.location.replace(/'/g, "\\'").replace(/"/g, "&quot;") : '';
+    // let activeSibling = groupData.items.find(i => i.is_stock && i.location && i.location.toLowerCase() !== 'none' && i.location !== '-');
+    // let siblingLoc = activeSibling ? activeSibling.location.replace(/'/g, "\\'").replace(/"/g, "&quot;") : '';
 
     if (!groupData || !groupData.items || groupData.items.length === 0) {
         tbody.innerHTML = `
@@ -193,13 +193,13 @@ document.addEventListener('submit', async function(e) {
     }
 
     try {
-        let formData = new FormData(form);
         let response = await fetch(form.action, {
             method: 'POST',
-            body: formData
+            body: new FormData(form)
         });
 
         let result = await response.json();
+        console.log(result);
 
         if (result.status === 'success') {
             showToast(result.message || 'Success!', 'success');
@@ -209,7 +209,7 @@ document.addEventListener('submit', async function(e) {
             if (form.id === 'assetItemEditForm' && window.closeAssetItemEditModal) closeAssetItemEditModal();
             if (window.closeActionModal) window.closeActionModal();
 
-            if (form.action.includes('/api/request_asset')) {
+            if (form.action.includes('/api/request_asset_by_pn')) {
                 let card = form.closest('.asset-card');
                 if (card) window.cancelEdit(new Event('click'), card.id);
                 return;
@@ -430,7 +430,7 @@ function renderAssetCards(data) {
             `;
         } else {
             cardBackForm = `
-                <form method="post" action="/api/request_asset_by_pn/${ group.pn1 }" class="require-form" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                <form method="post" action="/api/request_asset_by_pn/${group.pn1}" class="require-form" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
                     <input type="hidden" name="matter" value="require">
                     <div class="edit-form-grid" style="grid-template-columns: 1fr 1fr;">
                         <div style="grid-column: span 2; margin-bottom: 5px;">

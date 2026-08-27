@@ -123,6 +123,7 @@ async def submit_asset_request(
             return {'status': 'error', 'message': t_lang("do.not_exist", lang)}
         if not matter:
             return {'status': 'error', 'message': "Illegal matter"}
+        asset_id = asset.id
         real_applicant = current_user.get('full_name') or current_user.get('username')
         new_request = AssetRequest(
             ctrl_no=ctrl_no,
@@ -137,7 +138,14 @@ async def submit_asset_request(
         )
         session.add(new_request)
         session.commit()
-    return {'status': 'success', 'message': t_lang("do.success", lang)}
+    return {
+        'status': 'success',
+        'data': {
+            'id': asset_id,
+            'is_request': True
+            },
+        'message': t_lang("do.success", lang)
+        }
 
 @router.post("/api/request_asset_by_pn/{pn_1}")
 async def submit_asset_request_pn(
