@@ -1,4 +1,3 @@
-let currentReqQty = 0;
 
 window.switchQueueTab = function(tableName, el) {
     document.querySelectorAll('.queue-header-tab').forEach(tab => {
@@ -11,65 +10,9 @@ window.switchQueueTab = function(tableName, el) {
     document.getElementById('tab-asset').style.display = tableName === 'asset' ? 'block' : 'none';
 };
 
-window.openApproveModal = function(reqId, pn, name, reqQty, sysStock, location) {
-    document.getElementById('approveForm').action = '/request_queue/approve/' + reqId;
-    document.getElementById('modalPn').innerText = pn;
-    document.getElementById('modalName').innerText = name;
-    document.getElementById('modalSysStock').innerText = sysStock;
-    document.getElementById('modalReqQty').innerText = reqQty;
-    document.getElementById('modalLocation').innerText = location;
-    currentReqQty = parseInt(reqQty);
-
-    // 重置所有输入和报错状态
-    let stockInput = document.getElementById('realStock');
-    stockInput.value = '';
-    stockInput.style.backgroundColor = 'transparent';
-    document.getElementById('approveError').style.display = 'none';
-    document.getElementById('approveForm').classList.remove('shake-animation');
-
-    document.getElementById('approveModal').style.display = 'flex';
-
-    // 自动呼叫底部地图对焦
-    if (location && location.trim() !== '' && location !== '-' && location !== 'None') {
-        let rackName = location.split('-')[0].toUpperCase();
-        if (window.openFooterMap) window.openFooterMap(rackName);
-    }
-
-    setTimeout(() => stockInput.focus(), 100);
-};
-
-window.closeApproveModal = function() {
-    document.getElementById('approveModal').style.display = 'none';
-};
-
-// 防止批准时库存依然不足
-window.validateApproveForm = function(event) {
-    let realStock = parseInt(document.getElementById('realStock').value) || 0;
-    let form = document.getElementById('approveForm');
-    let errorBox = document.getElementById('approveError');
-    let errorText = document.getElementById('approveErrorText');
-    let stockInput = document.getElementById('realStock');
-
-    if (realStock < currentReqQty) {
-        event.preventDefault();
-
-        // 动态替换 I18N 字符串中的变量
-        errorText.innerText = QUEUE_I18N.stock_insufficient.replace('{realStock}', realStock).replace('{reqQty}', currentReqQty);
-
-        errorBox.style.display = 'flex';
-
-        stockInput.style.backgroundColor = '#fadbd8';
-        form.classList.remove('shake-animation');
-        void form.offsetWidth; // 触发重绘
-        form.classList.add('shake-animation');
-
-        return false;
-    }
-    return true;
-};
-
-// 页面加载完成后绑定输入事件，自动清除错误样式
 document.addEventListener('DOMContentLoaded', () => {
+
+    // 耗材表单逻辑
     const realStockInput = document.getElementById('realStock');
     if (realStockInput) {
         realStockInput.addEventListener('input', () => {
@@ -77,152 +20,86 @@ document.addEventListener('DOMContentLoaded', () => {
             realStockInput.style.backgroundColor = 'transparent';
         });
     }
-});
 
-window.openAssetApproveModal = function(reqId, matter, pn, reqQty, ctrlNo) {
-    const modal = document.getElementById('assetApproveModal');
-    const form = document.getElementById('assetApproveForm');
-    const title = document.getElementById('assetModalTitle');
-    const dynamicBox = document.getElementById('assetDynamicInput');
-
-    form.action = `/request_queue/asset_approve/${reqId}`;
-    form.dataset.matter = matter;
-    form.dataset.reqQty = reqQty;
-    form.dataset.pn = pn;
-
-    document.getElementById('assetModalPn').innerText = pn;
-    let ctrlBox = document.getElementById('assetModalCtrlNoBox');
-    if (ctrlNo && ctrlNo !== 'None') {
-        ctrlBox.style.display = 'block';
-        document.getElementById('assetModalCtrlNo').innerText = ctrlNo;
-    } else {
-        ctrlBox.style.display = 'none';
-    }
-    if (matter === 'require') {
-        title.innerHTML = `<i class="material-icons" style="color: var(--primary-blue);">add_shopping_cart</i> ${QUEUE_I18N.dispatch_asset}`;
-        dynamicBox.innerHTML = `
-            <label style="display: block; font-weight: bold; color: var(--text-main); margin-bottom: 8px;">Scan Serial Numbers (Expected: ${reqQty})${QUEUE_I18N.scan_area_label.replace('{reqQty}', reqQty)} <span style="color: red;">*</span></label>
-            <input type="text" id="scanSnInput" name="ctrl_nos" required placeholder="JPE160001"
-                   style="width: 100%; height: 42px; font-size: 1rem; padding: 0 10px; border: 2px solid var(--primary-blue); border-radius: 6px; outline: none; box-sizing: border-box;">
-            <p style="font-size: 0.75rem; color: #888; margin-top: 5px;">${QUEUE_I18N.scab_area_note}</p>
-        `;
-
-        // 拦截回车
-        setTimeout(() => {
-            const snInput = document.getElementById('scanSnInput');
-            if (snInput) {
-                snInput.focus();
-                snInput.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-
-                        let val = this.value.trim();
-                        if (val !== '' && !val.endsWith(',')) { this.value = val + ','; }
-                    }
-                });
-            }
-        }, 10);
-    }
-    else if (matter === 'return') {
-        title.innerHTML = `<i class="material-icons" style="color: var(--primary-green);">assignment_return</i> ${QUEUE_I18N.confirm_return}`;
-        dynamicBox.innerHTML = `
-            <label style="display: block; font-weight: bold; color: var(--text-main); margin-bottom: 8px;">${QUEUE_I18N.target_location}</label>
-            <input type="text" id="scanLocInput" name="target_location" placeholder="${QUEUE_I18N.target_location_ph}"
-                   style="width: 100%; height: 42px; font-size: 1rem; padding: 0 10px; border: 2px solid var(--primary); border-radius: 6px; outline: none; box-sizing: border-box;">
-        `;
-        // 拦截回车
-        setTimeout(() => {
-            const locInput = document.getElementById('scanLocInput');
-            if (locInput) {
-                locInput.focus();
-                locInput.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                    }
-                });
-            }
-        }, 10);
-    }
-    else if (matter === 'broken') {
-        title.innerHTML = `<i class="material-icons" style="color:#d93025;">build</i> ${QUEUE_I18N.confirm_broken}`;
-        dynamicBox.innerHTML = `
-            <div style="background: #fce8e6; color: #d93025; padding: 15px; border-radius: 6px; border: 1px dashed #fadbd8; text-align: center;">
-                <i class="material-icons" style="font-size: 2rem; margin-bottom: 5px;">warning</i><br>
-                ${QUEUE_I18N.broken_note}
-            </div>
-        `;
-    }
-    modal.style.display = 'flex';
-};
-
-// 发号校验拦截
-document.addEventListener('DOMContentLoaded', () => {
-    const assetForm = document.getElementById('assetApproveForm');
-    if (!assetForm) return;
-    assetForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const form = this;
-        const matter = form.dataset.matter;
-
-        if (matter === 'require') {
-            const snInput = document.getElementById('scanSnInput');
-            let valStr = snInput.value.trim();
-            if (valStr.endsWith(',')) valStr = valStr.slice(0, -1);
-            let sns = valStr.split(',').map(s => s.trim()).filter(s => s !== '');
-            let realQty = sns.length;
-            let expectedQty = parseInt(form.dataset.reqQty);
-
-            if (realQty !== expectedQty) {
-                showToast(`${QUEUE_I18N.scan_short.replace('{expectedQty}', expectedQty).replace('{realQty}', realQty)}`, 'error');
-                return;
-            }
-            let uniqueSns = new Set(sns);
-            if (uniqueSns.size !== sns.length) {
-                showToast(`${QUEUE_I18N.scan_repeated}`, 'error');
-                return;
-            }
-            snInput.value = sns.join(',');
-        }
-
-        const submitBtn = form.querySelector("button[type='submit']");
-        let originBtnText = submitBtn.innerHTML;
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite">autorenew</i> 校验中...`;
-
-        try {
-            let formData = new FormData(form);
-            let response = await fetch(form.action, {
-                method: 'POST',
-                body: formData
-            });
-
-            let result = await response.json();
-            if (result.status === 'success') {
-                showToast(result.message, 'success');
-                window.closeAssetApproveModal();
-                setTimeout(() => { window.location.reload(); }, 800);
-            } else {
-                showToast(result.message, 'error');
-            }
-        } catch (err) {
-            showToast('Internet error', 'error');
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originBtnText;
-        }
-    });
-
-    const rejectForms = document.querySelectorAll('form[action*="reject"]');
-    rejectForms.forEach(form => {
-        form.addEventListener('submit', async function (e) {
-            if (e.defaultPrevented) {
-                return;
-            }
+    const approveForm = document.getElementById('approveForm');
+    if (approveForm) {
+        approveForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const submitBtn = this.querySelector("button[type='submit']");
-            const originalHtml = submitBtn.innerHTML;
+            let realStock = parseInt(document.getElementById('realStock').value) || 0;
+            let targetReqQty = parseInt(document.getElementById('modalReqQty').innerText) || 0;
+            let errorBox = document.getElementById('approveError');
+            let errorText = document.getElementById('approveErrorText');
+            let stockInput = document.getElementById('realStock');
 
+            if (realStock < targetReqQty) {
+                e.preventDefault();
+                errorText.innerText = QUEUE_I18N.stock_insufficient.replace('{realStock}', realStock).replace('{reqQty}', targetReqQty);
+                errorBox.style.display = 'flex';
+                stockInput.style.backgroundColor = '#fadbd8';
+                this.classList.remove('shake-animation');
+                void this.offsetWidth;
+                this.classList.add('shake-animation');
+                return;
+            }
+
+            const submitBtn = this.querySelector("button[type='submit']");
+            const originBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite">autorenew</i> 校验中...`;
+
+            try {
+                let response = await fetch(this.action, {
+                    method: 'POST',
+                    body: new FormData(this)
+                });
+                let result = await response.json();
+
+                if (result.status === 'success') {
+                    showToast(result.message, 'success');
+                    if (window.closeApproveModal) window.closeApproveModal();
+                    const reqId = this.dataset.reqId;
+                    window.removeCard(reqId);
+                } else {
+                    showToast(result.message, 'error');
+                }
+            } catch (err) {
+                showToast('Internet error', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originBtnText;
+            }
+        });
+    }
+
+    // 资产表单逻辑
+    const assetForm = document.getElementById('assetApproveForm');
+    if (assetForm) {
+        assetForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const matter = this.dataset.matter;
+
+            if (matter === 'require') {
+                const snInput = document.getElementById('scanSnInput');
+                let valStr = snInput.value.trim();
+                if (valStr.endsWith(',')) valStr = valStr.slice(0, -1);
+                let sns = valStr.split(',').map(s => s.trim()).filter(s => s !== '');
+                let realQty = sns.length;
+                let expectedQty = parseInt(this.dataset.reqQty);
+
+                if (realQty !== expectedQty) {
+                    showToast(`${QUEUE_I18N.scan_short.replace('{expectedQty}', expectedQty).replace('{realQty}', realQty)}`, 'error');
+                    return;
+                }
+                if (new Set(sns).size !== sns.length) {
+                    showToast(`${QUEUE_I18N.scan_repeated}`, 'error');
+                    return;
+                }
+                snInput.value = sns.join(',');
+            }
+
+            const submitBtn = this.querySelector("button[type='submit']");
+            const originBtnText = submitBtn.innerHTML;
             submitBtn.disabled = true;
             submitBtn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite">autorenew</i> 校验中...`;
 
@@ -233,31 +110,52 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 let result = await response.json();
+                if (result.status === 'success') {
+                    showToast(result.message, 'success');
+                    if (window.closeAssetApproveModal) window.closeAssetApproveModal();
+                    
+                    const reqId = this.dataset.reqId;
+                    window.removeCard(reqId);
+                } else {
+                    showToast(result.message, 'error');
+                }
+            } catch (err) {
+                showToast('Internet error', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originBtnText;
+            }
+        });
+    }
+
+    // reject逻辑
+    document.addEventListener('submit', async function(e) {
+        if (e.defaultPrevented) return;
+        const form = e.target;
+        if (form.id === 'assetApproveForm' || form.id === 'approveForm') return;
+        if (form.tagName === 'FORM' && form.action.includes('reject')) {
+            e.preventDefault();
+
+            const submitBtn = form.querySelector("button[type='submit']");
+            const originalHtml = submitBtn.innerHTML;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite">autorenew</i> 校验中...`;
+
+            try {
+                let response = await fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form)
+                });
+
+                let result = await response.json();
 
                 if (result.status === "success") {
                     showToast(result.message, 'success');
-                    const card = this.closest('.req-card');
+                    const card = form.closest('.req-card');
                     if (card) {
-                        card.style.transition = 'all 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
-                        card.style.opacity = '0';
-                        card.style.transform = 'translateX(50px)';
-
-                        setTimeout(() => {
-                            const listContainer = form.closest('.queue-list');
-                            card.remove();
-
-                            if (listContainer) {
-                                const remainCount = listContainer.querySelectorAll('.req-card').length;
-                                const tabId = listContainer.id.replace('tab-', '');
-                                const badge = document.querySelector(`.queue-header-tab[onclick*="${tabId}"] .count-badge`);
-                                if (badge) {
-                                    badge.innerText = remainCount;
-                                }
-                                if (remainCount === 0) {
-                                    window.location.reload();
-                                }
-                            }
-                        }, 400);
+                        const reqId = card.dataset.reqId;
+                        window.removeCard(reqId);
                     }
                 } else {
                     showToast(result.message || 'Error', 'error');
@@ -269,17 +167,230 @@ document.addEventListener('DOMContentLoaded', () => {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalHtml;
             }
-        });
+        };
     });
 });
 
-window.closeAssetApproveModal = function() {
-    document.getElementById('assetApproveModal').style.display = 'none';
-};
+// 操作后移除卡片
+window.removeCard = function(reqId) {
+    const card = document.querySelector(`.req-card[data-req-id="${reqId}"]`);
+    if (!card) return;
 
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        if(window.closeApproveModal) window.closeApproveModal();
-        if(window.closeAssetApproveModal) window.closeAssetApproveModal();
+    card.style.transition = 'all 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
+    card.style.opacity = '0';
+    card.style.transform = 'translateX(50px)';
+    
+    setTimeout(() => {
+        const listContainer = card.closest('.queue-list');
+        card.remove();
+
+        if (window.INV_REQ_DATA) {
+            window.INV_REQ_DATA = window.INV_REQ_DATA.filter(item => String(item.req.id) !== String(reqId));
+        }
+        if (window.ASSET_REQ_DATA) {
+            window.ASSET_REQ_DATA = window.ASSET_REQ_DATA.filter(item => String(item.req.id) !== String(reqId));
+        }
+
+        if (listContainer) {
+            const remainCount = listContainer.querySelectorAll('.req-card').length;
+            const tabId = listContainer.id.replace('tab-', '');
+            const badge = document.querySelector(`.queue-header-tab[onclick*="${tabId}"] .count-badge`);
+            if (badge) {
+                badge.innerText = remainCount;
+            }
+            if (remainCount === 0) {
+                window.location.reload();
+            }
+        }
+
+        let newIndicatorData = (window.INV_REQ_DATA ? window.INV_REQ_DATA.length : 0) + (window.ASSET_REQ_DATA ? window.ASSET_REQ_DATA.length : 0);
+        // 修改指示灯
+        const indicator = document.getElementById('indicator');
+        indicator.innerHTML = `
+            <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">pending_actions</i>
+            ${QUEUE_I18N.request_queue}:
+            <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
+                ${newIndicatorData || 0}
+            </span>
+        `;
+    }, 400);
+}
+
+// 捞取后端数据
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const response = await fetch('/api/request_queue');
+        const result = await response.json();
+        if (result.status === 'success') {
+            const reqData = result.data;
+            window.INV_REQ_DATA = reqData.inv_req;
+            window.ASSET_REQ_DATA = reqData.asset_req;
+            console.log(window.INV_REQ_DATA);
+            console.log(window.ASSET_REQ_DATA);
+            renderInvReq(reqData.inv_req);
+            renderAssetReq(reqData.asset_req);
+
+            // 修改指示灯
+            const indicator = document.getElementById('indicator');
+            const indicatorData = reqData.inv_req.length + reqData.asset_req.length;
+            indicator.innerHTML = `
+                <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">pending_actions</i>
+                ${QUEUE_I18N.request_queue}:
+                <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
+                    ${indicatorData || 0}
+                </span>
+            `;
+        }
+    } catch (error) {
+        console.error("Data Loaded Fail", error);
+        document.querySelector('.queue-container').innerHTML = `<div style="text-align:center; color:red;">加载失败，请刷新重试</div>`;
+    } finally {
+        if (typeof window.hideGlobalLoader === 'function') {
+            setTimeout(window.hideGlobalLoader, 50);
+        }
     }
 });
+
+function renderInvReq(data) {
+    const tabConsumable = document.getElementById('tab-consumable');
+    if (!tabConsumable) return;
+    if (!data || data.length === 0) {
+        tabConsumable.innerHTML = `
+            <div style="text-align: center; padding: 60px 0; color: #bdc3c7;">
+                <i class="material-icons" style="font-size: 4rem; opacity: 0.5;">done_all</i>
+                <h3 style="margin-top: 15px; font-weight: normal;">${QUEUE_I18N.no_pending}</h3>
+            </div>
+        `;
+        return;
+    }
+
+    const invCardsHtml = data.map(data => {
+        let actionBtn = '';
+        if (data.item) {
+            actionBtn = `
+                <button class="btn-primary" style="background: #1db954; height: 40px; padding: 0 15px;"
+                        onclick="openApproveModal('${data.req.id}', '${data.req.pn_1}', '${data.req.item_name}', ${data.req.req_qty}, ${data.item.stock}, '${data.item.location || ''}')">
+                    <i class="material-icons">check_circle</i> ${QUEUE_I18N.approve}
+                </button>
+            `;
+        } else {
+            actionBtn = `
+                <button class="btn-primary" style="background: #aaa; height: 40px; padding: 0 15px;" disabled>
+                    <i class="material-icons">block</i> ${QUEUE_I18N.approve}
+                </button>
+            `;
+        }
+        return `
+            <div class="req-card" data-req-id="${data.req.id}">
+                <div class="req-avatar">
+                    <img class="user-avatar" src="/static/avatars/${data.req.applicant_username}.jpg" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <i class="material-icons" style="display:none; color:#777; font-size: 20px;">person</i>
+                </div>
+
+                <div class="req-info">
+                    <h4>
+                        ${data.req.applicant} <span style="font-size: 0.8rem; background: #f0f2f5; padding: 2px 6px; border-radius: 4px; color: #666; font-weight: normal;">${data.req.department}</span>
+                        <span style="font-size: 0.8rem; color: #aaa; margin-left: auto;">${data.req.created_at}</span>
+                    </h4>
+                    <p><strong>${data.req.pn_1}</strong> | ${data.req.item_name}</p>
+                    <p style="color: #95a5a6; margin-top: 5px;">
+                        <i class="material-icons" style="font-size: 0.9rem; vertical-align: middle;">chat_bubble_outline</i>
+                        ${data.req.note || QUEUE_I18N.no_reason}
+                    </p>
+                </div>
+
+                <div class="req-qty">
+                    ${data.item ? `<span class="req-qty-label">${QUEUE_I18N.req_qty_label}</span>${data.req.req_qty}` : `<span>NULL</span>`}
+                </div>
+
+                <div class="req-actions">
+                    ${actionBtn}
+                    <form action="/request_queue/reject/${data.req.id}" method="post" style="margin: 0;" onsubmit="return confirm('${QUEUE_I18N.confirm_reject}');">
+                        <button type="submit" class="btn-primary" style="background: white; border: 1px solid #ccc; color: #7f8c8d; height: 40px; padding: 0 15px;">
+                            <i class="material-icons">block</i> ${QUEUE_I18N.reject}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        `;
+    }).join('');
+    tabConsumable.innerHTML = invCardsHtml;
+}
+
+function renderAssetReq(data) {
+    const tabAsset = document.getElementById('tab-asset');
+    if (!tabAsset) return;
+    if (!data || data.length === 0) {
+        tabAsset.innerHTML = `
+            <div style="text-align: center; padding: 60px 0; color: #bdc3c7;">
+                <i class="material-icons" style="font-size: 4rem; opacity: 0.5;">done_all</i>
+                <h3 style="margin-top: 15px; font-weight: normal;">${QUEUE_I18N.no_pending}</h3>
+            </div>
+        `;
+        return;
+    }
+
+    const assetCardsHtml = data.map(data => {
+        let reqCtrl = `<span class="font-monospace" style="font-size: 1.4rem; font-weight: bold; color: #7f8c8d;"> </span>`;
+        if (data.req.ctrl_no) {
+            reqCtrl = `<span class="font-monospace" style="font-size: 1.4rem; font-weight: bold; color: #7f8c8d;">${data.req.ctrl_no}</span>`;
+        }
+
+        let reqBadge = `<span class="asset-badge badge-broken"><i class="material-icons" style="font-size:14px;">build</i> Broken</span>`;
+        if (data.req.matter.trim().toLowerCase() === 'require') {
+            reqBadge = `<span class="asset-badge badge-require"><i class="material-icons" style="font-size:14px;">add_shopping_cart</i> Require</span>`;
+        } else if (data.req.matter.trim().toLowerCase() === 'return') {
+            reqBadge = `<span class="asset-badge badge-return"><i class="material-icons" style="font-size:14px;">assignment_return</i> Return</span>`;
+        }
+
+        let safeLoc = data.req.department || '';
+        if (safeLoc.includes('-')) {
+            safeLoc = safeLoc.split('-')[0].trim();
+        }
+        return `
+            <div class="req-card" data-req-id="${data.req.id}">
+                <div class="req-avatar">
+                    <img class="user-avatar" src="/static/avatars/${data.req.applicant_username}.jpg" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <i class="material-icons" style="display:none; color:#777; font-size: 20px;">person</i>
+                </div>
+
+                <div class="req-info">
+                    <h4>
+                        ${data.req.applicant}
+                        <span style="font-size: 0.8rem; color: #aaa; margin-left: auto;">${data.req.created_at}</span>
+                    </h4>
+                    <div style="display: flex; align-items: center; justify-content: space-between;">${reqCtrl}${reqBadge}</div>
+
+                    <p><strong>${data.req.pn_1}</strong> | ${data.req.asset_name}</p>
+
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="color: #95a5a6; margin-top: 5px;">
+                            <i class="material-icons" style="font-size: 0.9rem; vertical-align: middle;">chat_bubble_outline</i>
+                            ${data.req.note || QUEUE_I18N.no_reason}
+                        </span>
+                        <span style="font-size: 1.05rem; font-weight: bold; color: var(--text-main); cursor: pointer;" onclick="openFooterMap('${safeLoc}')"><i class="material-icons" style="vertical-align: bottom;">place</i>${data.req.department}</span>
+                    </div>
+                </div>
+
+                <div class="req-qty">
+                    <span class="req-qty-label">${QUEUE_I18N.req_qty_label}</span>
+                    ${data.req.req_qty}
+                </div>
+
+                <div class="req-actions">
+                    <button class="btn-primary" style="background: #1db954; height: 40px; padding: 0 15px;"
+                            onclick="openAssetApproveModal('${data.req.id}', '${data.req.matter}', '${data.req.pn_1}', '${data.req.req_qty}', '${data.req.ctrl_no || ''}')">
+                        <i class="material-icons">check_circle</i> ${QUEUE_I18N.approve}
+                    </button>
+
+                    <form action="/request_queue/asset_reject/${data.req.id}" method="post" style="margin: 0;" onsubmit="return confirm('${QUEUE_I18N.confirm_reject}');">
+                        <button type="submit" class="btn-primary" style="background: white; border: 1px solid #ccc; color: #7f8c8d; height: 40px; padding: 0 15px;">
+                            <i class="material-icons">block</i> ${QUEUE_I18N.reject}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        `;
+    }).join('');
+    tabAsset.innerHTML = assetCardsHtml;
+}

@@ -68,8 +68,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         const response = await fetch('/api/history');
         const result = await response.json();
         
-        window.HISTORY_DATA = result.data;
-        renderHistory(result.data);
+        if (result.status === 'success') {
+            window.HISTORY_DATA = result.data;
+            renderHistory(result.data);
+
+            // 修改左下指示灯
+            const indicator = document.getElementById('indicator');
+            const indicatorData = result.data;
+            console.log(indicatorData);
+            indicator.innerHTML = `
+                <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">history</i>
+                ${BASE_I18N.history}:
+                <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
+                    ${indicatorData.length || '-'}
+                </span>
+            `;
+        }
     } catch (error) {
         console.error("Data Loaded Fail", error);
         document.querySelector('tbody').innerHTML = `<div style="text-align:center; color:red;">加载失败，请刷新重试</div>`;

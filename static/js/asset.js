@@ -22,13 +22,13 @@ window.switchAssetType = function(groupId) {
     }
 
     let rowsHtml = groupData.items.map(item => {
-        let statusHtml = '';
+        let statusHtml = `<span style="background: rgba(231, 76, 60, 0.15); color: #c0392b; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap">${ASSET_I18N.status_out_stock}</span>`;
         if (item.is_stop) {
             statusHtml = `<span style="background: rgba(149, 165, 166, 0.15); color: #7f8c8d; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; text-decoration: line-through; white-space: nowrap">${ASSET_I18N.status_stop}</span>`;
         } else if (item.is_stock) {
             statusHtml = `<span style="background: rgba(29, 185, 84, 0.15); color: #158e40; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap">${ASSET_I18N.status_in_stock}</span>`;
-        } else {
-            statusHtml = `<span style="background: rgba(231, 76, 60, 0.15); color: #c0392b; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap">${ASSET_I18N.status_out_stock}</span>`;
+        } else if (item.is_request) {
+            statusHtml = `<span style="background: rgba(230, 126, 34, 0.1); color: #e67e22; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap">${ASSET_I18N.pending}</span>`;
         }
 
         let rawLoc = item.location ? String(item.location).trim() : '';
@@ -55,6 +55,13 @@ window.switchAssetType = function(groupId) {
             <i class="material-icons">more_horiz</i>
         </button>
         `;
+        if (item.is_request) {
+            btnGroupHtml = `
+                <div style="height: 28px; display: inline-flex; align-items: center; justify-content: center; padding: 0 5px;">
+                    <i class="material-icons" style="color: #aaa; font-size: 1.2rem;">block</i>
+                </div>
+            `;
+        }
 
         return `
         <tr>
@@ -200,6 +207,7 @@ document.addEventListener('submit', async function(e) {
             if (form.id === 'assetToggleForm' && window.closeAssetToggleModal) closeAssetToggleModal();
             if (form.id === 'stopForm' && window.closeStopConfirmModal) closeStopConfirmModal();
             if (form.id === 'assetItemEditForm' && window.closeAssetItemEditModal) closeAssetItemEditModal();
+            if (window.closeActionModal) window.closeActionModal();
 
             if (form.action.includes('/api/request_asset')) {
                 let card = form.closest('.asset-card');
@@ -325,8 +333,27 @@ document.addEventListener("DOMContentLoaded", async () => {
         const response = await fetch('/api/asset');
         const result = await response.json();
 
-        window.ASSET_DATA = result.data;
-        renderAssetCards(result.data);
+        if (result.status === 'success') {
+            const assetData = result.data;
+            window.ASSET_DATA = assetData.grouped;
+            renderAssetCards(assetData.grouped);
+
+            // 修改左下指示灯
+            const indicator = document.getElementById('indicator');
+            const indicatorData = assetData.stats;
+            indicator.innerHTML = `
+                <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">category</i>
+                ${BASE_I18N.asset_1}:
+                <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
+                    ${indicatorData.categories || 0}
+                </span>
+                <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green); margin-left: 15px;">devices</i>
+                ${BASE_I18N.asset_2}:
+                <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
+                    ${indicatorData.total || 0}
+                </span>
+            `;
+        }
     } catch (error) {
         console.error("Data Loaded Fail", error);
         document.getElementById('assetCardList').innerHTML = `<div style="text-align:center; color:red;">加载失败，请刷新重试</div>`;

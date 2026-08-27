@@ -36,12 +36,41 @@ async def root(request: Request):
         return RedirectResponse(url="/all" if user else "/login", status_code=303)
 
 @router.get("/all", response_class=HTMLResponse)
-async def get_all(request: Request, query: Optional[str] = None, warning_only: Optional[str] = None,
-                  current_user: dict = Depends(get_current_user)):
+async def get_all(request: Request, current_user: dict = Depends(get_current_user)):
+    # with Session(engine) as session:
+    #     statement = select(InventoryItem)
+
+    #     if query:
+    #         statement = statement.where(
+    #             or_(
+    #                 InventoryItem.pn_1.like(f'%{query}%'),
+    #                 InventoryItem.pn_2.like(f'%{query}%'),
+    #                 InventoryItem.name.like(f'%{query}%'),
+    #                 InventoryItem.description_1.like(f'%{query}%'),
+    #                 InventoryItem.description_2.like(f'%{query}%'),
+    #                 InventoryItem.remarks.like(f'%{query}%')
+    #             )
+    #         )
+    #     else:
+    #         statement = statement.order_by(desc(InventoryItem.usage_1y))
+
+    #     is_warning = warning_only in ['on', 'true', '1']
+    #     if is_warning:
+    #         statement = statement.where(InventoryItem.warning_level > 0,
+    #                                     InventoryItem.stock <= InventoryItem.warning_level)
+    #     items = session.exec(statement).all()
+
+    #     username = current_user.get('username')
+    #     bm_statement = select(UserBookmark).where(UserBookmark.username == username)
+    #     bookmarks = session.exec(bm_statement).all()
+    #     user_bookmarks = [b.item_id for b in bookmarks]
+    return templates.TemplateResponse(request, "inventory_cards.html", {'user': current_user, 'active_page': 'inventory'})
+
+@router.get("/api/inventory")
+async def get_inventory(request: Request, query: Optional[str] = None, warning_only: Optional[str] = None, current_user: dict = Depends(get_current_user)):
     with Session(engine) as session:
         statement = select(InventoryItem)
-
-        if query:
+        if query: 
             statement = statement.where(
                 or_(
                     InventoryItem.pn_1.like(f'%{query}%'),
@@ -54,18 +83,22 @@ async def get_all(request: Request, query: Optional[str] = None, warning_only: O
             )
         else:
             statement = statement.order_by(desc(InventoryItem.usage_1y))
-
         is_warning = warning_only in ['on', 'true', '1']
         if is_warning:
-            statement = statement.where(InventoryItem.warning_level > 0,
-                                        InventoryItem.stock <= InventoryItem.warning_level)
+            statement = statement.where(InventoryItem.warning_level > 0, InventoryItem.stock < InventoryItem.warning_level)
         items = session.exec(statement).all()
 
-        username = current_user.get('username')
-        bm_statement = select(UserBookmark).where(UserBookmark.username == username)
+        user_name = current_user.get('username')
+        bm_statement = select(UserBookmark).where(UserBookmark.username == user_name)
         bookmarks = session.exec(bm_statement).all()
         user_bookmarks = [b.item_id for b in bookmarks]
-    return templates.TemplateResponse(request, "inventory_cards.html", {'items': items, 'query': query, 'is_warning': is_warning, 'user': current_user, 'user_bookmarks': user_bookmarks, 'active_page': 'inventory'})
+    return {
+        'status': "success",
+        "data": {
+            "items": items,
+            "userBookmarks": user_bookmarks
+            }
+        }
 
 @router.post("/do_out/{item_id}")
 async def do_out(
@@ -278,6 +311,21 @@ async def view_inventory_table(request: Request, current_user: dict = Depends(ge
         alarm_count = len(alarm_items)
     return templates.TemplateResponse(request,"inventory_table.html", {"items": items, "user": current_user, "active_page": "inventory_table", "alarm_count": alarm_count})
 
+@router.get("/api/inventory_table")
+async def get_inventory_table(request: Request, current_user: dict = Depends(get_current_user)):
+    with Session(engine) as session:
+        items =session.exec(select(InventoryItem).order_by(desc(InventoryItem.pn_1))).all()
+        alarm_items = session.exec(select(InventoryItem).where(InventoryItem.warning_level > 0, InventoryItem.warning_level >= InventoryItem.stock)).all()
+        alarm_count = len(alarm_items)
+    return {
+        'status': 'success',
+        'data': {
+            'items': items,
+            'alarmItems': alarm_items,
+            'alarmCount': alarm_count
+            }
+        }
+
 @router.post("/api/update_advanced/{item_id}")
 async def update_advanced(request: Request,
                           item_id: int,
@@ -439,11 +487,7 @@ async def batch_submit(
 
 @router.get('/history', response_class=HTMLResponse)
 async def view_history(request: Request, current_user: dict = Depends(get_current_user)):
-    with Session(engine) as session:
-        statement = select(HistoryLog).order_by(desc(HistoryLog.id))
-        logs = session.exec(statement).all()
-
-    return templates.TemplateResponse(request, "history.html", {'logs': logs, 'user': current_user, 'active_page': 'history'})
+    return templates.TemplateResponse(request, "history.html", {'user': current_user, 'active_page': 'history'})
 
 @router.get("/api/history")
 async def get_history(request: Request, current_user: dict = Depends(get_current_user)):
@@ -559,13 +603,7 @@ def export_history(request: Request, current_user: dict = Depends(get_current_us
 
 @router.get("/audit", response_class=HTMLResponse)
 async def view_audit(request: Request, current_user: dict = Depends(get_current_user)):
-    with Session(engine) as session:
-        statement = select(AuditRecord).order_by(AuditRecord.expected_location)
-        records = session.exec(statement).all()
-        total = len(records)
-        completed = sum(1 for r in records if r.status != 'Pending')
-        progress = int((completed / total * 100)) if total > 0 else 0
-    return templates.TemplateResponse(request, "audit.html", {"records": records, "total": total, "progress": progress, "completed": completed, "user": current_user, "active_page": "audit"})
+    return templates.TemplateResponse(request, "audit.html", {"user": current_user, "active_page": "audit"})
 
 @router.get("/api/audit")
 async def get_audit(request: Request, current_user: dict = Depends(get_current_user)):
@@ -577,7 +615,21 @@ async def get_audit(request: Request, current_user: dict = Depends(get_current_u
         for r in records:
             loc = r.actual_location or r.expected_location or 'Unallocated'
             grouped[loc].append(r)
-    return {'status': 'success', 'data': grouped}
+
+        total = len(records)
+        completed = sum(1 for r in records if r.status != 'Pending')
+        progress = int((completed / total * 100)) if total > 0 else 0
+    return {
+        'status': 'success',
+        'data': {
+            'grouped': grouped,
+            'stats': {
+                'total': total,
+                'completed': completed,
+                'progress': progress
+            }
+        }
+    }
 
 @router.post("/audit/start")
 async def start_audit(request: Request, current_user: dict = Depends(get_current_user)):

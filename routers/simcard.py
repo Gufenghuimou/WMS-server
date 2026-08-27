@@ -65,9 +65,7 @@ async def get_simcard_api(request: Request, query: Optional[str] = None, current
         else:
             statement = statement.order_by(PhysicalSimCard.project)
         items = session.exec(statement).all()
-        total = len(items)
-
-    return {"status": "success", "data": items, "simcard_total_count": total}
+    return {"status": "success", "data": items}
 
 @router.post("/simcard_out/{item_id}")
 async def simcard_out(

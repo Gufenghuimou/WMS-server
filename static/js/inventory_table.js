@@ -62,6 +62,45 @@ window.autoSave = async function(itemId) {
 
         if (result.status === 'success') {
             showToast(result.message, "success");
+
+            let isAlarming = false;
+            if (window.INV_TAB_DATA) {
+                const dataItem = window.INV_TAB_DATA.find(i => i.id == itemId);
+                if (dataItem) {
+                    dataItem.warning_level = warningVal ? parseFloat(warningVal) : 0;
+                    dataItem.is_mva = isMvaChecked;
+                    isAlarming = dataItem.warning_level > 0 && dataItem.stock < dataItem.warning_level;
+                }
+            }
+
+            // 保存后重绘该行
+            const badgeTr = tr.querySelector('.alarm-badge');
+            if (badgeTr) {
+                const td = badgeTr.parentElement;
+                if (isAlarming) {
+                    td.setAttribute('data-sort', '1');
+                    td.innerHTML = `<span class="alarm-badge alarm-yes"><i class="material-icons" style="font-size: 0.8rem; vertical-align: middle;">warning</i> ${TABLE_I18N.alarm_yes}</span>`;
+                } else {
+                    td.setAttribute('data-sort', '0');
+                    td.innerHTML = `<span class="alarm-badge alarm-no"><i class="material-icons" style="font-size: 0.8rem; vertical-align: middle;">check</i> ${TABLE_I18N.alarm_no}</span>`;
+                }
+            }
+
+            // 重绘指示灯
+            if (window.INV_TAB_DATA) {
+                const newAlarmCount = window.INV_TAB_DATA.filter(item => item.warning_level > 0 && item.stock < item.warning_level).length;
+                const indicator = document.getElementById('indicator');
+                if (indicator) {
+                    indicator.innerHTML = `
+                        <i class="material-icons" style="font-size: 1.45rem; color: var(--danger-red);">report_problem</i>
+                        ${BASE_I18N.inventory_table}:
+                        <span style="font-size: 1.2rem; font-weight: bold; color: var(--danger-red); margin-left: 4px;">
+                            ${newAlarmCount || 0}
+                        </span>
+                    `;
+                }
+            }
+
             tr.classList.remove('row-saved');
             void tr.offsetWidth;
             tr.classList.add('row-saved');
@@ -74,33 +113,6 @@ window.autoSave = async function(itemId) {
 // 全局搜索
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 💡 优化 1：精确定位到 advancedTable，防止误伤页面内可能存在的其他表格
-    const tableBody = document.querySelector('#advancedTable tbody');
-    if (!tableBody) return;
-
-    // 一次性获取所有行，提升搜索时的循环性能
-    const mainRows = tableBody.querySelectorAll('.main-row');
-
-    // 💡 优化 2：页面加载时，使用 textContent 缓存文字，速度提升 10 倍
-    mainRows.forEach(mainRow => {
-        const itemId = mainRow.getAttribute('data-id');
-        const detailRow = document.getElementById(`detail-${itemId}`)
-
-        let combinedText = mainRow.textContent.toLowerCase();
-        if (detailRow) {
-            const template = detailRow.querySelector('.detail-template');
-            if (template) {
-                combinedText += " " + template.content.textContent.toLowerCase();
-                const inputs = template.content.querySelectorAll('input');
-                inputs.forEach(input => {
-                    const inputText = input.getAttribute('value') || "";
-                    combinedText += " " + inputText.toLowerCase();
-                });
-            }
-        }
-        mainRow._cachedSearchText = combinedText;
-    });
-
     const globalSearch = document.getElementById('globalSearch');
     let searchTimeout;
 
@@ -111,19 +123,16 @@ document.addEventListener('DOMContentLoaded', () => {
             clearTimeout(searchTimeout);
 
             searchTimeout = setTimeout(() => {
-                // 执行搜索：基于内存中的 DOM 引用直接操作，极速且不受排序干扰
-                mainRows.forEach(mainRow => {
-                    let rowText = mainRow._cachedSearchText || "";
-                    let isMatch = rowText.includes(term);
-                    mainRow.style.display = isMatch ? '' : 'none';
-
-                    const itemId = mainRow.getAttribute('data-id');
-                    const detailRow = document.getElementById(`detail-${itemId}`);
-                    if (detailRow) {
-                        detailRow.style.display = isMatch ? '' : 'none';
-                    }
+                if (term === '') {
+                    renderInvTab(window.INV_TAB_DATA);
+                    return;
+                }
+                let filterData = window.INV_TAB_DATA.filter(item => {
+                    let searchKey = `${ item.pn_1 || ''} ${ item.name || ''} ${ item.location || ''} ${ item.pn_2 || ''} ${item.description_1 || ''} ${item.description_2 || ''} ${item.remarks || ''}`.toLowerCase();
+                    return searchKey.includes(term);
                 });
-            }, 250);
+                renderInvTab(filterData);
+            }, 300);
         });
     }
 });
@@ -257,6 +266,17 @@ document.querySelector(`#advancedTable tbody`).addEventListener('click', (e) => 
             .then(data => {
                 if (data.status === 'success') {
                     showToast(data.message, "success")
+
+                    if (window.INV_TAB_DATA) {
+                        const dataItem = window.INV_TAB_DATA.find(i => i.id == itemId);
+                        if (dataItem) {
+                            dataItem.name = nameInput ? nameInput.value.trim() : dataItem.name;
+                            detailInner.querySelectorAll('input[name]').forEach(input => {
+                                dataItem[input.name] = input.value.trim();
+                            });
+                        }
+                    }
+
                     detailInner.querySelectorAll('.detail-input').forEach(input => {
                         input.dataset.originalValue = input.value;
                     });
@@ -312,113 +332,149 @@ document.querySelector(`#advancedTable tbody`).addEventListener('click', (e) => 
     }
 });
 
+// 捞取后端数据
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const response = await fetch('/api/inventory_table');
+        const result = await response.json();
 
-// // 定义滑动报废变量
-// let isDraggingSlider = false;
-// let startX = 0;
-// let maxDrag = 0;
-// const ZOOM_LEVEL = 0.67;
+        if (result.status === 'success') {
+            const invData = result.data;
+            window.INV_TAB_DATA = invData.items;
+            renderInvTab(invData.items);
 
-// // 滑动删除
+            // 修改左下指示灯
+            const indicator = document.getElementById('indicator');
+            const indicatorData = invData.alarmCount;
+            indicator.innerHTML = `
+                <i class="material-icons" style="font-size: 1.45rem; color: var(--danger-red);">report_problem</i>
+                ${BASE_I18N.inventory_table}:
+                <span style="font-size: 1.2rem; font-weight: bold; color: var(--danger-red); margin-left: 4px;">
+                    ${indicatorData || 0}
+                </span>
+            `;
+        }
+    } catch (error) {
+        console.error("Data Loaded Fail", error);
+        document.querySelector('tbody').innerHTML = `<div style="text-align:center; color:red;">加载失败，请刷新重试</div>`;
+    } finally {
+        if (typeof window.hideGlobalLoader === 'function') {
+            setTimeout(window.hideGlobalLoader, 50);
+        }
+    }
+});
 
-// window.openScrapModal = function(itemId) {
-//     const modal = document.getElementById('scrapModal');
-//     const form = document.getElementById('scrapForm');
+function renderInvTab(data) {
+    const tBody = document.querySelector('tbody');
+    if (!tBody) return;
 
-//     form.action = `/delete/${itemId}`
+    if (!data || data.length === 0) {
+        tBody.innerHTML = `
+            <tr>
+                <td colspan="9" style="text-align:center; padding: 40px 20px; color: #999;">
+                    <i class="material-icons" style="font-size: 3rem; opacity: 0.5;">inbox</i>
+                    <p>暂无数据</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
 
-//     resetSlider();
-//     modal.style.display = 'flex';
+    const rowsHtml = data.map(item => {
+        let alarmBadge = '';
+        let is_alarming = false;
+        if (item.warning_level > 0 && item.stock < item.warning_level) is_alarming = true;
+        if (is_alarming) {
+            alarmBadge = `<span class="alarm-badge alarm-yes"><i class="material-icons" style="font-size: 0.8rem; vertical-align: middle;">warning</i> ${TABLE_I18N.alarm_yes}</span>`;
+        } else {
+            alarmBadge = `<span class="alarm-badge alarm-no"><i class="material-icons" style="font-size: 0.8rem; vertical-align: middle;">check</i> ${TABLE_I18N.alarm_no}</span>`;
+        }
+        let hasImage = '';
+        if (item.has_image) {
+            hasImage = `<img class="lazy-image" data-src="/static/item_images/${item.id}.jpg?t=${window.GLOBAL_SYS_VER}" loading="lazy" alt="Item Image" onclick="openShowImgModal('${item.id}', '${item.pn_1}', '${item.name}')">`;
+        }
+        return `
+            <tr class="main-row" data-id="${item.id}" id="row-${item.id}">
+                    <td class="font-monospace" style="font-size: 1.1rem; font-weight: bold;">${item.pn_1}</td>
+                    <td title="${item.name || '-'}">
+                        <input class="name-input" type="text" value="${item.name || '-'}" readonly name="name">
+                    </td>
+                    <td data-sort="${item.stock}" style="font-weight: bold; font-size: 1rem;">${item.stock }</td>
+                    <td data-sort="${item.usage_1y}">${item.usage_1y}</td>
+                    <td data-sort="${item.usage_2y}">${item.usage_2y}</td>
+                    <td data-sort="${item.usage_3y}">${item.usage_3y}</td>
+                    <td data-sort="${item.first_in_date}"><span style="color: #7f8c8d;">${item.first_in_date || '-'}</span></td>
+                    <td data-sort="${is_alarming ? 1 : 0}">${alarmBadge}</td>
+                    <td><input type="number" class="inline-input warning-input" value="${item.warning_level || 0}" min="0" onchange="autoSave('${item.id}')"></td>
 
-//     const handle = document.getElementById('sliderHandle');
-//     const container = document.getElementById('sliderContainer');
-//     maxDrag = container.clientWidth - handle.clientWidth - 6;
+                    <td style="text-align: center;">
+                        <label class="switch">
+                            <input type="checkbox" class="mva-checkbox" onchange="autoSave('${item.id}')" ${item.is_mva ? "checked" : ""}>
+                            <span class="slider"></span>
+                        </label>
+                    </td>
+                </tr>
+                <tr class="detail-row" data-id="${item.id}" id="detail-${item.id}">
+                    <td colspan="10">
+                        <div class="detail-container">
+                            <template class="detail-template">
+                                <div class="detail-inner">
+                                    <div class="detail-image-box">${hasImage}</div>
+                                    <div class="detail-text">
+                                        <label>PN2:
+                                            <input class="detail-input" type="text" value="${item.pn_2}" readonly name="pn_2">
+                                        </label>
+                                    </div>
+                                    <div class="detail-long-text">
+                                        <label>${TABLE_I18N.description_2}:
+                                            <input class="detail-input" type="text" value="${item.description_2}" readonly name="description_2">
+                                        </label>
+                                    </div>
+                                    <div class="detail-text">
+                                        <label>${TABLE_I18N.description_1}:
+                                            <input class="detail-input" type="text" value="${item.description_1}" readonly name="description_1">
+                                        </label>
+                                    </div>
+                                    <div class="detail-long-text">
+                                          <label>${TABLE_I18N.remarks}:
+                                            <input class="detail-input" type="text" value="${item.remarks}" readonly name="remarks">
+                                        </label>
+                                    </div>
 
-//     handle.onmousedown = startSlide;
-// }
-
-// window.closeScrapModal = function() {
-//     document.getElementById('scrapModal').style.display = 'none';
-//     resetSlider();
-// }
-
-// document.addEventListener('keydown', (e) => {
-//     if (e.key === 'Escape') {
-//         closeScrapModal();
-//     }
-// });
-
-// // scrapModal 滑动控制
-
-// function resetSlider(animate = false) {
-//     const container = document.getElementById('sliderContainer');
-//     const handle = document.getElementById('sliderHandle');
-//     const bg = document.getElementById('sliderBg');
-//     const text = document.getElementById('sliderText');
-
-//     container.classList.remove('unlocked');
-//     text.innerText = '滑动以确认';
-
-//     if (animate) {
-//         handle.style.transition = 'left 0.3s ease';
-//         bg.style.transition = 'width 0.3s ease';
-//     }
-
-//     handle.style.left = '3px';
-//     bg.style.width = '0';
-// }
-
-// function unlockSuccess() {
-//     isDraggingSlider = false;
-//     document.onmousemove = null;
-
-//     const container = document.getElementById('sliderContainer');
-//     container.classList.add('unlocked');
-//     document.getElementById('sliderText').innerText = '释放以报废';
-
-//     setTimeout(() => {
-//         document.getElementById('scrapForm').submit();
-//     }, 200);
-// }
-
-// function updateSliderPosition(x) {
-//     const handle = document.getElementById('sliderHandle');
-//     const bg = document.getElementById('sliderBg');
-//     handle.style.left = (x + 3) + 'px';
-//     bg.style.width = (x + 25) + 'px';
-// }
-
-// function onSlide(e) {
-//     if (!isDraggingSlider) return;
-//     let moveX = (e.clientX - startX) / ZOOM_LEVEL;
-
-//     if (moveX < 0) moveX = 0;
-//     if (moveX > maxDrag) moveX = maxDrag;
-
-//     updateSliderPosition(moveX);
-
-//     if (moveX >= maxDrag * 0.98) {
-//         unlockSuccess();
-//     }
-// }
-
-// function startSlide(e) {
-//     isDraggingSlider = true;
-//     startX = e.clientX;
-//     document.onmousemove = onSlide;
-//     document.onmouseup = stopSlide;
-
-//     document.getElementById('sliderHandle').style.transition = 'none';
-//     document.getElementById('sliderBg').style.transition = 'none';
-// }
-
-// function stopSlide(e) {
-//     if (!isDraggingSlider) return;
-//     isDraggingSlider = false;
-//     document.onmousemove = null;
-//     document.onmouseup = null;
-
-//     if (!document.getElementById('sliderContainer').classList.contains('unlocked')) {
-//         resetSlider(true);
-//     }
-// }
+                                    <div class="detail-text">
+                                        <label style="display: flex; justify-content: center; gap: 20px;">
+                                            <i class="material-icons location-map-btn" style="color: var(--primary); cursor: pointer;">place</i>
+                                            <input class="detail-input" type="text" value="${item.location}" readonly name="location" style="flex: 0; width: 80px;">
+                                        </label>
+                                    </div>
+                                    <div class="detail-text" style="display: flex; justify-content: space-around;">
+                                        <div>
+                                            <span>${TABLE_I18N.total_in}: </span>
+                                            <span style="font-size: 1.05rem; font-weight: 600;">${item.total_in}</span>
+                                        </div>
+                                        <div>
+                                            <span>${TABLE_I18N.total_out}: </span>
+                                        <span style="font-size: 1.05rem; font-weight: 600;">${item.total_out}</span>
+                                        </div>
+                                        <input type="hidden" name="pn_1" value="${item.pn_1}">
+                                        <input type="hidden" name="stock" value="${item.stock}">
+                                    </div>
+                                    <div class="btn-container">
+                                        <div class="detail-edit-btn">
+                                            <div class="action-btn">
+                                                <button class="btn-primary scrap-btn" style="background-color: var(--danger-red);">${TABLE_I18N.scrap_btn}</button>
+                                                <button class="btn-primary save-btn" style="background-color: var(--primary-blue);">${TABLE_I18N.save_btn}</button>
+                                                <button class="btn-primary cancel-btn" style="background-color: #f1f3f4; color: var(--text-main);">${TABLE_I18N.cancel_btn}</button>
+                                            </div>
+                                            <button class="btn-primary edit-btn" style="background-color: var(--primary-green);">${TABLE_I18N.edit_btn}</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </td>
+                </tr>
+        `;
+    }).join('');
+    tBody.innerHTML = rowsHtml;
+}

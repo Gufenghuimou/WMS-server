@@ -561,6 +561,14 @@ window.closeShowImgModal = function() {
 
 // Asset 操作按钮模态框控制开始
 window.openActionModal = function(groupId, itemId) {
+    const response = fetch(`/api/status_check/${itemId}`);
+    const result = response.json();
+
+    if (result.status !== 'success') {
+        showToast(result.message, 'error');
+        setTimeout(() => {location.reload()}, 400);
+    }
+
     let groupData = window.ASSET_DATA[groupId];
     let item = groupData.items.find(i => i.id === itemId);
     if (!item) return;
@@ -611,7 +619,7 @@ window.openActionModal = function(groupId, itemId) {
         btnGroupHtml = btn1 + btn2 + btn3;
     } else {
         if (!item.is_stock && !item.is_stop) {
-            let btn4 = `<button class="btn-primary" style="background-color: #1db954; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="openToggleModal(${item.id}, 'False', '${safeCtrl}', true, '${rackName}', '')"><i class="material-icons">assignment_return</i> ${ASSET_I18N.request_return_title}</button>`;
+            let btn4 = `<button class="btn-primary" style="background-color: #1db954; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="openAssetToggleModal(${item.id}, 'False', '${safeCtrl}', true, '${rackName}', '')"><i class="material-icons">assignment_return</i> ${ASSET_I18N.request_return_title}</button>`;
             let btn5 = `<button class="btn-primary" style="background-color: var(--danger-red); width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="openStopConfirmModal(${item.id}, '${safeCtrl}', 'False', true, '${rackName}')"><i class="material-icons">build</i> ${ASSET_I18N.report_broken_title}</button>`;
             btnGroupHtml = btn4 + btn5;
         } else {
@@ -776,13 +784,18 @@ window.closeAssetItemEditModal = function() {
 // 物料审批Modal 开始
 
 window.openApproveModal = function(reqId, pn, name, reqQty, sysStock, location) {
-    document.getElementById('approveForm').action = '/request_queue/approve/' + reqId;
+    const form = document.getElementById('approveForm');
+    form.action = '/request_queue/approve/' + reqId;
+    form.dataset.reqId = reqId;
     document.getElementById('modalPn').innerText = pn;
     document.getElementById('modalName').innerText = name;
     document.getElementById('modalSysStock').innerText = sysStock;
     document.getElementById('modalReqQty').innerText = reqQty;
-    document.getElementById('modalLocation').innerText = location;
-    let currentReqQty = parseInt(reqQty);
+
+    const locBtn = document.getElementById('modalLocation');
+    locBtn.innerText = location;
+    let safeLoc = location.split('-')[0];
+    locBtn.addEventListener('click', () => {openFooterMap(safeLoc)});
 
     // 重置所有输入和报错状态
     let stockInput = document.getElementById('realStock');
@@ -820,6 +833,7 @@ window.openAssetApproveModal = function(reqId, matter, pn, reqQty, ctrlNo) {
     form.dataset.matter = matter;
     form.dataset.reqQty = reqQty;
     form.dataset.pn = pn;
+    form.dataset.reqId = reqId;
 
     document.getElementById('assetModalPn').innerText = pn;
     let ctrlBox = document.getElementById('assetModalCtrlNoBox');
@@ -832,7 +846,7 @@ window.openAssetApproveModal = function(reqId, matter, pn, reqQty, ctrlNo) {
     if (matter === 'require') {
         title.innerHTML = `<i class="material-icons" style="color: var(--primary-blue);">add_shopping_cart</i> ${MODAL_I18N.dispatch_asset}`;
         dynamicBox.innerHTML = `
-            <label style="display: block; font-weight: bold; color: var(--text-main); margin-bottom: 8px;">Scan Serial Numbers (Expected: ${reqQty})${MODAL_I18N.scan_area_label.replace('{reqQty}', reqQty)} <span style="color: red;">*</span></label>
+            <label style="display: block; font-weight: bold; color: var(--text-main); margin-bottom: 8px;">${MODAL_I18N.scan_area_label.replace('{reqQty}', reqQty)} <span style="color: red;">*</span></label>
             <input type="text" id="scanSnInput" name="ctrl_nos" required placeholder="JPE160001"
                    style="width: 100%; height: 42px; font-size: 1rem; padding: 0 10px; border: 2px solid var(--primary-blue); border-radius: 6px; outline: none; box-sizing: border-box;">
             <p style="font-size: 0.75rem; color: #888; margin-top: 5px;">${MODAL_I18N.scab_area_note}</p>

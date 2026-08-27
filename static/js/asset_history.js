@@ -100,11 +100,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         const response = await fetch('/api/asset_history');
         const result = await response.json();
 
-        window.ASSET_HIS_DATA = result.data;
-        if (window.triggerHistoryFilter) {
-            window.triggerHistoryFilter();
-        } else {
-            renderAssetHis(result.data);
+        if (result.status === 'success') {
+            window.ASSET_HIS_DATA = result.data;
+            if (window.triggerHistoryFilter) {
+                window.triggerHistoryFilter();
+            } else {
+                renderAssetHis(result.data);
+            }
+
+            // 修改左下指示灯
+            const indicator = document.getElementById('indicator');
+            const indicatorData = result.data;
+            indicator.innerHTML = `
+                <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">manage_history</i>
+                ${BASE_I18N.asset_history}:
+                <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
+                    ${indicatorData.length || '-'}
+                </span>
+            `;
         }
     } catch (error) {
         console.error("Data Loaded Fail", error);

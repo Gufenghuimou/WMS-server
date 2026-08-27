@@ -28,7 +28,7 @@
     </div>
 
     <div id="tab-consumable" class="queue-list">
-        {% if req_data|length == 0 %}
+        {# {% if req_data|length == 0 %}
         <div style="text-align: center; padding: 60px 0; color: #bdc3c7;">
             <i class="material-icons" style="font-size: 4rem; opacity: 0.5;">done_all</i>
             <h3 style="margin-top: 15px; font-weight: normal;">{{ t('queue.no_pending', lang) }}</h3>
@@ -81,11 +81,11 @@
                 </form>
             </div>
         </div>
-        {% endfor %}
+        {% endfor %} #}
     </div>
 
     <div id="tab-asset" class="queue-list" style="display: none;">
-        {% if asset_req_data|length == 0 %}
+        {# {% if asset_req_data|length == 0 %}
         <div style="text-align: center; padding: 60px 0; color: #bdc3c7;">
             <i class="material-icons" style="font-size: 4rem; opacity: 0.5;">done_all</i>
             <h3 style="margin-top: 15px; font-weight: normal;">{{ t('queue.no_pending', lang) }}</h3>
@@ -150,7 +150,7 @@
                 </form>
             </div>
         </div>
-        {% endfor %}
+        {% endfor %} #}
     </div>
 
 </div>
@@ -234,7 +234,19 @@
         target_location_ph: "{{ t('queue.target_location_ph', lang) }}",
         confirm_broken: "{{ t('queue.confirm_broken', lang) }}",
         broken_note: "{{ t('queue.broken_note', lang) }}",
+        request_queue: "{{ t('status.request_queue', lang, count='') }}",
+        no_pending: "{{ t('queue.no_pending', lang) }}",
+        no_reason: "{{ t('queue.no_reason', lang) }}",
+        req_qty_label: "{{ t('queue.req_qty_label', lang) }}",
+        approve: "{{ t('queue.approve', lang) }}",
+        reject: "{{ t('queue.reject', lang) }}",
+        confirm_reject: "{{ t('queue.confirm_reject', lang) }}",
     };
+    window.USER_ROLE = "{{ user.role }}";
+    window.INV_REQ_DATA = {};
+    window.ASSET_REQ_DATA = {};
+    window.SYS_VER = "{{ request.state.sys_ver }}";
+    window.DEFER_GLOBAL_LOADER = true;
 </script>
 <script src="/static/js/request_queue.js"></script>
 {% endblock %}

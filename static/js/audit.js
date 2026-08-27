@@ -209,8 +209,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const response = await fetch('/api/audit');
         const result = await response.json();
-        window.INV_AUDIT_DATA = result.data;
-        renderAudit(result.data);
+        if (result.status === 'success') {
+            const aduitData = result.data;
+            window.INV_AUDIT_DATA = aduitData.grouped;
+            renderAudit(aduitData.grouped);
+            
+            // 修改左下指示灯
+            const indicator = document.getElementById('indicator');
+            const indicatorData = aduitData.stats;
+            indicator.innerHTML = `
+                <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">fact_check</i>
+                ${BASE_I18N.audit}:
+                <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
+                    ${ indicatorData.progress || 0 }% (${indicatorData.completed || 0}/${indicatorData.total || 0})
+                </span>
+            `;
+        }
     } catch (error) {
         console.error("Data Loaded Fail", error);
         document.querySelector('tbody').innerHTML = `<div style="text-align:center; color:red;">加载失败，请刷新重试</div>`;

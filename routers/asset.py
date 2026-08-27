@@ -13,7 +13,7 @@ import json
 from datetime import datetime
 
 from database import engine
-from models import AssetItem, AssetLog, AssetScrapRecord, AssetAuditRecord, User
+from models import AssetItem, AssetLog, AssetScrapRecord, AssetAuditRecord, User, AssetRequest
 from dependencies import get_current_user, require_admin
 from core import templates, t_lang
 from routers import request
@@ -30,13 +30,7 @@ router = APIRouter(tags=["Assets"])
 # TemplateResponse 不能返回Json，所以TamplateResponse 和 JSONResponse 分开写
 @router.get("/asset", response_class=HTMLResponse)
 async def get_asset_page(request: Request, current_user: dict = Depends(get_current_user)):
-    with Session(engine) as session:
-        statement = select(AssetItem)
-        items = session.exec(statement).all()
-
-        categories = len(set(i.pn_1 for i in items))
-        total = len(items)
-    return templates.TemplateResponse(request, "asset.html", {'user': current_user, 'active_page': 'asset', "asset_categories_count": categories, "asset_total_count": total})
+    return templates.TemplateResponse(request, "asset.html", {'user': current_user, 'active_page': 'asset'})
 
 @router.get("/api/asset")
 async def get_asset(request: Request, query: Optional[str] = None, current_user: dict = Depends(get_current_user)):
@@ -60,6 +54,9 @@ async def get_asset(request: Request, query: Optional[str] = None, current_user:
             statement = statement.order_by(AssetItem.pn_1)
         items = session.exec(statement).all()
 
+        asset_request = session.exec(select(AssetRequest).where(AssetRequest.status == 'Pending')).all()
+        req_ctrls = {req.ctrl_no for req in asset_request if req.ctrl_no}
+
         grouped_data = {}
         for item in items:
             pn1 = item.pn_1 or "UNKNOWN"
@@ -77,6 +74,7 @@ async def get_asset(request: Request, query: Optional[str] = None, current_user:
                     "items": []
                 }
 
+            is_item_requested = bool(item.ctrl_no and item.ctrl_no in req_ctrls)
             grouped_data[group_key]["items"].append({
                 "id": item.id,
                 "ctrl_no": item.ctrl_no or "",
@@ -85,10 +83,32 @@ async def get_asset(request: Request, query: Optional[str] = None, current_user:
                 "po_type": item.po_type or "",
                 "remarks": item.remarks or "",
                 "is_stock": bool(item.is_stock),
-                "is_stop": bool(item.is_stop)
+                "is_stop": bool(item.is_stop),
+                "is_request": is_item_requested
             })
+        categories = len(set(i.pn_1 for i in items))
+        total = len(items)
+    return {
+        "status": "success",
+        "data": {
+            "grouped": grouped_data,
+            "stats":{
+                "categories": categories,
+                "total": total
+            }
+        }
+    }
 
-    return {"status": "success", "data": grouped_data}
+@router.post("/api/status_check/{item_id}")
+async def status_check(request: Request, item_id: int, current_user: dict = Depends(get_current_user)):
+    with Session(engine) as session:
+        item = session.get(AssetItem, item_id)
+        if not item:
+            return {'status': 'error', 'message': 'Item not exist'}
+        existing_request = session.exec(select(AssetRequest).where(AssetRequest.ctrl_no == item.ctrl_no, AssetRequest.status == 'Pending')).first()
+        if existing_request:
+            return {'status': 'error', 'message': 'Item is under request!'}
+    return {'status': 'success', 'message': "Status OK"}
 
 @router.post("/asset_out/{item_id}")
 async def asset_out(
@@ -511,41 +531,27 @@ async def asset_batch_submit(
 
 @router.get("/asset_scrap", response_class=HTMLResponse)
 async def asset_scrap(request: Request, current_user: dict = Depends(get_current_user)):
-    with Session(engine) as session:
-        records = session.exec(select(AssetScrapRecord).order_by(desc(AssetScrapRecord.id))).all()
-        draft_records = []
-        for r in records:
-            item = session.exec(select(AssetItem).where(AssetItem.ctrl_no == r.ctrl_no)).first()
-            if not item:
-                continue
-            draft_records.append({
-                'ctrl_no': item.ctrl_no,
-                'pn_1': item.pn_1,
-                'pn_2': item.pn_2,
-                'name': item.name,
-                'is_no_use': r.is_no_use,
-                'location': item.location,
-                'is_stop': item.is_stop if item else False,
-            })
-    return templates.TemplateResponse(request, "asset_scrap.html", {"request": request, 'draft_records': draft_records, "user": current_user, "active_page": "asset_scrap"})
+    return templates.TemplateResponse(request, "asset_scrap.html", {"request": request, "user": current_user, "active_page": "asset_scrap"})
 
 @router.get("/api/asset_scrap")
 async def get_asset_scrap(request: Request, current_user: dict = Depends(get_current_user)):
     with Session(engine) as session:
-        statement = select(AssetScrapRecord).join(AssetItem, AssetScrapRecord.ctrl_no == AssetItem.ctrl_no).order_by(desc(AssetScrapRecord.id))
-        results = session.exec(statement).all()
-        draft_records = []
-        for record, item in results:
-            draft_records.append({
-                'ctrl_no': item.ctrl_no,
-                'pn_1': item.pn_1,
-                'pn_2': item.pn_2,
-                'name': item.name,
-                'is_no_use': record.is_no_use,
-                'location': item.location,
-                'is_stop': item.is_stop if item else False,
-            })
-    return JSONResponse(content={"status": "success", "data": draft_records})
+            records = session.exec(select(AssetScrapRecord).order_by(desc(AssetScrapRecord.id))).all()
+            draft_records = []
+            for r in records:
+                item = session.exec(select(AssetItem).where(AssetItem.ctrl_no == r.ctrl_no)).first()
+                if not item:
+                    continue
+                draft_records.append({
+                    'ctrl_no': item.ctrl_no,
+                    'pn_1': item.pn_1,
+                    'pn_2': item.pn_2,
+                    'name': item.name,
+                    'is_no_use': r.is_no_use,
+                    'location': item.location,
+                    'is_stop': item.is_stop if item else False,
+                })
+    return {"status": "success", "data": draft_records}
 
 @router.post("/asset_scrap")
 async def asset_batch_scrap(
@@ -748,10 +754,7 @@ def asset_scrap_export(request: Request, current_user: dict = Depends(get_curren
 
 @router.get('/asset_history', response_class=HTMLResponse)
 async def asset_history(request: Request, current_user: dict = Depends(get_current_user)):
-    with Session(engine) as session:
-        statement = select(AssetLog).order_by(desc(AssetLog.id))
-        logs = session.exec(statement).all()
-    return templates.TemplateResponse(request, "asset_history.html", {'logs': logs, 'user': current_user, 'active_page': 'asset_history'})
+    return templates.TemplateResponse(request, "asset_history.html", {"request": request, 'user': current_user, 'active_page': 'asset_history'})
 
 @router.get("/api/asset_history")
 async def get_asset_history(request: Request, current_user: dict = Depends(get_current_user)):

@@ -23,16 +23,16 @@
 
 {% block content %}
 <div class="card-grid" id="inventoryGrid">
-    <div class="scroll-widgets">
+    {# <div class="scroll-widgets">
         <div id="leftWidget" class="material-icons">keyboard_arrow_left</div><div id="rightWidget" class="material-icons">keyboard_arrow_right</div>
-    </div>
-    {% for item in items %}
+    </div> #}
+    {# {% for item in items %}
     <div class="item-card" data-id="{{ item.id }}" data-sort-usage="{{ item.usage_1y or 0 }}" data-sort-id="{{ item.id }}" data-search="{{ item.pn_1 | lower }} {{ item.name | lower }} {{ item.location | lower }} {{ item.pn_2 | lower }} {{ item.description_1 | lower }} {{ item.description_2 | lower }} {{ item.remarks | lower }}">
         <div class="card-front">
             <i class="material-icons bookmark-ribbon" data-bookmark-id="{{ item.id }}" onclick="toggleBookmark(event, '{{ item.id }}')">bookmark</i>
             <div class="card-header">
                 <div>
-                    <span class="card-title font-monospace" title="{{ item.pn_1 }}" style="font-size: 1.3rem">{{ item.pn_1 }} </span><span class="card-title-sec font-monospace" title="{{ item.pn_2 or '' }}"> {{ item.pn_2 or '' }}</span>
+                    <span class="card-title font-monospace" title="{{ item.pn_1 }}" style="font-size: 1.3rem">{{ item.pn_1 }}</span><span class="card-title-sec font-monospace" title="{{ item.pn_2 or '' }}"> {{ item.pn_2 or '' }}</span>
                     <span class="card-subtitle" title="{{ item.name or t('card.unnamed_item', lang) }}">{{ item.name or t('card.unnamed_item', lang) }}</span>
                 </div>
                 <div class="stock-badge {% if item.stock < (item.warning_level or 0) %}warning{% endif %}">
@@ -76,7 +76,7 @@
         </div>
         <div class="card-back"></div>
     </div>
-    {% endfor %}
+    {% endfor %} #}
 </div>
 
 <div id="formStorage" style="display: none;">
@@ -177,55 +177,12 @@
         </form>
     </div>
 </div>
-
-{# <div id="cropModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999;">
-    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 600px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 15px;">
-            <h3 style="margin: 0; color: var(--primary-blue); font-size: 1.1rem;">
-                <i class="material-icons" style="vertical-align: middle;">crop</i> 剪裁物料图片
-            </h3>
-            <i class="material-icons" style="cursor: pointer; color: #999;" onclick="closeCropModal()">close</i>
-        </div>
-
-        <div style="width: 100%; max-height: 50vh; margin-bottom: 15px; background: #eee; border-radius: 8px; overflow: hidden;">
-            <img id="cropImageTarget" style="max-width: 100%; display: block;">
-        </div>
-
-        <div style="display: flex; gap: 10px; justify-content: flex-end;">
-            <button type="button" onclick="closeCropModal()" style="padding: 8px 20px; border-radius: 6px; border: none; background: #95a5a6; color: white; cursor: pointer;">取消</button>
-            <button type="button" onclick="confirmCrop()" style="padding: 8px 20px; border-radius: 6px; border: none; background: var(--primary-blue); color: white; font-weight: bold; cursor: pointer;">确认裁剪</button>
-        </div>
-    </div>
-</div> #}
-
-{# <div id="scrapModal" class="modal-overlay">
-    <div class="modal-box" style="width: 380px; text-align: center; padding: 30px 25px;">
-        <i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red); margin-bottom: 10px; width: auto; height: auto; line-height: 1;">report_problem</i>
-        <h3 style="margin-top: 0; color: #333; font-size: 1.3rem;">{{ t('asset_scrap.modal_title', lang) }}</h3>
-        <div style="background: #fce8e6; color: #c0392b; padding: 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 25px; text-align: left; line-height: 1.5;">
-            {{ t('asset_scrap.modal_warning', lang) | safe }}
-        </div>
-        <form id="scrapForm" method="post" action=""></form>
-        <div class="slider-container" id="sliderContainer">
-            <div class="slider-track" id="sliderTrack">
-                <div class="slider-text" id="sliderText">{{ t('asset_scrap.slider_text', lang) }}</div>
-                <div class="slider-bg" id="sliderBg"></div>
-                <div class="slider-handle" id="sliderHandle">
-                    <i class="material-icons">double_arrow</i>
-                </div>
-            </div>
-        </div>
-        <div style="display: flex; gap: 15px; justify-content: center; margin-top: 25px;">
-            <button type="button" class="btn-primary" style="background: #f1f3f4; color: #555; box-shadow: none;" onclick="closeScrapModal()">{{ t('asset_scrap.btn_think_again', lang) }}</button>
-        </div>
-    </div>
-</div> #}
 {% endblock %}
 
 {% block extra_js %}
-<script type="application/json" id="userBookmarksData">
+{# <script type="application/json" id="userBookmarksData">
     {{ user_bookmarks | default([]) | tojson | safe }}
-</script>
+</script> #}
 
 <script>
     const CARD_I18N = {
@@ -245,9 +202,21 @@
         processing: "{{ t('card.processing', lang) }}",
         backend_fail: "{{ t('card.backend_fail', lang) }}",
         net_req_fail: "{{ t('card.net_req_fail', lang) }}",
-        unnamed_item: "{{ t('card.unnamed_item', lang) }}"
+        unnamed_item: "{{ t('card.unnamed_item', lang) }}",
+        category: "{{ t('card.category', lang) }}",
+        desc: "{{ t('card.desc', lang) }}",
+        location: "{{ t('card.location', lang) }}",
+        usage_1y: "{{ t('card.usage_1y', lang) }}",
+        warning_level: "{{ t('card.warning_level', lang) }}",
+        remarks: "{{ t('card.remarks', lang) }}",
+        edit: "{{ t('card.edit', lang) }}",
+        outbound: "{{ t('card.outbound', lang) }}",
+        request: "{{ t('card.request', lang) }}",
     };
     window.GLOBAL_SYS_VER = "{{ request.state.sys_ver }}";
+    window.INVENTORY_DATA = {};
+    window.USER_ROLE = "{{ user.role }}";
+    window.DEFER_GLOBAL_LOADER = true;
 </script>
 
 <script src="/static/js/inventory_card.js"></script>

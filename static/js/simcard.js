@@ -105,10 +105,13 @@ document.addEventListener('submit', async function(e){
         let result = await response.json();
         if (result.status === 'success') {
             showToast(result.message, 'success');
-            closeActionModal();
-            closeSimcardToggleModal();
-            closeSimcardEditModal();
-            closeActiveToggleModal();
+            if (form.id === 'simcardToggleForm' && window.closeSimcardToggleModal) window.closeSimcardToggleModal();
+            if (form.id === 'simcardEditForm' && window.closeSimcardEditModal) window.closeSimcardEditModal();
+            if (form.id === 'activeToggleForm' && window.closeActiveToggleModal) window.closeActiveToggleModal();
+            if (window.closeActionModal) window.closeActionModal();
+            // closeSimcardToggleModal();
+            // closeSimcardEditModal();
+            // closeActiveToggleModal();
 
             updateTableRow(result.data)
         }
@@ -142,9 +145,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         const response = await fetch('/api/simcard');
         const result = await response.json();
 
-        window.SIMCARD_DATA = result.data;
-        window.SIMCARD_TOTAL = result.simcard_total_count;
-        renderSimcard(result.data);
+        if (result.status === 'success') {
+            window.SIMCARD_DATA = result.data;
+            renderSimcard(result.data);
+            
+            // 修改左下指示灯
+            const indicator = document.getElementById('indicator');
+            const indicatorData = result.data;
+            console.log(indicatorData);
+            indicator.innerHTML = `
+                <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">sim_card</i>
+                ${BASE_I18N.asset_2}:
+                <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
+                    ${indicatorData.length || '-'}
+                </span>
+            `;
+        }
     } catch (error) {
         console.error("Data Loaded Fail", error);
         document.querySelector('.table-header').innerHTML = `<div style="text-align:center; color:red;">加载失败，请刷新重试</div>`;

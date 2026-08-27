@@ -65,6 +65,7 @@
         status_stop: "{{ t('asset_view.status_stop', lang) }}",
         status_in_stock: "{{ t('asset_view.status_in_stock', lang) }}",
         status_out_stock: "{{ t('asset_view.status_out_stock', lang) }}",
+        pending: "{{ t('log.status_pending', lang) }}",
         btn_take_out: "{{ t('asset_view.btn_take_out', lang) }}",
         btn_return_in: "{{ t('asset_view.btn_return_in', lang) }}",
         btn_edit: "{{ t('asset_view.btn_edit', lang) }}",
@@ -119,6 +120,7 @@
     };
     window.USER_ROLE = "{{ user.role }}";
     window.ASSET_DATA = {};
+    window.ASSET_REQUEST_DATA = {};
     window.SYS_VER = "{{ request.state.sys_ver }}";
     window.DEFER_GLOBAL_LOADER = true;
 </script>

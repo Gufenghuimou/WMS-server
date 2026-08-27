@@ -44,6 +44,32 @@ async def view_request_queue(request: Request, error: Optional[str] = None, curr
             asset_req_data.append({'req': req, 'asset': asset})
     return templates.TemplateResponse(request, 'request_queue.html', {'req_data': req_data, 'asset_req_data': asset_req_data, 'user': current_user, 'active_page': 'request_queue', 'error': error})
 
+@router.get("/api/request_queue")
+async def get_request_queue(request: Request, current_user: dict = Depends(get_current_user)):
+    with Session(engine) as session:
+        statement = select(OutboundRequest).where(OutboundRequest.status == 'Pending').order_by(OutboundRequest.created_at)
+        requests = session.exec(statement).all()
+        req_data = []
+        for req in requests:
+            item = session.get(InventoryItem, req.item_id)
+            req_data.append({'req': req, 'item': item})
+
+    with Session(engine) as session:
+        statement = select(AssetRequest).where(AssetRequest.status == 'Pending').order_by(AssetRequest.created_at)
+        requests = session.exec(statement).all()
+        asset_req_data = []
+        for req in requests:
+            asset = None
+            asset = session.exec(select(AssetItem).where(AssetItem.ctrl_no == req.ctrl_no)).first()
+            asset_req_data.append({'req': req, 'asset': asset})
+    return {
+        'status': 'success',
+        'data':{
+            'inv_req': req_data,
+            'asset_req': asset_req_data
+            }
+        }
+
 @router.post("/api/request_item/{item_id}")
 async def submit_outbound_request(
         request: Request,
@@ -155,11 +181,8 @@ async def submit_asset_request_pn(
     return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 @router.post('/request_queue/approve/{req_id}')
-async def approve_request(
-        req_id: int,
-        real_stock: int = Form(...),
-        current_user: dict = Depends(get_current_user),
-):
+async def approve_request(request: Request, req_id: int, real_stock: int = Form(...), current_user: dict = Depends(get_current_user)):
+    lang = request.state.lang
     with Session(engine) as session:
         req = session.get(OutboundRequest, req_id)
         if not req or req.status != 'Pending':
@@ -205,7 +228,7 @@ async def approve_request(
         update_single_usage(session,item.pn_1)
         session.commit()
 
-    return RedirectResponse(url= "/request_queue", status_code=303)
+    return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 @router.post("/request_queue/asset_approve/{req_id}")
 async def approve_asset_request(request: Request, req_id: int, target_location: str = Form(None), ctrl_nos: str=Form(None), current_user: dict = Depends(get_current_user)):

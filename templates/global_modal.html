@@ -311,13 +311,13 @@
 <!-- 物料申请审批时的Modal -->
 <div id="approveModal" class="custom-modal">
     <!-- 内容要求靠左对齐，设置 display: block -->
-    <div class="custom-modal-content" style="display: block; width: 450px;">
+    <div class="custom-modal-content" style="display: block; width: 450px; overflow-y: hidden;">
         <span class="close-modal" onclick="closeApproveModal()">&times;</span>
-        <h3 style="margin-top: 0; color: var(--primary-green); border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; align-items: center; gap: 10px; font-size: 1.5rem;">
+        <h3 style="margin-top: 0; color: var(--primary-green); border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; align-items: center; gap: 10px; font-size: 1.35rem;">
             <i class="material-icons" style="vertical-align: middle;">place</i>
-            <strong id="modalLocation"></strong>
+            <strong id="modalLocation" style="cursor: pointer;"></strong>
         </h3>
-        <form id="approveForm" method="post" onsubmit="return validateApproveForm(event)">
+        <form id="approveForm" method="post">
             <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee;">
                 <div style="margin-bottom: 8px; font-size: 1.2rem; color: #666;">{{ t('queue.item_pn', lang) }} <strong id="modalPn" style="color: #333;"></strong></div>
                 <div style="margin-bottom: 8px; font-size: 0.9rem; color: #666;">{{ t('queue.item_name', lang) }} <strong id="modalName" style="color: #333;"></strong></div>
@@ -491,7 +491,7 @@
         btn_stop: "{{ t('asset_view.btn_stop', lang) }}",
         dispatch_asset: "{{ t('queue.dispatch_asset', lang) }}",
         scan_area_label: "{{ t('queue.scan_area_label', lang) }}",
-        scab_area_note: "{{ t('queue.scab_area_note', lang) }}",
+        scab_area_note: "{{ t('queue.scan_area_note', lang) }}",
         confirm_return: "{{ t('queue.confirm_return', lang) }}",
         target_location: "{{ t('queue.target_location', lang) }}",
         target_location_ph: "{{ t('queue.target_location_ph', lang) }}",

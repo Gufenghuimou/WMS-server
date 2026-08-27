@@ -43,7 +43,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for item in items %}
+                {# {% for item in items %}
                 {% set is_alarming = item.warning_level > 0 and item.stock <= item.warning_level %}
 
                 <tr class="main-row" data-id="{{ item.id }}" id="row-{{ item.id }}">
@@ -140,44 +140,34 @@
                         </div>
                     </td>
                 </tr>
-                {% endfor %}
+                {% endfor %} #}
             </tbody>
         </table>
     </div>
 </div>
-
-{# <div id="scrapModal" class="modal-overlay">
-    <div class="modal-box" style="width: 380px; text-align: center; padding: 30px 25px;">
-        <i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red); margin-bottom: 10px; width: auto; height: auto; line-height: 1;">report_problem</i>
-        <h3 style="margin-top: 0; color: #333; font-size: 1.3rem;">{{ t('asset_scrap.modal_title', lang) }}</h3>
-        <div style="background: #fce8e6; color: #c0392b; padding: 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 25px; text-align: left; line-height: 1.5;">
-            {{ t('asset_scrap.modal_warning', lang) | safe }}
-        </div>
-        <form id="scrapForm" method="post" action=""></form>
-        <div class="slider-container" id="sliderContainer">
-            <div class="slider-track" id="sliderTrack">
-                <div class="slider-text" id="sliderText">{{ t('asset_scrap.slider_text', lang) }}</div>
-                <div class="slider-bg" id="sliderBg"></div>
-                <div class="slider-handle" id="sliderHandle">
-                    <i class="material-icons">double_arrow</i>
-                </div>
-            </div>
-        </div>
-        <div style="display: flex; gap: 15px; justify-content: center; margin-top: 25px;">
-            <button type="button" class="btn-primary" style="background: #f1f3f4; color: #555; box-shadow: none;" onclick="closeScrapModal()">{{ t('asset_scrap.btn_think_again', lang) }}</button>
-        </div>
-    </div>
-</div> #}
 {% endblock %}
 
 {% block extra_js %}
 <script>
     const TABLE_I18N = {
         net_err_save: "{{ t('table.net_err_save', lang) }}",
-        scrap_warn: `{{ t('card.scrap_warn', lang) }}`
+        scrap_warn: "{{ t('card.scrap_warn', lang) }}",
+        alarm_yes: "{{ t('table.alarm_yes', lang) }}",
+        alarm_no: "{{ t('table.alarm_no', lang) }}",
+        description_2: "{{ t('inv.description_2', lang) }}",
+        description_1: "{{ t('inv.description_1', lang) }}",
+        remarks: "{{ t('inv.remarks', lang) }}",
+        total_in: "{{ t('inv.total_in', lang) }}",
+        total_out: "{{ t('inv.total_out', lang) }}",
+        scrap_btn: "{{ t('table.scrap_btn', lang) }}",
+        save_btn: "{{ t('table.save_btn', lang) }}",
+        cancel_btn: "{{ t('table.cancel_btn', lang) }}",
+        edit_btn: "{{ t('table.edit_btn', lang) }}",
     };
+    window.GLOBAL_SYS_VER = "{{ request.state.sys_ver }}";
+    window.INV_TAB_DATA = {};
     window.USER_ROLE = "{{ user.role }}";
-    window.SYS_VER = "{{ request.state.sys_ver }}";
+    window.DEFER_GLOBAL_LOADER = true;
 </script>
 <script src="/static/js/inventory_table.js"></script>
 {% endblock %}

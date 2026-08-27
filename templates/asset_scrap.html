@@ -65,7 +65,7 @@
                         </tr>
                     </thead>
                     <tbody id="scrapList">
-                        <tr id="emptyState">
+                        {# <tr id="emptyState">
                             <td colspan="6" style="text-align: center; padding: 80px 20px; color: var(--text-muted); border: none;">
                                 <i class="material-icons" style="font-size: 4rem; color: #e0e0e0; display: block; margin-bottom: 15px;">document_scanner</i>
                                 <span style="font-size: 1.1rem;">{{ t('asset_scrap.empty_table', lang) }}</span>
@@ -91,7 +91,7 @@
                                 </button>
                             </td>
                         </tr>
-                        {% endfor %}
+                        {% endfor %} #}
                     </tbody>
                 </table>
             </div>
@@ -134,8 +134,15 @@
         fetch_net_error: "{{ t('asset_scrap.fetch_net_error', lang) }}",
         scan_net_error: "{{ t('asset_scrap.scan_net_error', lang) }}",
         destroying: "{{ t('asset_scrap.destroying', lang) }}",
-        slider_text: "{{ t('asset_scrap.slider_text', lang) }}"
+        slider_text: "{{ t('asset_scrap.slider_text', lang) }}",
+        empty_table: "{{ t('asset_scrap.empty_table', lang) }}",
+        title_remove: "{{ t('asset_scrap.title_remove', lang) }}",
     };
 </script>
 <script src="/static/js/asset_scrap.js"></script>
+<script>
+    window.USER_ROLE = "{{ user.role }}";
+    window.DEFER_GLOBAL_LOADER = true;
+    window.ASSET_SCRAP_DATA = {};
+</script>
 {% endblock %}

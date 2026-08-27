@@ -333,6 +333,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.auditedLocations = aduitData.audited_locations;
 
             renderAssetAudit(aduitData.grouped);
+
+            // 修改左下指示灯
+            const indicator = document.getElementById('indicator');
+            const indicatorData = aduitData.stats;
+            indicator.innerHTML = `
+                <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">barcode_reader</i>
+                ${BASE_I18N.asset_audit}:
+                <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
+                    ${ indicatorData.progress || 0 }% (${indicatorData.completed || 0}/${indicatorData.total || 0})
+                </span>
+            `;
         }
     } catch (error) {
         console.error("Data Loaded Fail", error);

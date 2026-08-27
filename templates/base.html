@@ -119,9 +119,9 @@
                 </div>
             </div>
 
-            <div style="background: rgba(255,255,255,0.08); padding: 6px 18px; border-radius: 20px; font-size: 0.85rem; color: #e0e0e0; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+            <div id="indicator" style="background: rgba(255,255,255,0.08); padding: 6px 18px; border-radius: 20px; font-size: 0.85rem; color: #e0e0e0; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
 
-                {% if active_page == 'inventory' %}
+                {# {% if active_page == 'inventory' %}
                     <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">inventory_2</i>
                     {{ t('status.inventory_cards', lang) }}:
                     <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
@@ -220,7 +220,7 @@
                 {% else %}
                     <i class="material-icons" style="font-size: 1.1rem; color: var(--primary-green);">check_circle</i>
                     {{ t('status.base', lang) }}
-                {% endif %}
+                {% endif %} #}
             </div>
 
         </div>
@@ -327,7 +327,16 @@
         network_error_qr: "{{ t('base.network_error_qr', lang) }}",
         chat_note: "{{ t('base.chat_note', lang) }}",
         admin_tag: "{{ t('base.admin_tag', lang) }}",
-        send_fail: "{{ t('base.send_fail', lang) }}"
+        send_fail: "{{ t('base.send_fail', lang) }}",
+        asset_audit: "{{ t('status.asset_audit', lang) }}",
+        asset_history: "{{ t('status.asset_history', lang) }}",
+        asset_1: "{{ t('status.asset_1', lang) }}",
+        asset_2: "{{ t('status.asset_2', lang) }}",
+        audit: "{{ t('status.audit', lang) }}",
+        history: "{{ t('status.history', lang) }}",
+        asset_scrap: "{{ t('status.asset_scrap', lang) }}",
+        inventory_cards: "{{ t('status.inventory_cards', lang) }}",
+        inventory_table: "{{ t('status.inventory_table', lang) }}",
     };
 </script>
 
