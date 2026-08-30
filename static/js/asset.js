@@ -199,7 +199,6 @@ document.addEventListener('submit', async function(e) {
         });
 
         let result = await response.json();
-        console.log(result);
 
         if (result.status === 'success') {
             showToast(result.message || 'Success!', 'success');

@@ -561,12 +561,28 @@ window.closeShowImgModal = function() {
 
 // Asset 操作按钮模态框控制开始
 window.openActionModal = async function(groupId, itemId) {
-    const response = await fetch(`/api/status_check/${itemId}`, {method: 'POST'});
-    const result = await response.json();
+    try {
+        const response = await fetch(`/api/status_check/${itemId}`, {method: 'POST'});
+        const result = await response.json();
 
-    if (result.status !== 'success') {
-        showToast(result.message, 'error');
-        setTimeout(() => {location.reload()}, 400);
+        if (result.status !== 'success') {
+            showToast(result.message, 'error');
+
+            let groupData = window.ASSET_DATA[groupId];
+            if (groupData && groupData.items) {
+                let item = groupData.items.find(i => i.id === itemId);
+                if (item) {
+                    item.is_request = true;
+                }
+            }
+            window.switchAssetType(groupId);
+            // setTimeout(() => {location.reload()}, 400);
+            return;
+        }
+    } catch (err) {
+        showToast('Network error during status check', 'error');
+        console.error("Status check failed:", err);
+        return;
     }
 
     let groupData = window.ASSET_DATA[groupId];
