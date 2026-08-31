@@ -28,9 +28,9 @@ router = APIRouter(tags=["Assets"])
 # -----------------------------资产信息--------------------------#
 
 # TemplateResponse 不能返回Json，所以TamplateResponse 和 JSONResponse 分开写
-@router.get("/asset", response_class=HTMLResponse)
-async def get_asset_page(request: Request, current_user: dict = Depends(get_current_user)):
-    return templates.TemplateResponse(request, "asset.html", {'user': current_user, 'active_page': 'asset'})
+# @router.get("/asset", response_class=HTMLResponse)
+# async def get_asset_page(request: Request, current_user: dict = Depends(get_current_user)):
+#     return templates.TemplateResponse(request, "asset.html", {'user': current_user, 'active_page': 'asset'})
 
 @router.get("/api/asset")
 async def get_asset(request: Request, query: Optional[str] = None, current_user: dict = Depends(get_current_user)):
@@ -352,7 +352,7 @@ async def import_asset(request: Request, file: UploadFile = File(...), current_u
     except Exception as e:
         return {"error": t_lang("do.read_excel_error", lang, error=str(e))}
 
-@router.get("/asset/export")
+@router.get("/api/asset/export")
 def asset_export(request: Request, current_user: dict = Depends(get_current_user)):
     lang = request.state.lang
     with Session(engine) as session:
@@ -386,7 +386,7 @@ def asset_export(request: Request, current_user: dict = Depends(get_current_user
         }
         return StreamingResponse(output, headers=headers, media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
-@router.get("/asset/export_summary")
+@router.get("/api/asset/export_summary")
 def asset_export_summary(request: Request, current_user: dict = Depends(get_current_user)):
     with Session(engine) as session:
         all_assets = session.exec(select(AssetItem)).all()
@@ -451,9 +451,9 @@ def asset_export_summary(request: Request, current_user: dict = Depends(get_curr
 
 # -----------------------------资产登记--------------------------#
 
-@router.get("/asset_stock_in", response_class=HTMLResponse)
-async def asset_stock_in(request: Request, current_user: dict = Depends(get_current_user)):
-    return templates.TemplateResponse(request, "asset_stock_in.html", {"request": request, "user": current_user, "active_page": "asset_stock_in"})
+# @router.get("/asset_stock_in", response_class=HTMLResponse)
+# async def asset_stock_in(request: Request, current_user: dict = Depends(get_current_user)):
+#     return templates.TemplateResponse(request, "asset_stock_in.html", {"request": request, "user": current_user, "active_page": "asset_stock_in"})
 
 @router.get("/api/asset/next_seq")
 async def get_next_asset_seq():
@@ -529,9 +529,9 @@ async def asset_batch_submit(
 
 # -----------------------------资产报废--------------------------#
 
-@router.get("/asset_scrap", response_class=HTMLResponse)
-async def asset_scrap(request: Request, current_user: dict = Depends(get_current_user)):
-    return templates.TemplateResponse(request, "asset_scrap.html", {"request": request, "user": current_user, "active_page": "asset_scrap"})
+# @router.get("/asset_scrap", response_class=HTMLResponse)
+# async def asset_scrap(request: Request, current_user: dict = Depends(get_current_user)):
+#     return templates.TemplateResponse(request, "asset_scrap.html", {"request": request, "user": current_user, "active_page": "asset_scrap"})
 
 @router.get("/api/asset_scrap")
 async def get_asset_scrap(request: Request, current_user: dict = Depends(get_current_user)):
@@ -752,9 +752,9 @@ def asset_scrap_export(request: Request, current_user: dict = Depends(get_curren
 
     # -----------------------------资产变动--------------------------#
 
-@router.get('/asset_history', response_class=HTMLResponse)
-async def asset_history(request: Request, current_user: dict = Depends(get_current_user)):
-    return templates.TemplateResponse(request, "asset_history.html", {"request": request, 'user': current_user, 'active_page': 'asset_history'})
+# @router.get('/asset_history', response_class=HTMLResponse)
+# async def asset_history(request: Request, current_user: dict = Depends(get_current_user)):
+#     return templates.TemplateResponse(request, "asset_history.html", {"request": request, 'user': current_user, 'active_page': 'asset_history'})
 
 @router.get("/api/asset_history")
 async def get_asset_history(request: Request, current_user: dict = Depends(get_current_user)):
@@ -828,9 +828,9 @@ async def asset_history_import(request: Request, file: UploadFile = File(...), c
 
 # -----------------------------资产盘点--------------------------#
 
-@router.get("/asset_audit/dashboard", response_class=HTMLResponse)
-async def view_asset_audit(request: Request, current_user: dict = Depends(get_current_user)):
-    return templates.TemplateResponse(request, "asset_audit.html", {"request": request, "user": current_user, "active_page": "asset_audit"})
+# @router.get("/asset_audit/dashboard", response_class=HTMLResponse)
+# async def view_asset_audit(request: Request, current_user: dict = Depends(get_current_user)):
+#     return templates.TemplateResponse(request, "asset_audit.html", {"request": request, "user": current_user, "active_page": "asset_audit"})
 
 # @router.get("/asset_audit/dashboard", response_class=HTMLResponse)
 # async def view_asset_audit(request: Request, current_user: dict = Depends(get_current_user)):

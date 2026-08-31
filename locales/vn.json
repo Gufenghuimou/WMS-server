@@ -120,7 +120,7 @@
     "status_online": "Đang Online",
     "confirm_reset_pwd": "Bạn có chắc muốn reset mật khẩu cho TK [{username}] về 123456 không?",
     "btn_reset_pwd": "Reset Mật khẩu",
-    "confirm_delete_user": "Cảnh báo nguy hiểm:\n\nBạn có chắc muốn xóa vĩnh viễn TK [{username}] không? Thao tác không thể hoàn tác!",
+    "confirm_delete_user": "Cảnh báo nguy hiểm:\\n\\nBạn có chắc muốn xóa vĩnh viễn TK [{username}] không? Thao tác không thể hoàn tác!",
     "btn_delete_user": "Xóa TK",
     "system_init": "Khởi tạo dữ liệu / Ghi đè hàng loạt",
     "warning_init": "<b>Chú ý:</b> Thao tác này sẽ ghi đè CSDL, <b>XÓA SẠCH toàn bộ dữ liệu hiện tại</b> và thay thế bằng nội dung Excel. Để nhập kho hàng ngày, dùng mục [Nhập kho nhanh] bên trái.",

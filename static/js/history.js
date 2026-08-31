@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 let filterData = window.HISTORY_DATA.filter(log => {
-                    let searchKey = `${log.ctrl_no || ''} ${log.pn_1 || ''} ${log.name || ''} ${log.applicant || ''} ${log.department || ''} ${log.note || ''}`.toLowerCase();
+                    let searchKey = `${log.date || ''} ${log.pn_1 || ''} ${log.pn_2 || ''} ${log.name || ''} ${log.applicant || ''} ${log.department || ''} ${log.note || ''}`.toLowerCase();
                     return searchKey.includes(term);
                 }); 
                 renderHistory(filterData);

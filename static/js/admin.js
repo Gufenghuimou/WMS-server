@@ -370,3 +370,86 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('click', () => { if(paletteBox) paletteBox.style.display = 'none'; });
     }
 });
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const response = await fetch('/api/users_list');
+        const result = await response.json();
+        if (result.status === 'success') {
+            const usersData = result.data;
+            window.USERS_LIST = usersData.users_list;
+            renderUsers(usersData.users_list);
+            // 修改指示灯
+            const indicator = document.getElementById('indicator');
+            indicator.innerHTML = `
+                <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">group</i>
+                ${ADMIN_I18N.admin}:
+                <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
+                    ${usersData.users_list.length || '-'}
+                </span>
+            `;
+        }
+    } catch (error) {
+        console.error("Data Loaded Fail", error);
+        document.querySelector('tbody').innerHTML = `<div style="text-align:center; color:red;">加载失败，请刷新重试</div>`;
+    } finally {
+        if (typeof window.hideGlobalLoader === 'function') {
+            setTimeout(window.hideGlobalLoader, 50);
+        }
+    }
+});
+
+function renderUsers(data) {
+    const tBody = document.querySelector('tbody');
+    if (!tBody) return;
+    if (!data || data.length === 0) {
+        tBody.innerHTML = `
+            <tr>
+                <td colspan="9" style="text-align:center; padding: 40px 20px; color: #999;">
+                    <i class="material-icons" style="font-size: 3rem; opacity: 0.5;">inbox</i>
+                    <p>暂无数据</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    const rowsHtml = data.map(u => {
+        let userBadge = `<span style="background: rgba(46, 125, 50, 0.1); color: #2e7d32; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">${ADMIN_I18N.badge_operator}</span>`;
+        if (u.role === 'superadmin') {
+            userBadge = `<span style="background: rgba(217, 48, 37, 0.1); color: #d93025; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">${ADMIN_I18N.badge_superadmin}</span>`;
+        } else if (u.role === 'admin') {
+            userBadge = `<span style="background: rgba(230, 81, 0, 0.1); color: #e65100; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">${ADMIN_I18N.badge_admin}</span>`;
+        }
+        let actionBtn = `
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <form action="/admin/reset_password" method="post" class="async-form" style="margin: 0;" data-confirm="${ADMIN_I18N.confirm_reset_pwd.replace('{username}', u.username)}">
+                    <input type="hidden" name="target_username" value="${u.username}">
+                    <button type="submit" class="btn-primary btn-sm" style="background: #f39c12;">
+                        <i class="material-icons" style="font-size: 1.1rem;">lock_reset</i> ${ADMIN_I18N.btn_reset_pwd}
+                    </button>
+                </form>
+
+                <form action="/delete_user/${u.id}" method="post" class="async-form" style="margin: 0;" data-confirm="${ADMIN_I18N.confirm_delete_user.replace('{username}', u.username)}">
+                    <input type="hidden" name="username" value="${u.username}">
+                    <button type="submit" class="btn-primary btn-sm" style="background: var(--danger-red);">
+                        <i class="material-icons" style="font-size: 1.1rem;">person_remove</i> ${ADMIN_I18N.btn_delete_user}
+                    </button>
+                </form>
+            </div>
+        `;
+        if (u.username === window.CURRENT_USER.username) {
+            actionBtn = `<span style="color: #1db954; font-weight: bold; font-size: 0.9rem; padding-right: 15px;">${ADMIN_I18N.status_online}</span>`;
+        }
+        return `
+            <tr>
+                <td style="color: #999;">${u.id}</td>
+                <td style="font-weight: bold;">${u.username}</td>
+                <td>${u.full_name}</td>
+                <td>${userBadge}</td>
+                <td style="text-align: right;">${actionBtn}</td>
+            </tr>
+        `;
+    }).join('');
+    tBody.innerHTML = rowsHtml;
+}

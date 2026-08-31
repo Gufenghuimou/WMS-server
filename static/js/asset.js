@@ -327,7 +327,14 @@ window.updateMiniChartUI = function (groupId) {
     `
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
+window.initAssetPage = async function () {
+    const topActionsContainer = document.querySelector('.top-actions');
+    const pageActions = document.querySelector('.page-top-actions');
+    if (pageActions) {
+        topActionsContainer.innerHTML = pageActions.innerHTML;
+        pageActions.remove();
+    }
+    
     try {
         const response = await fetch('/api/asset');
         const result = await response.json();
@@ -361,7 +368,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             setTimeout(window.hideGlobalLoader, 50);
         }
     }
-});
+};
 
 function renderAssetCards(data) {
     const isAdmin = (window.USER_ROLE === 'superadmin' || window.USER_ROLE === 'admin');

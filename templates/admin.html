@@ -38,7 +38,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for u in users_list %}
+            {# {% for u in users_list %}
             <tr>
                 <td style="color: #999;">{{ u.id }}</td>
                 <td style="font-weight: bold;">{{ u.username }}</td>
@@ -74,7 +74,7 @@
                     {% endif %}
                 </td>
             </tr>
-            {% endfor %}
+            {% endfor %} #}
         </tbody>
     </table>
 </div>
@@ -188,13 +188,29 @@
     const ADMIN_I18N = {
         selected_count: "{{ t('admin.selected_count', lang) }}",
         new_rack_name: "{{ t('admin.new_rack_name', lang) }}",
-        confirm_deploy: `{{ t('admin.confirm_deploy', lang) }}`,
+        confirm_deploy: "{{ t('admin.confirm_deploy', lang) }}",
         deploy_success: "{{ t('admin.deploy_success', lang) }}",
         deploy_fail: "{{ t('admin.deploy_fail', lang) }}",
         processing: "{{ t('admin.processing', lang) }}",
         success: "{{ t('admin.success', lang) }}",
-        net_error: "{{ t('admin.net_error', lang) }}"
+        net_error: "{{ t('admin.net_error', lang) }}",
+        admin: "{{ t('status.admin', lang) }}",
+        badge_superadmin: "{{ t('admin.badge_superadmin', lang) }}",
+        badge_admin: "{{ t('admin.badge_admin', lang) }}",
+        badge_operator: "{{ t('admin.badge_operator', lang) }}",
+        status_online: "{{ t('admin.status_online', lang) }}",
+        confirm_reset_pwd: "{{ t('admin.confirm_reset_pwd', lang) }}",
+        btn_reset_pwd: "{{ t('admin.btn_reset_pwd', lang) }}",
+        confirm_delete_user: "{{ t('admin.confirm_delete_user', lang) }}",
+        btn_delete_user: "{{ t('admin.btn_delete_user', lang) }}",
     };
+    window.USERS_LIST = {};
+    window.SYS_VER = "{{ request.state.sys_ver }}";
+    window.DEFER_GLOBAL_LOADER = true;
+    window.CURRENT_USER = {
+            username: "{{ user.username }}",
+            role: "{{ user.role }}"
+        };
 </script>
 <script src="/static/js/admin.js"></script>
 {% endblock %}

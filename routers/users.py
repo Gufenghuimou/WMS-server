@@ -71,14 +71,29 @@ async def process_login(request: Request, username: str = Form(...), password: s
             error_msg = t_lang("login.error", lang)
             return templates.TemplateResponse(request, "login.html", {"error": error_msg ,"lang": lang})
 
-@router.get("/backend", response_class=HTMLResponse)
-async def admin_dashboard(request: Request, current_user:dict = Depends(require_superadmin)):
+# @router.get("/backend", response_class=HTMLResponse)
+# async def admin_dashboard(request: Request, current_user:dict = Depends(require_superadmin)):
+#     with Session(engine) as session:
+#         user_list = []
+#         users = session.exec(select(User)).all()
+#         for user in users:
+#             user_list.append(user)
+#     return templates.TemplateResponse(request, "admin.html", {"user": current_user, 'users': users, 'users_list': user_list, "active_page": "backend"})
+
+@router.get("/api/users_list")
+async def get_users_list(request: Request, current_user: dict = Depends(get_current_user)):
     with Session(engine) as session:
-        user_list = []
+        users_list = []
         users = session.exec(select(User)).all()
         for user in users:
-            user_list.append(user)
-    return templates.TemplateResponse(request, "admin.html", {"user": current_user, 'users': users, 'users_list': user_list, "active_page": "backend"})
+            users_list.append(user)
+    return {
+        'status': 'success',
+        'data': {
+            'users': users,
+            'users_list': users_list
+        }
+    }
 
 @router.get("/logout")
 async def logout(request: Request):

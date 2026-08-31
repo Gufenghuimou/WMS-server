@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title data-i18n="title.base">WMS System</title>
+    <link rel="stylesheet" href="/static/css/admin.css">
+    <link rel="stylesheet" href="/static/css/asset.css">
+    <link rel="stylesheet" href="/static/css/asset_audit.css">
+    <link rel="stylesheet" href="/static/css/asset_history.css">
+    <link rel="stylesheet" href="/static/css/asset_scrap.css">
+    <link rel="stylesheet" href="/static/css/asset_stock_in.css">
+    <link rel="stylesheet" href="/static/css/audit.css">
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="/static/css/cropper.min.csss">
+    <link rel="stylesheet" href="/static/css/global_modal.css">
+    <link rel="stylesheet" href="/static/css/history.css">
+    <link rel="stylesheet" href="/static/css/inventory_card.css">
+    <link rel="stylesheet" href="/static/css/inventory_table.css">
+    <link rel="stylesheet" href="/static/css/login.css">
+    <link rel="stylesheet" href="/static/css/request_log.css">
+    <link rel="stylesheet" href="/static/css/request_queue.css">
+    <link rel="stylesheet" href="/static/css/settings.css">
+    <link rel="stylesheet" href="/static/css/simcard.css">
+    <link rel="stylesheet" href="/static/css/simcard_history.css">
+    <link rel="stylesheet" href="/static/css/simcard_stock_in.css">
+    <link rel="stylesheet" href="/static/css/stock_in.css">
+    <script src="/static/js/admin.js"></script>
+    <script src="/static/js/asset.js"></script>
+    <script src="/static/js/asset_audit.js"></script>
+    <script src="/static/js/asset_history.js"></script>
+    <script src="/static/js/asset_scrap.js"></script>
+    <script src="/static/js/asset_stock_in.js"></script>
+    <script src="/static/js/audit.js"></script>
+    <script src="/static/js/base.js"></script>
+    <script src="/static/js/cropper.min.js"></script>
+    <script src="/static/js/global_modal.js"></script>
+    <script src="/static/js/history.js"></script>
+    <script src="/static/js/html5-qrcode.min.js"></script>
+    <script src="/static/js/index.js"></script>
+    <script src="/static/js/inventory_card.js"></script>
+    <script src="/static/js/inventory_table.js"></script>
+    <script src="/static/js/login.js"></script>
+    <script src="/static/js/qrious.min.js"></script>
+    <script src="/static/js/request_log.js"></script>
+    <script src="/static/js/request_queue.js"></script>
+    <script src="/static/js/settings.js"></script>
+    <script src="/static/js/simcard.js"></script>
+    <script src="/static/js/simcard_history.js"></script>
+    <script src="/static/js/simcard_stock_in.js"></script>
+    <script src="/static/js/stock_in.js"></script>
+</head>
+<body class="is-loading">
+    <div id="global-page-loader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text" data-i18n="base.loading">Loading</div>
+    </div>
+
+    <nav class="sidebar">
+        <a href="/settings" class="user-profile" data-link="" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 12px; margin-bottom: 30px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+            <div class="avatar" style="width: 72px; height: 72px; min-width: 36px; overflow: hidden; background: #282828; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                <img id="navUserAvatar" class="user-avatar" src="/static/avatars/default.jpg" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <i class="material-icons" style="display:none; color:#777; font-size: 20px;">person</i>
+            </div>
+
+            <div class="user-info" style="flex: 1; overflow: hidden;">
+                <div id="navUserName" class="user-name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.95rem; color: var(--text-white); font-weight: 500;">
+                    Loading...
+                </div>
+                <div id="navUserRole" class="user-role" >...</div>
+            </div>
+        </a>
+        <div class="nav-menu">
+            <div class="nav-group-title" data-i18n="base.request">Request</div>
+            <a href="/request_queue" class="nav-item auth-admin" data-link>
+                <i class="material-icons">notifications</i><span data-i18n="title.request_queue">Request Queue</span>
+                <span id="badge-pending" style="display: none; background-color: var(--danger-red); color: white; border-radius: 12px; padding: 4px 7px; font-size: 0.8rem; font-weight: bold; margin-left: auto;"></span>
+            </a>
+            <a href="/request_log" class="nav-item" data-link><i class="material-icons">list_alt</i><span data-i18n="title.request_log">Request Log</span></a>
+            <div class="nav-group-title" data-i18n="base.inventory">Inventory</div>
+            <a href="/all" class="nav-item" data-link><i class="material-icons">inventory_2</i><span data-i18n="title.inventory_cards">Inventory Cards</span></a>
+            <a href="/inventory_table" class="nav-item auth-admin" data-link><i class="material-icons">view_list</i><span data-i18n="title.inventory_table">Inventory Table</span></a>
+            <a href="/stock_in" class="nav-item auth-admin" data-link><i class="material-icons">add_box</i><span data-i18n="title.stock_in">Stock In</span></a>
+            <a href="/history" class="nav-item auth-admin" data-link><i class="material-icons">history</i><span data-i18n="title.history">History</span></a>
+            <a href="/audit" class="nav-item auth-admin" data-link><i class="material-icons">fact_check</i><span data-i18n="title.audit">Audit</span></a>
+            <div class="nav-group-title" data-i18n="base.asset">Asset</div>
+            <a href="/asset" class="nav-item" data-link><i class="material-icons">devices</i><span data-i18n="title.asset">Asset</span></a>
+            <a href="/asset_stock_in" class="nav-item auth-admin" data-link><i class="material-icons">app_registration</i><span data-i18n="title.asset_stock_in">Asset Stock In</span></a>
+            <a href="/asset_history" class="nav-item auth-admin" data-link><i class="material-icons">manage_history</i><span data-i18n="title.asset_history">Asset History</span></a>
+            <a href="/asset_audit/dashboard" class="nav-item auth-admin" data-link><i class="material-icons">barcode_reader</i><span data-i18n="title.asset_audit">Asset Audit</span></a>
+            <a href="/asset_scrap" class="nav-item auth-admin" data-link><i class="material-icons">playlist_remove</i><span data-i18n="title.asset_scrap">Asset Scrap</span></a>
+            <div class="nav-group-title auth-admin" data-i18n="base.simcard">Simcard</div>
+            <a href="/simcard" class="nav-item" data-link><i class="material-icons">sim_card</i><span data-i18n="title.simcard">Simcard</span></a>
+            <a href="/simcard_stock_in" class="nav-item" data-link><i class="material-icons">add_box</i><span data-i18n="title.simcard_stock_in">Simcard Stock In</span></a>
+            <a href="/simcard_history" class="nav-item" data-link><i class="material-icons">history</i><span data-i18n="title.simcard_history">Simcard History</span></a>
+            <div class="nav-group-title" data-i18n="base.system">System</div>
+            <a href="/backend" class="nav-item auth-superadmin" data-link><i class="material-icons">admin_panel_settings</i><span data-i18n="title.admin">Admin</span></a>
+        </div>
+    </nav>
+    <main class="main-area">
+        <header class="top-bar" style="display: flex; align-items: center;">
+            <div class="gerenal-actions" style="display: flex; align-items: center;">
+                <button type="button" class="btn-primary auth-admin" onclick="openMobileUploadAuth(event)" style="background-color: #8e44ad; border-radius: 20px; gap: 8px; min-width: 135px;" data-i18n="title.mobile_quick_upload">
+                    <i class="material-icons" style="font-size: 1.2rem;">phone_iphone</i>Mobile Quick Upload
+                </button>
+                <button type="button" class="btn-primary auth-admin" id="openReprint" onclick="openReprintModal()" style="background-color: #3498db; border-radius: 20px; gap: 8px; margin-left: 16px; min-width: 135px;" data-i18n="title.reprint">
+                    <div id="printerStatusBadge" style="display: flex; align-items: center; border: none;">
+                        <span id="printerDot" style="width: 10px; height: 10px; border-radius: 50%; background: #ccc; transition: all 0.3s ease;"></span>
+                    </div>
+                    <i class="material-icons" style="font-size: 1.2rem;">print</i>Reprint
+                </button>
+                <div class="search-box" style="margin-left: 16px;">
+                    <i class="material-icons" style="color: #888;">search</i>
+                    <input type="text" id="globalSearch" data-i18n-placeholder="base.search_placeholder">
+                    <button type="button" id="clearBtn" class="material-icons" style="border: none; background-color: #fff; cursor: pointer; display: none;">clear</button>
+                </div>
+            </div>
+
+            <div class="top-actions"></div>
+
+        </header>
+
+        <div id="router-view" class="content-scroll-area"></div>
+    </main>
+</body>
+</html>

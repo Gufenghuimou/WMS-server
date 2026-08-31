@@ -42,9 +42,9 @@ router = APIRouter(tags=["Simcard"])
 
 #     return templates.TemplateResponse(request, "simcard.html", {"request": request, "items": items, 'query': query, 'user': current_user, 'active_page': 'simcard', 'simcard_total_count': total})
 
-@router.get("/simcard", response_class=HTMLResponse)
-async def get_simcard(request: Request, current_user: dict = Depends(get_current_user)):
-    return templates.TemplateResponse(request, "simcard.html", {'user': current_user, 'active_page': 'simcard'})
+# @router.get("/simcard", response_class=HTMLResponse)
+# async def get_simcard(request: Request, current_user: dict = Depends(get_current_user)):
+#     return templates.TemplateResponse(request, "simcard.html", {'user': current_user, 'active_page': 'simcard'})
 
 @router.get("/api/simcard")
 async def get_simcard_api(request: Request, query: Optional[str] = None, current_user: dict = Depends(get_current_user)):
@@ -212,9 +212,9 @@ async def simcard_active_toggle(
             'message': t_lang("do.success", lang)
         }
 
-@router.get("/simcard_stock_in", response_class=HTMLResponse)
-async def simcard_stock_in(request: Request,current_user: dict = Depends(get_current_user)):
-    return templates.TemplateResponse(request, "simcard_stock_in.html", {"request": request, "user": current_user, 'active_page': 'simcard_stock_in'})
+# @router.get("/simcard_stock_in", response_class=HTMLResponse)
+# async def simcard_stock_in(request: Request,current_user: dict = Depends(get_current_user)):
+#     return templates.TemplateResponse(request, "simcard_stock_in.html", {"request": request, "user": current_user, 'active_page': 'simcard_stock_in'})
 
 @router.post("/simcard_batch_submit")
 async def simcard_batch_submit(
@@ -298,9 +298,9 @@ async def simcard_delete(request: Request, item_id: int, current_user: dict = De
             redirect_url = referer if referer else "/all"
     return RedirectResponse(url=redirect_url, status_code=303)
 
-@router.get("/simcard_history", response_class=HTMLResponse)
-async def simcard_history(request: Request, current_user: dict = Depends(get_current_user)):
-    return templates.TemplateResponse(request, "simcard_history.html", {'user': current_user, 'active_page': 'simcard_history'})
+# @router.get("/simcard_history", response_class=HTMLResponse)
+# async def simcard_history(request: Request, current_user: dict = Depends(get_current_user)):
+#     return templates.TemplateResponse(request, "simcard_history.html", {'user': current_user, 'active_page': 'simcard_history'})
 
 @router.get("/api/simcard_history")
 async def get_simcard_history(request: Request, current_user: dict = Depends(get_current_user)):

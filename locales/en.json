@@ -120,7 +120,7 @@
     "status_online": "Currently Online",
     "confirm_reset_pwd": "Are you sure you want to force reset the password for account [{username}] to 123456?",
     "btn_reset_pwd": "Reset Password",
-    "confirm_delete_user": "Dangerous Operation:\n\nAre you sure you want to permanently wipe the account [{username}]? This action is irreversible!",
+    "confirm_delete_user": "Dangerous Operation:\\n\\nAre you sure you want to permanently wipe the account [{username}]? This action is irreversible!",
     "btn_delete_user": "Wipe Account",
     "system_init": "System Data Initialization / Batch Overwrite",
     "warning_init": "<b>Notice:</b> Operations in this area overwrite the underlying database, <b>clearing all current data</b> and replacing it with Excel content. For daily inbound tasks, use the [Quick Inbound] function on the left menu.",

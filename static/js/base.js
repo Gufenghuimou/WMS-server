@@ -880,3 +880,49 @@ window.takeoverLockScreen = function(message) {
         overlay.querySelector('.lock-container').appendChild(btn);
     }
 };
+
+window.CURRENT_USER = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+    await initApplication();
+});
+
+async function initApplication() {
+    try {
+        const response = await fetch('');
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            const context = result.data;
+            window.CURRENT_USER = context.user;
+
+            document.getElementById('navUserName').innerText = context.user.full_name;
+            document.getElementById('navUserRole').innerText = context.user.role;
+            document.getElementById('navUserAvatar').src = `/static/avatars/${context.user.username}.jpg`;
+
+            applyRolePermissions(context.user.role);
+
+            document.body.classList.remove('is-loading');
+            document.getElementById('global-page-loader').style.display = 'none';
+            if (typeof window.AppRouter === 'function') {
+                window.AppRouter();
+            }
+        } else {
+            window.location.href = '/login';
+        }
+    } catch (error) {
+        console.error("初始化系统失败", err);
+    }
+}
+
+function applyRolePermissions(role) {
+    document.querySelectorAll('.auth-admin, .auth-superadmin').forEach(el => {
+        el.style.display = 'none';
+    });
+
+    if (role === 'superadmin') {
+        document.querySelectorAll('.auth-superadmin, .auth-admin').forEach(el => { el.style.display = '' });
+    } else if (role === 'admin') {
+        document.querySelectorAll('.auth-admin').forEach(el => { el.style.display = '' });
+    }
+}

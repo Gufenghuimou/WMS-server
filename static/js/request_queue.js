@@ -225,8 +225,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const reqData = result.data;
             window.INV_REQ_DATA = reqData.inv_req;
             window.ASSET_REQ_DATA = reqData.asset_req;
-            console.log(window.INV_REQ_DATA);
-            console.log(window.ASSET_REQ_DATA);
             renderInvReq(reqData.inv_req);
             renderAssetReq(reqData.asset_req);
 

@@ -27,18 +27,18 @@
 <!--    </div>-->
 
     <div class="log-tabs-container">
-        <div class="log-tab active" onclick="switchLogTab('consumable', this)">
+        {# <div class="log-tab active" onclick="switchLogTab('consumable', this)">
             <h3><i class="material-icons">inventory_2</i> {{ t('queue.consumables', lang) }}</h3>
             <span class="count-badge">{{ req_log|length }}</span>
         </div>
         <div class="log-tab inactive" onclick="switchLogTab('asset', this)">
             <h3><i class="material-icons">devices</i> {{ t('queue.assets', lang) }}</h3>
             <span class="count-badge">{{ asset_req_log|length }}</span>
-        </div>
+        </div> #}
     </div>
 
     <div id="tab-consumable" class="table-scroll-wrapper">
-        {% if req_log|length == 0 %}
+        {# {% if req_log|length == 0 %}
         <div style="text-align: center; padding: 60px 0; color: #bdc3c7; background: var(--surface); height: 100%;">
             <i class="material-icons" style="font-size: 4rem; opacity: 0.5;">inbox</i>
             <h3 style="margin-top: 15px; font-weight: normal;">{{ t('log.empty', lang) }}</h3>
@@ -90,11 +90,11 @@
                 {% endfor %}
             </tbody>
         </table>
-        {% endif %}
+        {% endif %} #}
     </div>
 
     <div id="tab-asset" class="table-scroll-wrapper" style="display: none;">
-        {% if asset_req_log|length == 0 %}
+        {# {% if asset_req_log|length == 0 %}
         <div style="text-align: center; padding: 60px 0; color: #bdc3c7; background: var(--surface); height: 100%;">
             <i class="material-icons" style="font-size: 4rem; opacity: 0.5;">inbox</i>
             <h3 style="margin-top: 15px; font-weight: normal;">No Asset Requests Found</h3>
@@ -161,7 +161,7 @@
                 {% endfor %}
             </tbody>
         </table>
-        {% endif %}
+        {% endif %} #}
     </div>
 </div>
 {% endblock %}
@@ -169,8 +169,28 @@
 {% block extra_js %}
 <script>
     const LOG_I18N = {
-        search_ph: "{{ t('log.search_ph', lang) }}"
+        search_ph: "{{ t('log.search_ph', lang) }}",
+        request_log: "{{ t('status.request_log', lang) }}",
+        empty: "{{ t('log.empty', lang) }}",
+        th_time: "{{ t('log.th_time', lang) }}",
+        th_pn1: "{{ t('log.th_pn1', lang) }}",
+        th_name: "{{ t('log.th_name', lang) }}",
+        th_qty: "{{ t('log.th_qty', lang) }}",
+        th_dept: "{{ t('log.th_dept', lang) }}",
+        th_applicant: "{{ t('log.th_applicant', lang) }}",
+        th_note: "{{ t('log.th_note', lang) }}",
+        th_status: "{{ t('log.th_status', lang) }}",
+        status_pending: "{{ t('log.status_pending', lang) }}",
+        status_approved: "{{ t('log.status_approved', lang) }}",
+        status_rejected: "{{ t('log.status_rejected', lang) }}",
+        consumables: "{{ t('queue.consumables', lang) }}",
+        assets: "{{ t('queue.assets', lang) }}",
     };
+    window.USER_ROLE = "{{ user.role }}";
+    window.INV_REQ_LOG = {};
+    window.ASSET_REQ_LOG = {};
+    window.SYS_VER = "{{ request.state.sys_ver }}";
+    window.DEFER_GLOBAL_LOADER = true;
 </script>
 <script src="/static/js/request_log.js"></script>
 {% endblock %}

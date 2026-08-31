@@ -35,36 +35,9 @@ async def root(request: Request):
     else:
         return RedirectResponse(url="/all" if user else "/login", status_code=303)
 
-@router.get("/all", response_class=HTMLResponse)
-async def get_all(request: Request, current_user: dict = Depends(get_current_user)):
-    # with Session(engine) as session:
-    #     statement = select(InventoryItem)
-
-    #     if query:
-    #         statement = statement.where(
-    #             or_(
-    #                 InventoryItem.pn_1.like(f'%{query}%'),
-    #                 InventoryItem.pn_2.like(f'%{query}%'),
-    #                 InventoryItem.name.like(f'%{query}%'),
-    #                 InventoryItem.description_1.like(f'%{query}%'),
-    #                 InventoryItem.description_2.like(f'%{query}%'),
-    #                 InventoryItem.remarks.like(f'%{query}%')
-    #             )
-    #         )
-    #     else:
-    #         statement = statement.order_by(desc(InventoryItem.usage_1y))
-
-    #     is_warning = warning_only in ['on', 'true', '1']
-    #     if is_warning:
-    #         statement = statement.where(InventoryItem.warning_level > 0,
-    #                                     InventoryItem.stock <= InventoryItem.warning_level)
-    #     items = session.exec(statement).all()
-
-    #     username = current_user.get('username')
-    #     bm_statement = select(UserBookmark).where(UserBookmark.username == username)
-    #     bookmarks = session.exec(bm_statement).all()
-    #     user_bookmarks = [b.item_id for b in bookmarks]
-    return templates.TemplateResponse(request, "inventory_cards.html", {'user': current_user, 'active_page': 'inventory'})
+# @router.get("/all", response_class=HTMLResponse)
+# async def get_all(request: Request, current_user: dict = Depends(get_current_user)):
+#     return templates.TemplateResponse(request, "inventory_cards.html", {'user': current_user, 'active_page': 'inventory'})
 
 @router.get("/api/inventory")
 async def get_inventory(request: Request, query: Optional[str] = None, warning_only: Optional[str] = None, current_user: dict = Depends(get_current_user)):
@@ -301,15 +274,15 @@ async def import_excel(request: Request, file: UploadFile = File(...), current_u
 
 # -----------------------------库存管理--------------------------#
 
-@router.get("/inventory_table", response_class=HTMLResponse)
-async def view_inventory_table(request: Request, current_user: dict = Depends(get_current_user)):
-    if current_user.get('role') not in ['superadmin', 'admin']:
-        return RedirectResponse(url= "/all", status_code=303)
-    with Session(engine) as session:
-        items =session.exec(select(InventoryItem).order_by(desc(InventoryItem.pn_1))).all()
-        alarm_items = session.exec(select(InventoryItem).where(InventoryItem.warning_level > 0, InventoryItem.warning_level >= InventoryItem.stock)).all()
-        alarm_count = len(alarm_items)
-    return templates.TemplateResponse(request,"inventory_table.html", {"items": items, "user": current_user, "active_page": "inventory_table", "alarm_count": alarm_count})
+# @router.get("/inventory_table", response_class=HTMLResponse)
+# async def view_inventory_table(request: Request, current_user: dict = Depends(get_current_user)):
+#     if current_user.get('role') not in ['superadmin', 'admin']:
+#         return RedirectResponse(url= "/all", status_code=303)
+#     with Session(engine) as session:
+#         items =session.exec(select(InventoryItem).order_by(desc(InventoryItem.pn_1))).all()
+#         alarm_items = session.exec(select(InventoryItem).where(InventoryItem.warning_level > 0, InventoryItem.warning_level >= InventoryItem.stock)).all()
+#         alarm_count = len(alarm_items)
+#     return templates.TemplateResponse(request,"inventory_table.html", {"items": items, "user": current_user, "active_page": "inventory_table", "alarm_count": alarm_count})
 
 @router.get("/api/inventory_table")
 async def get_inventory_table(request: Request, current_user: dict = Depends(get_current_user)):
@@ -406,9 +379,9 @@ def export_mva(request: Request, current_user: dict = Depends(get_current_user))
 
 # -----------------------------快速入库--------------------------#
 
-@router.get("/stock_in", response_class=HTMLResponse)
-async def stock_in(request: Request, current_user: dict = Depends(get_current_user)):
-    return templates.TemplateResponse(request, "stock_in.html", {"request": request, "user": current_user, "active_page": "stock_in"})
+# @router.get("/stock_in", response_class=HTMLResponse)
+# async def stock_in(request: Request, current_user: dict = Depends(get_current_user)):
+#     return templates.TemplateResponse(request, "stock_in.html", {"request": request, "user": current_user, "active_page": "stock_in"})
 
 @router.post("/batch_submit")
 async def batch_submit(
@@ -485,9 +458,9 @@ async def batch_submit(
 
 # -----------------------------历史记录--------------------------#
 
-@router.get('/history', response_class=HTMLResponse)
-async def view_history(request: Request, current_user: dict = Depends(get_current_user)):
-    return templates.TemplateResponse(request, "history.html", {'user': current_user, 'active_page': 'history'})
+# @router.get('/history', response_class=HTMLResponse)
+# async def view_history(request: Request, current_user: dict = Depends(get_current_user)):
+#     return templates.TemplateResponse(request, "history.html", {'user': current_user, 'active_page': 'history'})
 
 @router.get("/api/history")
 async def get_history(request: Request, current_user: dict = Depends(get_current_user)):
@@ -601,9 +574,9 @@ def export_history(request: Request, current_user: dict = Depends(get_current_us
 
 # -----------------------------盘点工作台--------------------------#
 
-@router.get("/audit", response_class=HTMLResponse)
-async def view_audit(request: Request, current_user: dict = Depends(get_current_user)):
-    return templates.TemplateResponse(request, "audit.html", {"user": current_user, "active_page": "audit"})
+# @router.get("/audit", response_class=HTMLResponse)
+# async def view_audit(request: Request, current_user: dict = Depends(get_current_user)):
+#     return templates.TemplateResponse(request, "audit.html", {"user": current_user, "active_page": "audit"})
 
 @router.get("/api/audit")
 async def get_audit(request: Request, current_user: dict = Depends(get_current_user)):

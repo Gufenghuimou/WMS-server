@@ -1,0 +1,46 @@
+<div id="page-top-actions" style="display: none;">
+    <div style="display: flex; align-items: center; gap: 15px;">
+    <a href="/api/asset/export" class="btn-primary">
+        <i class="material-icons">download</i> <span data-i18n="asset_view.export_btn">Export</span>
+    </a>
+    <a href="/api/asset/export_summary" class="btn-primary" style="background-color: var(--primary-green);">
+        <i class="material-icons">download</i> <span data-i18n="asset_view.export_summary">Summary</span>
+    </a>
+</div>
+
+</div>
+<div class="dashboard-container">
+
+    <div class="left-panel" id="assetCardList">
+        <div id="loadingIndicator" style="text-align:center; padding: 40px 20px; color: var(--text-muted);">
+            <i class="material-icons" style="font-size: 3rem; animation: spin 1s linear infinite;">autorenew</i>
+            <p data-i18n="base.generating">Generating...</p>
+        </div>
+    </div>
+
+    <div class="right-panel">
+        <div class="table-wrapper">
+            <table class="detail-table">
+                <thead>
+                    <tr style="font-size: 0.95rem;">
+                        <th style="width: 5%; text-align: center;"><i class="material-icons" style="font-size: 1.1rem; vertical-align: bottom;">keyboard_command_key</i></th>
+                        <th style="width: 10%;" data-i18n="asset_view.th_ctrl_no">Ctrl_no</th>
+                        <th style="width: 10%;" data-i18n="asset_view.th_loc">Location</th>
+                        <th style="width: 10%;" data-i18n="asset_view.th_date">Data</th>
+                        <th style="width: 5%; text-align: center;" data-i18n="asset_view.th_status">Status</th>
+                        <th style="width: 10%; text-align: center;">PO Type</th>
+                        <th style="text-align: center;">Remarks</th>
+                    </tr>
+                </thead>
+                <tbody id="dynamicDetailTbody">
+                    <tr id="emptyDetailRow">
+                        <td colspan="5" style="text-align: center; padding: 120px 0; color: #ccc; border: none;">
+                            <i class="material-icons" style="font-size: 4rem; margin-bottom: 15px; display: block;">ads_click</i>
+                            <span style="font-size: 1.1rem;" data-i18n="asset_view.click_left_hint">Click Left Hint</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

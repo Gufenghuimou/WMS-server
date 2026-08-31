@@ -120,7 +120,7 @@
     "status_online": "オンライン",
     "confirm_reset_pwd": "アカウント [{username}] のパスワードを強制的に 123456 にリセットしますか？",
     "btn_reset_pwd": "パスワードリセット",
-    "confirm_delete_user": "危険な操作：\n\nアカウント [{username}] を完全に抹消しますか？この操作は取り消せません！",
+    "confirm_delete_user": "危険な操作：\\n\\nアカウント [{username}] を完全に抹消しますか？この操作は取り消せません！",
     "btn_delete_user": "アカウント抹消",
     "system_init": "システム初期化 / 一括上書き",
     "warning_init": "<b>注意：</b> このエリアの操作はデータベースの直接上書きです。<b>現在の全データをクリア</b>し、Excelの内容に置き換えます。日常的な入庫は左メニューの「クイック入庫」を使用してください。",

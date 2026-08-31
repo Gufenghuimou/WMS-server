@@ -120,7 +120,7 @@
     "status_online": "当前在线",
     "confirm_reset_pwd": "确定要将账号 [{username}] 的密码强制重置为 123456 吗？",
     "btn_reset_pwd": "重置密码",
-    "confirm_delete_user": "危险操作：\n\n确定要彻底抹除账号 [{username}] 吗？此操作不可逆！",
+    "confirm_delete_user": "危险操作：\\n\\n确定要彻底抹除账号 [{username}] 吗？此操作不可逆！",
     "btn_delete_user": "抹除账号",
     "system_init": "系统级数据初始化 / 批量覆盖",
     "warning_init": "<b>注意：</b> 此区域操作为系统底层库覆写，将<b>直接清空</b>当前所有数据并以 Excel 内容替代。日常入库请使用左侧菜单的【快速入库】功能。",

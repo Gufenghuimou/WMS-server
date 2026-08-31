@@ -344,24 +344,32 @@ async def reject_asset_request(request: Request, req_id: int, current_user: dict
 
 @router.get("/request_log", response_class=HTMLResponse)
 async def view_request_log(request: Request, current_user: dict = Depends(get_current_user)):
+    return templates.TemplateResponse(request, 'request_log.html', {'user': current_user, 'active_page': 'request_log'})
+
+@router.get("/api/request_log")
+async def get_request_log(request: Request, current_user: dict = Depends(get_current_user)):
     with Session(engine) as session:
         real_applicant = current_user.get('full_name') or current_user.get('username')
-
         if current_user.get('role') not in ['superadmin', 'admin']:
             statement_inv = select(OutboundRequest).where(OutboundRequest.applicant == real_applicant).order_by(desc(OutboundRequest.id))
+            statement_asset = select(AssetRequest).where(AssetRequest.applicant == real_applicant).order_by(desc(AssetRequest.id))
         else:
             statement_inv = select(OutboundRequest).order_by(desc(OutboundRequest.id))
-        req_log = session.exec(statement_inv).all()
+            statement_asset = select(AssetRequest).order_by(desc(AssetRequest.id))
+        inv_req_log = session.exec(statement_inv).all()
+        asset_req_log = session.exec(statement_asset).all()
 
-        if current_user.get('role') not in ['superadmin', 'admin']:
-            statement_ast = select(AssetRequest).where(AssetRequest.applicant == real_applicant).order_by(desc(AssetRequest.id))
-        else:
-            statement_ast = select(AssetRequest).order_by(desc(AssetRequest.id))
-        asset_req_log = session.exec(statement_ast).all()
-
-        processed_count = session.exec(select(func.count(OutboundRequest.id)).where(OutboundRequest.status != 'Pending')).one()
-        processed_count += session.exec(select(func.count(AssetRequest.id)).where(AssetRequest.status != 'Pending')).one()
-    return templates.TemplateResponse(request, 'request_log.html', {'req_log': req_log, 'asset_req_log': asset_req_log, 'user': current_user, 'active_page': 'request_log', 'processed_count': processed_count})
+        processed_inv = session.exec(select(func.count(OutboundRequest.id)).where(OutboundRequest.status != 'Pending')).one()
+        processed_asset = session.exec(select(func.count(AssetRequest.id)).where(AssetRequest.status != 'Pending')).one()
+    return {
+        'status': 'success',
+        'data': {
+            'inv_req_log': inv_req_log,
+            'processed_inv': processed_inv,
+            'asset_req_log': asset_req_log,
+            'processed_asset': processed_asset
+        }
+    }
 
 @router.get("/request_log/export")
 def request_log_export(request: Request, current_user: dict = Depends(get_current_user)):
