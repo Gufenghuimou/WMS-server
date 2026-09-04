@@ -1,0 +1,43 @@
+
+<div id="page-top-actions" style="display: none;">
+    <div style="display: flex; gap: 15px; align-items: center;">
+        <form action="/asset_audit/start" method="post" style="margin: 0;" onsubmit="return confirm(`${t('asset_audit.confirm_reset')}`);">
+            <button type="submit" class="btn-primary" style="background: transparent; color: var(--text-muted); border: 1px solid #ccc; box-shadow: none;">
+                <i class="material-icons" style="font-size: 1.2rem; margin-right: 5px;">sync</i> <span data-i18n="asset_audit.btn_reset">Reset</span>
+            </button>
+        </form>
+
+        <form action="/asset_audit/commit" method="post" style="margin: 0;" onsubmit="return confirm(`${t('asset_audit.confirm_commit')}`);">
+            <button type="submit" class="btn-primary" style="background-color: var(--primary-green);">
+                <i class="material-icons" style="font-size: 1.2rem; margin-right: 5px;">done_all</i> <span data-i18n="asset_audit.btn_commit">Commit</span>
+            </button>
+        </form>
+
+        <a href="/asset_audit/export" style="text-decoration: none;">
+            <button type="button" class="btn-primary" style="background-color: #f39c12; border-radius: 20px; display: flex; align-items: center; gap: 5px;">
+                <i class="material-icons" style="font-size: 1.2rem;">file_download</i> <span data-i18n="asset_audit.btn_export">Export</span>
+            </button>
+        </a>
+    </div>
+</div>
+
+<div class="audit-wrapper-main">
+
+    <div class="scan-console">
+        <div class="scan-input-group" style="width: 250px;">
+            <label data-i18n="asset_audit.lbl_current_loc">Current Location</label>
+            <input type="text" id="scanLocation" class="scan-input" data-i18n-placeholder="asset_audit.ph_loc" autocomplete="off">
+        </div>
+
+        <div class="scan-input-group" style="width: 300px;">
+            <label data-i18n="asset_audit.lbl_barcode">Barcode</label>
+            <input type="text" id="scanBarcode" class="scan-input" data-i18n-placeholder="asset_audit.ph_barcode" autocomplete="off">
+        </div>
+
+        <div class="scan-result-box" id="scanResult">
+            <span style="color: #999; font-size: 1rem; font-weight: normal;"><i class="material-icons" style="vertical-align: bottom;">barcode_reader</i> <span data-i18n="asset_audit.waiting_scan">Waiting Scan</span></span>
+        </div>
+    </div>
+
+    <div id="auditContainer" class="locations-scroll-area"></div>
+</div>

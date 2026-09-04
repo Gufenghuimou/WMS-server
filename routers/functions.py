@@ -71,8 +71,6 @@ def get_item_api(request: Request, pn_or_loc: str, current_user: dict = Depends(
 
 @router.get("/api/simcard/{icc_or_num}", response_model=None)
 def get_simcard_api(request: Request, icc_or_num: str, current_user: dict = Depends(get_current_user)):
-    print(f"--- Frontend sent ICCID: '{icc_or_num}' ---")
-    print(f"--- Length of received ICCID: {len(icc_or_num)} ---")
     lang = request.state.lang
     with Session(engine) as session:
         icc_or_num = icc_or_num.strip().upper()
@@ -274,9 +272,9 @@ async def get_printer_status():
     except Exception as e:
         return {"status": "error", "detail": str(e)}
 
-@router.get("/reprint", response_class=HTMLResponse)
-async def view_reprint_page(request: Request, current_user: dict = Depends(get_current_user)):
-    return templates.TemplateResponse(request, "reprint.html", {"user": current_user, "active_page": "reprint"})
+# @router.get("/reprint", response_class=HTMLResponse)
+# async def view_reprint_page(request: Request, current_user: dict = Depends(get_current_user)):
+#     return templates.TemplateResponse(request, "reprint.html", {"user": current_user, "active_page": "reprint"})
 
 @router.post("/api/update_printer_config")
 async def update_printer_config(request: Request, ip: str = Form(...), port: int = Form(...), current_user: dict = Depends(require_admin)):

@@ -1,0 +1,33 @@
+
+<div id="page-top-actions" style="display: none;">
+    <div style="display: flex; gap: 15px;">
+        <button type="button" class="btn-primary" onclick="clearSimcardGrid()" style="background: transparent; color: var(--text-muted);">
+            <i class="material-icons" style="font-size: 1.2rem; margin-right: 5px;">delete</i> <span data-i18n="stockin.clear_grid">Clear Grid</span>
+        </button>
+        <button type="submit" form="stockInForm" class="btn-primary">
+            <i class="material-icons" style="font-size: 1.2rem; margin-right: 5px;">save_alt</i> <span data-i18n="stockin.confirm_submit">Submit</span>
+        </button>
+    </div>
+</div>
+
+<div class="stockin-container">
+    <span style="color: #7f8c8d; font-size: 0.9rem; margin-bottom: 15px; display: inline-block;" data-i18n="stockin.tips">
+        Stock in Tips
+    </span>
+
+    <form id="stockInForm" action="/simcard_batch_submit" method="post">
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-long">ICCID<span class="required-star">*</span></th>
+                    <th class="col-mid" data-i18n="simcard_stock_in.th_carrier">Carrier<span class="required-star">*</span></th>
+                    <th class="col-mid" data-i18n="simcard_stock_in.th_number">Number<span class="required-star">*</span></th>
+                    <th class="col-long" data-i18n="simcard_stock_in.th_note">Note</th>
+                    <th class="col-short" data-i18n="simcard_stock_in.th_action">Action</th>
+                </tr>
+            </thead>
+            <tbody id="gridBody">
+                </tbody>
+        </table>
+    </form>
+</div>

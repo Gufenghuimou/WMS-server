@@ -2,7 +2,7 @@
 from fastapi import Request, Form, UploadFile, File, Depends, APIRouter
 from fastapi.responses import HTMLResponse
 from pygments.lexers import verification
-from sqlmodel import Session, select
+from sqlmodel import Session, select, func
 from starlette.responses import RedirectResponse
 import os
 import hashlib
@@ -11,10 +11,43 @@ from models import User, UserBookmark
 from dependencies import get_current_user, require_admin, require_superadmin, superadmin_logger
 from core import templates, t_lang
 from datetime import datetime, timedelta
-
+from models import OutboundRequest, AssetRequest
 from dependencies import get_client_ip
 
 router = APIRouter(tags=['Functions'])
+
+#----------------------- 初始请求 -------------------------#
+
+@router.get("/api/system/context")
+async def get_system_context(request: Request, current_user: dict = Depends(get_current_user)):
+    sys_ver = request.app.state.sys_ver
+
+    pending_count = 0
+    try:
+        with Session(engine) as session:
+            count_consumable = session.exec(
+                select(func.count(OutboundRequest.id)).where(OutboundRequest.status == 'Pending')
+            ).one()
+            count_asset = session.exec(
+                select(func.count(AssetRequest.id)).where(AssetRequest.status == 'Pending')
+            ).one()
+            pending_count = count_consumable + count_asset
+    except Exception as e:
+        pending_count = 0
+
+    return {
+        'status': 'success',
+        'data': {
+            'user': {
+                'username': current_user.get('username'),
+                'full_name': current_user.get('full_name') or current_user.get('username'),
+                'role': current_user.get('role')
+            },
+            'lang': request.state.lang,
+            "pending_count": pending_count,
+            "sys_ver": sys_ver
+        },
+    }
 
 #----------------------- 用户管理 -------------------------#
 

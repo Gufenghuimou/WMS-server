@@ -1,0 +1,39 @@
+
+<div id="page-top-actions" style="display: none;">
+    <div style="display: flex; gap: 15px;">
+        <button type="button" class="btn-primary" onclick="clearAssetGrid()" style="background: transparent; color: var(--text-muted); box-shadow: none; border: 1px solid #ccc;">
+            <i class="material-icons" style="font-size: 1.2rem; margin-right: 5px;">delete</i> <span data-i18n="asset_stockin.clear_grid">Clear Grid</span>
+        </button>
+        <button type="submit" form="assetStockInForm" class="btn-primary">
+            <i class="material-icons" style="font-size: 1.2rem; margin-right: 5px;">how_to_reg</i> <span data-i18n="asset_stockin.confirm_submit">Submit</span>
+        </button>
+    </div>
+</div>
+
+<div class="stockin-container">
+    <div style="margin-bottom: 15px; font-size: 0.9rem; color: #555; display: flex; align-items: center; gap: 8px;">
+        <i class="material-icons" style="color: var(--primary);">info</i>
+        <span data-i18n="asset_stockin.guide_text">Guide Text</span>
+    </div>
+
+    <form id="assetStockInForm" action="/asset_batch_submit" method="post">
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-mid" data-i18n="asset_stockin.th_ctrl_no">Ctrl No.</th>
+                    <th class="col-mid" data-i18n="asset_stockin.th_pn1">PN1<span class="required-star">*</span></th>
+                    <th class="col-mid" data-i18n="asset_stockin.th_pn2">PN2</th>
+                    <th class="col-long" data-i18n="asset_stockin.th_name">Name<span class="required-star">*</span></th>
+                    <th class="col-mid" data-i18n="asset_stockin.th_category">Category</th>
+                    <th class="col-long" data-i18n="asset_stockin.th_desc">Description</th>
+                    <th class="col-mid" data-i18n="asset_stockin.th_use_for">Use for</th>
+                    <th class="col-mid" data-i18n="asset_stockin.th_date">Date<span class="required-star">*</span></th>
+                    <th class="col-short" data-i18n="asset_stockin.th_loc">Location</th>
+                    <th class="col-long" data-i18n="asset_stockin.th_remarks">Remarks</th>
+                    <th style="width: 60px;" data-i18n="asset_stockin.th_action">Action</th>
+                </tr>
+            </thead>
+            <tbody id="gridBody"></tbody>
+        </table>
+    </form>
+</div>

@@ -1,0 +1,44 @@
+
+<div id="page-top-actions" style="display: none;">
+    <div style="display: flex; gap: 15px; align-items: center;">
+        <form action="/audit/start" method="post" style="margin: 0;" onsubmit="return confirm(t('audit.confirm_start');">
+            <button type="submit" class="btn-primary" style="background: transparent; color: var(--text-muted);">
+                <i class="material-icons" style="font-size: 1.2rem; margin-right: 5px;">sync</i> <span data-i18n="audit.start_new">Start New</span>
+            </button>
+        </form>
+
+        <form action="/audit/commit" method="post" style="margin: 0;" onsubmit="return confirm(t('asset_audit.confirm_commit');">
+            <button type="submit" class="btn-primary" style="background-color: var(--primary-green);">
+                <i class="material-icons" style="font-size: 1.2rem; margin-right: 5px;">done_all</i> <span data-i18n="asset_audit.btn_commit">Commit</span>
+            </button>
+        </form>
+
+        <a href="/audit/export" style="text-decoration: none;">
+            <button class="btn-primary" style="border-radius: 20px; display: flex; align-items: center; gap: 5px;">
+                <i class="material-icons" style="font-size: 1.2rem;">file_download</i> <span data-i18n="audit.export_report">Export</span>
+            </button>
+        </a>
+    </div>
+</div>
+
+<div id="auditContainer">
+    <div class="scan-console">
+        <div class="scan-input-group" style="width: 320px;">
+            <label data-i18n="audit.scan_label">Scan Label</label>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="scanInput" class="scan-input" style="flex: 1; width: 100%;" data-i18n-placeholder="audit.scan_placeholder" autocomplete="off" autofocus>
+            </div>
+        </div>
+
+        <div class="scan-result-box" id="scanResultBox" style="flex: 1; flex-direction: column; align-items: flex-start; justify-content: center; background: #f8f9fa; border-color: #ddd;">
+            <div style="font-size: 1.1rem; color: var(--primary-blue); display: flex; align-items: center; gap: 8px; font-weight: bold;">
+                <i class="material-icons">qr_code_scanner</i> <span data-i18n="audit.waiting_scan">Waiting Scan</span>
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: normal; margin-top: 4px;" data-i18n="audit.scan_desc">
+                Scan Description
+            </div>
+        </div>
+    </div>
+
+    <div class="audit-list-wrapper"></div>
+</div>

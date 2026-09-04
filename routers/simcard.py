@@ -216,13 +216,15 @@ async def simcard_active_toggle(
 # async def simcard_stock_in(request: Request,current_user: dict = Depends(get_current_user)):
 #     return templates.TemplateResponse(request, "simcard_stock_in.html", {"request": request, "user": current_user, 'active_page': 'simcard_stock_in'})
 
-@router.post("/simcard_batch_submit")
+@router.post("/api/simcard_batch_submit")
 async def simcard_batch_submit(
-        icc_id: List[str] = Form(default=[]),
-        carrier: List[str] = Form(default=[]),
-        phone_number: List[str] = Form(default=[]),
-        note: List[str] = Form(default=[]),
+    request: Request,
+    icc_id: List[str] = Form(default=[]),
+    carrier: List[str] = Form(default=[]),
+    phone_number: List[str] = Form(default=[]),
+    note: List[str] = Form(default=[]),
 ):
+    lang = request.state.lang
     with Session(engine) as session:
         for i in range(len(icc_id)):
             current_icc_id = icc_id[i].replace(" ", "").strip()
@@ -250,7 +252,7 @@ async def simcard_batch_submit(
             )
             session.add(log)
         session.commit()
-    return RedirectResponse("/simcard_stock_in", status_code=303)
+    return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 @router.get("/simcard/export")
 def simcard_export(request: Request, current_user: dict = Depends(get_current_user)):

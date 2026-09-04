@@ -380,7 +380,7 @@
             } else {
                 // 3. 未找到
                 resultBox.style.background = '#fce8e6';
-                resultBox.innerHTML = `<div style="font-size: 1.1rem; color: #d93025; font-weight: bold;">${AUDIT_I18N.no_result_found}: ${term.toUpperCase()}</div>`;
+                resultBox.innerHTML = `<div style="font-size: 1.1rem; color: #d93025; font-weight: bold;">${t('audit.no_result_found')}: ${term.toUpperCase()}</div>`;
             }
 
             scanInput.value = '';
@@ -404,7 +404,7 @@
 
                 let btn = form.querySelector('.btn-save');
                 let oldHtml = btn.innerHTML;
-                btn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite;">autorenew</i> ${AUDIT_I18N.saving}`;
+                btn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite;">autorenew</i> ${t('audit.saving')}`;
                 btn.disabled = true;
 
                 try {
@@ -433,7 +433,7 @@
                         alert(result.message);
                     }
                 } catch(err) {
-                    alert(`${AUDIT_I18N.net_error}`);
+                    alert(`${t('audit.net_error')}`);
                 } finally {
                     btn.innerHTML = oldHtml;
                     btn.disabled = false;

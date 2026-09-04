@@ -1,0 +1,135 @@
+
+<div id="globalAdminMsg" class="admin-msg-box"></div>
+
+<div class="admin-card">
+    <h3><i class="material-icons" style="color: var(--primary);">group_add</i> <span data-i18n="admin.open_account">Open Account</span></h3>
+    <form action="/add_user" method="post" class="async-form" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+        <input type="text" name="new_username" class="admin-input" data-i18n-placeholder="admin.ph_username" required style="width: 180px;">
+        <input type="text" name="new_password" class="admin-input" placeholder="123456" readonly style="width: 180px;">
+        <input type="text" name="new_full_name" class="admin-input" data-i18n-placeholder="admin.ph_fullname" required style="width: 180px;">
+        <select name="new_role" class="admin-input" required style="width: 180px; background: white;">
+            <option value="user" data-i18n="admin.role_user">User</option>
+            <option value="admin" data-i18n="admin.role_admin">Admin</option>
+        </select>
+        <button type="submit" class="btn-primary" style="height: 42px; background-color: var(--primary-green)" data-i18n="admin.btn_create">Creat</button>
+    </form>
+</div>
+
+<div class="admin-card">
+    <h3><i class="material-icons" style="color: var(--primary);">admin_panel_settings</i> <span data-i18n="admin.user_list">User List</span></h3>
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th data-i18n="admin.th_uid">UID</th>
+                <th data-i18n="admin.th_account">Acount</th>
+                <th data-i18n="admin.th_name">Name</th>
+                <th data-i18n="admin.th_role">Role</th>
+                <th style="text-align: right;" data-i18n="admin.th_action">Action</th>
+            </tr>
+        </thead>
+        <tbody id="userTable"></tbody>
+    </table>
+</div>
+
+<div class="admin-card danger-zone">
+    <h3><i class="material-icons">warning</i> <span data-i18n="admin.system_init">System Init</span></h3>
+    <p style="color: #e74c3c; font-size: 0.85rem; margin-bottom: 25px; background: #fdf2f2; padding: 10px; border-radius: 6px;" data-i18n="admin.warning_init">
+        Warning Init
+    </p>
+
+    <div style="display: flex; gap: 30px;">
+        <div style="flex: 1; background: white; padding: 20px; border-radius: 8px; border: 1px solid #fadbd8;">
+            <h4 style="margin-top: 0; color: #333;" data-i18n="admin.import_stock">Import Stock</h4>
+            <form action="/import" method="post" enctype="multipart/form-data" style="display: flex; gap: 10px; margin-top: 15px;">
+                <input type="file" name="file" accept=".xlsx, .xls" required style="flex: 1; padding: 5px;">
+                <button type="submit" class="btn-primary" style="background: var(--danger-red);"><span data-i18n="admin.btn_overwrite_stock">Overwrite Stock</span></button>
+            </form>
+        </div>
+
+        <div style="flex: 1; background: white; padding: 20px; border-radius: 8px; border: 1px solid #fadbd8;">
+            <h4 style="margin-top: 0; color: #333;" data-i18n="admin.import_history">Import History</h4>
+            <form action="/import_history_excel" method="post" enctype="multipart/form-data" style="display: flex; gap: 10px; margin-top: 15px;">
+                <input type="file" name="file" accept=".xlsx, .xls" required style="flex: 1; padding: 5px;">
+                <button type="submit" class="btn-primary" style="background: var(--danger-red);"><span data-i18n="admin.btn_overwrite_history">Overwrite History</span></button>
+            </form>
+        </div>
+    </div>
+    <hr style="border: none ;background-color: #f5c6c6; height: 2px;">
+    <div style="display: flex; gap: 30px;">
+        <div style="flex: 1; background: white; padding: 20px; border-radius: 8px; border: 1px solid #fadbd8;">
+            <h4 style="margin-top: 0; color: #333;" data-i18n="admin.import_asset">Import Asset</h4>
+            <form action="/import_asset" method="post" enctype="multipart/form-data" style="display: flex; gap: 10px; margin-top: 15px;">
+                <input type="file" name="file" accept=".xlsx, .xls" required style="flex: 1; padding: 5px;">
+                <button type="submit" class="btn-primary" style="background: var(--danger-red);"><span data-i18n="admin.btn_overwrite_asset">Overwrite Asset</span></button>
+            </form>
+        </div>
+
+        <div style="flex: 1; background: white; padding: 20px; border-radius: 8px; border: 1px solid #fadbd8;">
+            <h4 style="margin-top: 0; color: #333;" data-i18n="admin.import_asset_history">Import Asset History</h4>
+            <form action="/asset_history/import" method="post" enctype="multipart/form-data" style="display: flex; gap: 10px; margin-top: 15px;">
+                <input type="file" name="file" accept=".xlsx, .xls" required style="flex: 1; padding: 5px;">
+                <button type="submit" class="btn-primary" style="background: var(--danger-red);"><span data-i18n="admin.btn_overwrite_record">Overwrite Record</span></button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="admin-card">
+    <h3><i class="material-icons" style="color: var(--primary);">map</i> <span data-i18n="admin.map_editor">Map Editer</span></h3>
+    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;" data-i18n="admin.map_instruction">
+        Map Instruction
+    </p>
+
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+
+        <div style="background: #f8f9fa; padding: 15px 20px; border-radius: 8px; border: 1px solid #e0e0e0; display: flex; align-items: flex-end; gap: 15px; flex-wrap: wrap;">
+
+            <div style="display: flex; gap: 10px; align-items: flex-end; border-right: 1px solid #ddd; padding-right: 15px;">
+                <div>
+                    <label style="color: #666; font-size: 0.8rem; display: block; margin-bottom: 5px;" data-i18n="admin.map_loc_name">Loc Name</label>
+                    <input type="text" id="propName" class="admin-input" style="width: 140px; padding: 8px;" disabled>
+                </div>
+                <div>
+                    <label style="color: #666; font-size: 0.8rem; display: block; margin-bottom: 5px;" data-i18n="admin.map_width">Width</label>
+                    <input type="number" id="propW" class="admin-input" style="width: 70px; padding: 8px;" disabled>
+                </div>
+                <div>
+                    <label style="color: #666; font-size: 0.8rem; display: block; margin-bottom: 5px;" data-i18n="admin.map_height">Height</label>
+                    <input type="number" id="propH" class="admin-input" style="width: 70px; padding: 8px;" disabled>
+                </div>
+
+                <div style="position: relative;">
+                    <label style="color: #666; font-size: 0.8rem; display: block; margin-bottom: 5px;" data-i18n="admin.map_bg_color">Color</label>
+                    <div id="colorTrigger" style="width: 45px; height: 36px; border-radius: 4px; border: 1px solid #ccc; background: #ffffff; cursor: not-allowed; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);" onclick="togglePalette(event)"></div>
+
+                    <div id="colorPalette" style="display: none; position: absolute; top: 60px; left: 0; background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 100; width: 220px; grid-template-columns: repeat(10, 1fr); gap: 2px;">
+                    </div>
+                </div>
+
+                <button id="btnUpdate" class="btn-primary" style="height: 36px; background: #7f8c8d;" disabled onclick="updateSelectedRack()"><span data-i18n="admin.btn_save_prop">Save Prop</span></button>
+            </div>
+
+            <div style="display: flex; gap: 10px; border-right: 1px solid #ddd; padding-right: 15px;">
+                <button id="btnDuplicate" class="btn-primary" style="height: 36px; background: #f39c12;" disabled onclick="duplicateSelectedRack()"><i class="material-icons" style="font-size: 1.1rem;">content_copy</i></button>
+                <button id="btnDelete" class="btn-primary" style="height: 36px; background: var(--danger-red);" disabled onclick="deleteSelectedRack()"><i class="material-icons" style="font-size: 1.1rem;">delete</i></button>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-left: auto;">
+                <button class="btn-primary" style="height: 36px; background: white; color: var(--primary); border: 1px solid var(--primary);" onclick="addNewRack()">
+                    <i class="material-icons" style="font-size: 1.2rem;">add</i> <span data-i18n="admin.btn_add_block">Add Block</span>
+                </button>
+                <button class="btn-primary" style="height: 36px;" onclick="saveMapToDb()">
+                    <i class="material-icons" style="font-size: 1.2rem;">cloud_upload</i> <span data-i18n="admin.btn_deploy_map">Deploy Map</span>
+                </button>
+            </div>
+        </div>
+
+        <div style="width: 100%; height: 1000px; overflow: auto; border: 1px solid #ddd; border-radius: 8px; background: #e2e8f0; position: relative;">
+            <div style="width: 4000px; margin: 0 auto; background: #ffffff; box-shadow: 0 0 20px rgba(0,0,0,0.05);">
+                <canvas id="editorCanvas" width="4000" height="4000" style="cursor: crosshair; display: block; background: transparent;"></canvas>
+            </div>
+        </div>
+
+    </div>
+</div>

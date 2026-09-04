@@ -465,22 +465,24 @@ async def get_next_asset_seq():
         last_seq = last_ctrl_no[-3:] if last_ctrl_no else '000'
     return {'prefix': prefix,'last_seq': last_seq}
 
-@router.post("/asset_batch_submit")
+@router.post("/api/asset_batch_submit")
 async def asset_batch_submit(
-        background_tasks: BackgroundTasks,
-        ctrl_no: List[str] = Form(default=[]),
-        pn_1: List[str] = Form(default=[]),
-        pn_2: List[str] = Form(default=[]),
-        name: List[str] = Form(default=[]),
-        description_1: List[str] = Form(default=[]),
-        description_2: List[str] = Form(default=[]),
-        use_for: List[str] = Form(default=[]),
-        location:List[str] = Form(default=[]),
-        first_in_date: List[str] = Form(default=[]),
-        remarks: List[str] = Form(default=[]),
-        po_type: List[str] = Form(default=[]),
-        model: List[str] = Form(default=[])
+    request: Request,
+    background_tasks: BackgroundTasks,
+    ctrl_no: List[str] = Form(default=[]),
+    pn_1: List[str] = Form(default=[]),
+    pn_2: List[str] = Form(default=[]),
+    name: List[str] = Form(default=[]),
+    description_1: List[str] = Form(default=[]),
+    description_2: List[str] = Form(default=[]),
+    use_for: List[str] = Form(default=[]),
+    location:List[str] = Form(default=[]),
+    first_in_date: List[str] = Form(default=[]),
+    remarks: List[str] = Form(default=[]),
+    po_type: List[str] = Form(default=[]),
+    model: List[str] = Form(default=[])
 ):
+    lang = request.state.lang
     current_year = datetime.now().strftime("%y")
     prefix = f'JPE{current_year}'
     with Session(engine) as session:
@@ -525,7 +527,7 @@ async def asset_batch_submit(
             )
             session.add(log)
         session.commit()
-    return RedirectResponse(url= "/asset_stock_in", status_code=303)
+    return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 # -----------------------------资产报废--------------------------#
 
@@ -955,7 +957,7 @@ async def start_audit(request: Request, current_user: dict = Depends(get_current
             session.add(record)
         session.commit()
     referer = request.headers.get("referer", "")
-    target_url = "/mobile/audit_asset" if "mobile" in referer else "/asset_audit/dashboard"
+    target_url = "/mobile/audit_asset" if "mobile" in referer else "/asset_audit"
     return RedirectResponse(url=target_url, status_code=303)
 
 @router.post("/api/asset_audit/scan")
@@ -1020,7 +1022,7 @@ async def commit_asset_audit(request: Request, current_user: dict = Depends(get_
                 session.add(asset)
         session.commit()
     referer = request.headers.get("referer", "")
-    target_url = "/mobile/audit_asset" if "mobile" in referer else "/asset_audit/dashboard"
+    target_url = "/mobile/audit_asset" if "mobile" in referer else "/asset_audit"
     return RedirectResponse(url=target_url, status_code=303)
 
 @router.get("/asset_audit/export")

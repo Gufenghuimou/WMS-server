@@ -1,0 +1,64 @@
+
+<div id="page-top-actions" style="display: none;">
+    <a href="/asset_scrap/export" style="text-decoration: none;">
+        <button class="btn-primary" style="border-radius: 20px; gap: 8px;">
+            <i class="material-icons" style="font-size: 1.2rem;">file_download</i> <span data-i18n="asset_scrap.export_btn">Export</span>
+        </button>
+    </a>
+</div>
+
+<div class="scrap-container">
+    <div class="scan-console">
+        <div class="scan-input-group" style="width: 320px;">
+            <label data-i18n="asset_scrap.scan_label">Scan</label>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="scanInput" class="scan-input" style="flex: 1; width: 100%;" data-i18m-placeholder="asset_scrap.scan_placeholder" autocomplete="off" autofocus>
+                <button class="btn-primary" onclick="addAsset()" style="border-radius: 8px; padding: 0 15px;" data-i18n="asset_scrap.btn_input">Input</button>
+            </div>
+        </div>
+
+        <div class="scan-result-box" style="flex: 1; flex-direction: column; align-items: flex-start; justify-content: center; background: #fff5f5; border-color: #ffcdd2;">
+            <div style="font-size: 1.1rem; color: var(--danger-red); display: flex; align-items: center; gap: 8px; font-weight: bold;">
+                <i class="material-icons">warning</i> <span data-i18n="asset_scrap.danger_zone_title">Danger Zone</span>
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: normal; margin-top: 4px;" data-i18n="asset_scrap.danger_zone_desc">
+                Danger Zone Description
+            </div>
+        </div>
+    </div>
+
+    <form id="scrapForm" action="/asset_scrap" method="POST" onsubmit="return confirmScrap()">
+        <div class="location-block" style="margin-bottom: 20px;">
+            <div class="location-header" style="cursor: default; background: #fafafa; justify-content: space-between;">
+                <div style="display: flex; flex-direction: row; gap: 10px;">
+                    <button type="button" class="btn-primary" onclick="fetchStoppedAssets(event)" style="background-color: var(--primary-blue); border: 1px solid var(--primary-blue); border-radius: 20px; box-shadow: 0 6px 20px rgba(12, 60, 128, 0.4)">
+                        <i class="material-icons" style="font-size: 1.2rem; margin-right: 5px;">content_paste_go</i> <span data-i18n="asset_scrap.btn_fetch_stop">Fetch stop</span>
+                    </button>
+                    <button type="button" class="btn-primary" onclick="openScrapModal()" style="background-color: var(--danger-red); border: 1px solid var(--danger-red); border-radius: 20px; box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);">
+                        <i class="material-icons" style="font-size: 1.5rem; margin-right: 8px;">delete_forever</i> <span data-i18n="asset_scrap.btn_destroy">Destory</span>
+                    </button>
+                </div>
+                <span class="status-badge" style="background: rgba(231, 76, 60, 0.1); color: var(--danger-red); font-size: 1rem; padding: 6px 15px;">
+                    <span data-i18n="asset_scrap.prefix_total">prefix_total</span> <span id="countDisplay" style="font-size: 1.2rem; font-weight: 900; margin: 0 3px;">0</span> <span data-i18n="asset_scrap.suffix_item">suffix_item</span>
+                </span>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="scrap-table">
+                    <thead style="position: sticky; top: 0; background: #f1f5f9; z-index: 10;">
+                        <tr>
+                            <th style="width: 15%;" data-i18n="asset_scrap.th_ctrl_no">Ctrl No.</th>
+                            <th style="width: 15%;" data-i18n="asset_scrap.th_pn1">PN1</th>
+                            <th style="width: 15%;" data-i18n="asset_scrap.th_pn2">PN2</th>
+                            <th style="width: 30%;" data-i18n="asset_scrap.th_name">Name</th>
+                            <th style="width: 10%;" data-i18n="asset_scrap.th_raison">Raison</th>
+                            <th style="width: 15%;" data-i18n="asset_scrap.th_loc">Location</th>
+                            <th style="width: 10%; text-align: center;" data-i18n="'asset_scrap.th_remove">Remove</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scrapList"> </tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+</div>

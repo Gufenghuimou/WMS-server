@@ -21,28 +21,28 @@ from utils import update_single_usage
 router = APIRouter(tags=['Request'])
 # -----------------------------申请队列--------------------------#
 
-@router.get("/request_queue", response_class=HTMLResponse)
-async def view_request_queue(request: Request, error: Optional[str] = None, current_user: dict = Depends(get_current_user)):
-    if current_user.get('role') not in ['superadmin', 'admin']:
-        return RedirectResponse(url= "/all", status_code=303)
+# @router.get("/request_queue", response_class=HTMLResponse)
+# async def view_request_queue(request: Request, error: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+#     if current_user.get('role') not in ['superadmin', 'admin']:
+#         return RedirectResponse(url= "/all", status_code=303)
 
-    with Session(engine) as session:
-        statement = select(OutboundRequest).where(OutboundRequest.status == 'Pending').order_by(OutboundRequest.created_at)
-        requests = session.exec(statement).all()
-        req_data = []
-        for req in requests:
-            item = session.get(InventoryItem, req.item_id)
-            req_data.append({'req': req, 'item': item})
+#     with Session(engine) as session:
+#         statement = select(OutboundRequest).where(OutboundRequest.status == 'Pending').order_by(OutboundRequest.created_at)
+#         requests = session.exec(statement).all()
+#         req_data = []
+#         for req in requests:
+#             item = session.get(InventoryItem, req.item_id)
+#             req_data.append({'req': req, 'item': item})
 
-    with Session(engine) as session:
-        statement = select(AssetRequest).where(AssetRequest.status == 'Pending').order_by(AssetRequest.created_at)
-        requests = session.exec(statement).all()
-        asset_req_data = []
-        for req in requests:
-            asset = None
-            asset = session.exec(select(AssetItem).where(AssetItem.ctrl_no == req.ctrl_no)).first()
-            asset_req_data.append({'req': req, 'asset': asset})
-    return templates.TemplateResponse(request, 'request_queue.html', {'req_data': req_data, 'asset_req_data': asset_req_data, 'user': current_user, 'active_page': 'request_queue', 'error': error})
+#     with Session(engine) as session:
+#         statement = select(AssetRequest).where(AssetRequest.status == 'Pending').order_by(AssetRequest.created_at)
+#         requests = session.exec(statement).all()
+#         asset_req_data = []
+#         for req in requests:
+#             asset = None
+#             asset = session.exec(select(AssetItem).where(AssetItem.ctrl_no == req.ctrl_no)).first()
+#             asset_req_data.append({'req': req, 'asset': asset})
+#     return templates.TemplateResponse(request, 'request_queue.html', {'req_data': req_data, 'asset_req_data': asset_req_data, 'user': current_user, 'active_page': 'request_queue', 'error': error})
 
 @router.get("/api/request_queue")
 async def get_request_queue(request: Request, current_user: dict = Depends(get_current_user)):
@@ -342,9 +342,9 @@ async def reject_asset_request(request: Request, req_id: int, current_user: dict
             session.commit()
     return {'status': 'success', 'message': t_lang("do.success", lang)}
 
-@router.get("/request_log", response_class=HTMLResponse)
-async def view_request_log(request: Request, current_user: dict = Depends(get_current_user)):
-    return templates.TemplateResponse(request, 'request_log.html', {'user': current_user, 'active_page': 'request_log'})
+# @router.get("/request_log", response_class=HTMLResponse)
+# async def view_request_log(request: Request, current_user: dict = Depends(get_current_user)):
+#     return templates.TemplateResponse(request, 'request_log.html', {'user': current_user, 'active_page': 'request_log'})
 
 @router.get("/api/request_log")
 async def get_request_log(request: Request, current_user: dict = Depends(get_current_user)):

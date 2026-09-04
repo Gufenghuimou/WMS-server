@@ -1,0 +1,63 @@
+<div class="settings-container">
+    <h2 class="settings-header">
+        <i class="material-icons" style="vertical-align: middle; color: var(--primary-blue); font-size: 2rem;">manage_accounts</i> 
+        <span data-i18n="title.settings">Settings</span>
+    </h2>
+
+    <form id="settingsForm">
+        <div class="avatar-upload-box">
+            <div class="avatar-preview-circle">
+                <img id="setAvatarPreview" src="" style="width:100%; height:100%; object-fit:cover; display: none;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <i class="material-icons" style="display:none; color:#777; font-size: 40px; justify-content:center; align-items:center; width: 100%; height: 100%;">person</i>
+            </div>
+            <div>
+                <h4 style="margin: 0 0 10px 0; color: var(--text-main);" data-i18n="settings.avatar_label">Avatar</h4>
+                <!-- 移除了内联的 onchange -->
+                <input type="file" name="avatar" id="avatarInput" accept="image/*" style="display: none;">
+                <!-- 移除了内联的 onclick -->
+                <button type="button" class="btn-upload" id="btnUploadAvatar">
+                    <i class="material-icons" style="font-size: 1.1rem; vertical-align: middle;">upload</i> 
+                    <span data-i18n="settings.upload_btn">Upload</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="form-group-main">
+            <div class="user-edit">
+                <label data-i18n="settings.username_label">Username</label>
+                <input type="text" id="settingsUsername" disabled>
+            </div>
+            <div class="user-edit">
+                <label data-i18n="settings.full_name_label">Full Name</label>
+                <input type="text" name="new_full_name" id="settingsFullName" data-i18n-placeholder="settings.full_name_placeholder">
+            </div>
+        </div>
+
+        <div class="form-group-main">
+            <div class="user-edit">
+                <label data-i18n="settings.new_password_label">New Password</label>
+                <input type="password" name="new_password" autocomplete="new-password" data-i18n-placeholder="settings.new_password_placeholder">
+            </div>
+            <div class="user-edit">
+                <label data-i18n="settings.confirm_password_label">Confirm Password</label>
+                <input type="password" name="confirm_password" autocomplete="new-password" data-i18n-placeholder="settings.confirm_password_placeholder">
+            </div>
+        </div>
+
+        <div class="security-box">
+            <label>
+                <i class="material-icons" style="vertical-align: middle; font-size: 1.2rem;">security</i>
+                <span data-i18n="settings.security_label">Security Verification</span>
+            </label>
+            <input type="password" name="old_password" required data-i18n-placeholder="settings.old_password_placeholder">
+        </div>
+
+        <div id="settingsMsgBox" class="settings-msg" style="display: none;"></div>
+        
+        <div style="display: flex; gap: 15px;">
+            <button type="submit" id="submitBtn" class="btn-save">
+                <span data-i18n="settings.save_btn">Save Changes</span>
+            </button>
+        </div>
+    </form>
+</div>

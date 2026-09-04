@@ -292,7 +292,7 @@
 
             if (realStock < currentReqQty) {
                 event.preventDefault();
-                errorText.innerText = QUEUE_I18N.stock_insufficient
+                errorText.innerText = t('queue.stock_insufficient')
                                         .replace('{realStock}', realStock)
                                         .replace('{reqQty}', currentReqQty);
 

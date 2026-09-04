@@ -1,5 +1,3 @@
-<link rel="stylesheet" href="/static/css/global_modal.css">
-
 <!-- =============================================
     1. 全局调用的 Modal
 ==============================================-->
@@ -9,12 +7,14 @@
     <div class="custom-modal-content" style="width: 320px; text-align: center;">
         <span class="close-modal" onclick="closeQrModal()">&times;</span>
         <h3 style="margin-top:0; color: var(--text-main); display: flex; align-items: center; justify-content: center; gap: 8px;">
-            <i class="material-icons" style="color: #8e44ad;">qr_code_scanner</i>{{ t('base.scan_to_login', lang) }}
+            <i class="material-icons" style="color: #8e44ad;">qr_code_scanner</i>
+            <span data-i18n="base.scan_to_login">Scan to Login</span>
         </h3>
-        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">{{ t('base.qr_note', lang) }}</p>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;" data-i18n="base.qr_note">QR Note</p>
         <canvas id="qrcodeCanvas" style="margin: 0 auto; display: block; border: 1px solid #eee; padding: 10px; border-radius: 8px;"></canvas>
         <div style="font-size: 0.75rem; color: #aaa; margin-top: 15px;">
-            <i class="material-icons" style="font-size: 0.9rem; vertical-align: middle;">timer</i>{{ t('base.qr_time_note', lang) }}
+            <i class="material-icons" style="font-size: 0.9rem; vertical-align: middle;">timer</i>
+            <span data-i18n="base.qr_time_note">QR Time Note</span>
         </div>
     </div>
 </div>
@@ -24,65 +24,65 @@
     <div class="custom-modal-content" style="text-align: center; width: 610px; overflow:hidden;">
         <span class="close-modal" onclick="closeReprintModal()">&times;</span>
         <h3 style="margin: 0; color: var(--primary-blue); font-size: 1.1rem; margin-bottom:15px; align-self: flex-start;">
-            <i class="material-icons" style="vertical-align: middle;">print</i> {{ t('reprint.page_title', lang) }}
+            <i class="material-icons" style="vertical-align: middle;">print</i> 
+            <span data-i18n="reprint.page_title">Reprint</span>
         </h3>
         <div class="reprint-container">
             <div style="background: #fdfefe; border-bottom: 1px solid #dcdde1; padding-bottom: 10px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; gap: 5px;">
                 <div style="display: flex; align-items: center; gap: 8px; color: #7f8c8d;">
                     <i class="material-icons" style="font-size: 1.35rem;" id="printerStatusIcon">print_disabled</i>
-                    {# <span style="font-weight: bold; font-size: 0.9rem; white-space: nowrap">{{ t('reprint.config_title', lang) }}</span> #}
                 </div>
 
                 <form id="printerConfigForm" style="display: flex; gap: 10px; align-items: center; margin: 0;" onsubmit="savePrinterConfig(event)">
-                    <input type="text" id="printerIp" class="big-input" style="width: 180px; padding: 8px 12px; font-size: 0.9rem;" placeholder="{{ t('reprint.ph_ip', lang) }}" required>
+                    <input type="text" id="printerIp" class="big-input" style="width: 180px; padding: 8px 12px; font-size: 0.9rem;" data-i18n-placeholder="reprint.ph_ip" placeholder="IP" required>
                     <span style="color:#aaa;">:</span>
-                    <input type="number" id="printerPort" class="big-input" style="width: 100px; padding: 8px 12px; font-size: 0.9rem;" placeholder="{{ t('reprint.ph_port', lang) }}" required>
+                    <input type="number" id="printerPort" class="big-input" style="width: 100px; padding: 8px 12px; font-size: 0.9rem;" data-i18n-placeholder="reprint.ph_port" placeholder="Port" required>
 
-                    <button type="submit" class="btn-primary" style="padding: 8px 15px; font-size: 0.85rem; height: auto;">{{ t('reprint.btn_save_config', lang) }}</button>
-                    <button type="button" class="btn-primary" style="padding: 8px 15px; font-size: 0.85rem; height: auto; background: #95a5a6; box-shadow: none;" onclick="checkPrinterStatus()">{{ t('reprint.btn_test', lang) }}</button>
+                    <button type="submit" class="btn-primary" style="padding: 8px 15px; font-size: 0.85rem; height: auto;" data-i18n="reprint.btn_save_config">Save</button>
+                    <button type="button" class="btn-primary" style="padding: 8px 15px; font-size: 0.85rem; height: auto; background: #95a5a6; box-shadow: none;" onclick="checkPrinterStatusManual()" data-i18n="reprint.btn_test">Test</button>
                 </form>
             </div>
             <div class="tab-box">
-                <button class="tab-btn active" id="tabInv" onclick="switchMode('inv')">{{ t('reprint.tab_inv', lang) }}</button>
-                <button class="tab-btn" id="tabAsset" onclick="switchMode('asset')">{{ t('reprint.tab_asset', lang) }}</button>
+                <button class="tab-btn active" id="tabInv" onclick="switchMode('inv')" data-i18n="reprint.tab_inv">Inventory</button>
+                <button class="tab-btn" id="tabAsset" onclick="switchMode('asset')" data-i18n="reprint.tab_asset">Asset</button>
             </div>
 
             <div id="formInv">
                 <div class="input-container" style="display: flex; gap:15px; justify-content:space-between;">
                     <div class="form-group">
-                        <label>{{ t('reprint.lbl_inv_pn1', lang) }}</label>
-                        <input type="text" id="invPn1" class="big-input" placeholder="{{ t('reprint.ph_inv_pn1', lang) }}" autocomplete="off">
+                        <label data-i18n="reprint.lbl_inv_pn1">PN1</label>
+                        <input type="text" id="invPn1" class="big-input" data-i18n-placeholder="reprint.ph_inv_pn1" placeholder="Enter PN1" autocomplete="off">
                     </div>
                     <div class="form-group">
-                        <label>{{ t('reprint.lbl_inv_pn2', lang) }}</label>
+                        <label data-i18n="reprint.lbl_inv_pn2">PN2</label>
                         <input type="text" id="invPn2" class="big-input readonly-input" readonly>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>{{ t('reprint.lbl_inv_name', lang) }}</label>
+                    <label data-i18n="reprint.lbl_inv_name">Name</label>
                     <input type="text" id="invName" class="big-input readonly-input" readonly>
                 </div>
                 <div id="invStatus" class="status-msg"></div>
-                <button class="btn-primary" style="width:100%; height: 50px; font-size: 1.2rem; background: #2c3e50;" onclick="doPrint('inv')">{{ t('reprint.btn_print_now', lang) }}</button>
+                <button class="btn-primary" style="width:100%; height: 50px; font-size: 1.2rem; background: #2c3e50;" onclick="doPrint('inv')" data-i18n="reprint.btn_print_now">Print Now</button>
             </div>
 
             <div id="formAsset" style="display: none;">
                 <div class="input-container" style="display: flex; gap:15px; justify-content:space-between;">
                     <div class="form-group">
-                        <label>{{ t('reprint.lbl_asset_ctrl', lang) }}</label>
-                        <input type="text" id="assetCtrl" class="big-input" placeholder="{{ t('reprint.ph_asset_ctrl', lang) }}" autocomplete="off">
+                        <label data-i18n="reprint.lbl_asset_ctrl">Ctrl No</label>
+                        <input type="text" id="assetCtrl" class="big-input" data-i18n-placeholder="reprint.ph_asset_ctrl" placeholder="Ctrl No" autocomplete="off">
                     </div>
                     <div class="form-group">
-                        <label>{{ t('reprint.lbl_asset_pn1', lang) }}</label>
+                        <label data-i18n="reprint.lbl_asset_pn1">PN1</label>
                         <input type="text" id="assetPn1" class="big-input readonly-input" readonly>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>{{ t('reprint.lbl_asset_name', lang) }}</label>
+                    <label data-i18n="reprint.lbl_asset_name">Name</label>
                     <input type="text" id="assetName" class="big-input readonly-input" readonly>
                 </div>
                 <div id="assetStatus" class="status-msg"></div>
-                <button class="btn-primary" style="width:100%; height: 50px; font-size: 1.2rem; background: #2c3e50;" onclick="doPrint('asset')">{{ t('reprint.btn_print_now', lang) }}</button>
+                <button class="btn-primary" style="width:100%; height: 50px; font-size: 1.2rem; background: #2c3e50;" onclick="doPrint('asset')" data-i18n="reprint.btn_print_now">Print Now</button>
             </div>
         </div>
     </div>
@@ -90,7 +90,6 @@
 
 <!-- 物品图像上传剪裁的Modal -->
 <div id="cropModal" class="custom-modal" style="z-index: 9999;">
-    <!-- 图像裁剪需要原生流布局，添加 display: block 覆盖居中 -->
     <div class="custom-modal-content" style="display: block; width: 90%; max-width: 600px; padding: 20px;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 15px;">
             <h3 style="margin: 0; color: var(--primary-blue); font-size: 1.1rem;">
@@ -103,7 +102,7 @@
         </div>
         <div style="display: flex; gap: 10px; justify-content: flex-end;">
             <button type="button" onclick="closeCropModal()" style="padding: 8px 20px; border-radius: 6px; border: none; background: #95a5a6; color: white; cursor: pointer;">取消</button>
-            <button type="button" onclick="" id="confirmCrop" style="padding: 8px 20px; border-radius: 6px; border: none; background: var(--primary-blue); color: white; font-weight: bold; cursor: pointer;">确认裁剪</button>
+            <button type="button" id="confirmCrop" style="padding: 8px 20px; border-radius: 6px; border: none; background: var(--primary-blue); color: white; font-weight: bold; cursor: pointer;">确认裁剪</button>
         </div>
     </div>
 </div>
@@ -113,14 +112,14 @@
     <div class="custom-modal-content" style="width: 380px; text-align: center; border-top: 6px solid var(--danger-red, #d93025);">
         <span class="close-modal" onclick="closeScrapModal()">&times;</span>
         <i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red); margin-bottom: 10px; width: auto; height: auto; line-height: 1;">report_problem</i>
-        <h3 style="margin-top: 0; color: #333; font-size: 1.3rem;">{{ t('asset_scrap.modal_title', lang) }}</h3>
-        <div style="background: #fce8e6; color: #c0392b; padding: 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 25px; text-align: left; line-height: 1.5;">
-            {{ t('asset_scrap.modal_warning', lang) | safe }}
-        </div>
+        <h3 style="margin-top: 0; color: #333; font-size: 1.3rem;" data-i18n="asset_scrap.modal_title">Scrap Warning</h3>
+        
+        <div data-i18n="asset_scrap.modal_warning" style="background: #fce8e6; color: #c0392b; padding: 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 25px; text-align: left; line-height: 1.5;"></div>
+        
         <form id="scrapForm" method="post" action="" style="width: 100%;"></form>
         <div class="slider-container" id="sliderContainer" style="width: 100%;">
             <div class="slider-track" id="sliderTrack">
-                <div class="slider-text" id="sliderText">{{ t('asset_scrap.slider_text', lang) }}</div>
+                <div class="slider-text" id="sliderText" data-i18n="asset_scrap.slider_text">Slide to Scrap</div>
                 <div class="slider-bg" id="sliderBg"></div>
                 <div class="slider-handle" id="sliderHandle">
                     <i class="material-icons">double_arrow</i>
@@ -128,7 +127,7 @@
             </div>
         </div>
         <div style="display: flex; gap: 15px; justify-content: center; margin-top: 25px; width: 100%;">
-            <button type="button" class="btn-primary" style="background: #f1f3f4; color: #555; box-shadow: none;" onclick="closeScrapModal()">{{ t('asset_scrap.btn_think_again', lang) }}</button>
+            <button type="button" class="btn-primary" style="background: #f1f3f4; color: #555; box-shadow: none;" onclick="closeScrapModal()" data-i18n="asset_scrap.btn_think_again">Think Again</button>
         </div>
     </div>
 </div>
@@ -148,16 +147,11 @@
     <div class="custom-modal-content" style="width: 400px; text-align: left; padding: 20px;">
         <span class="close-modal" onclick="closeActionModal()">&times;</span>
         <h3 id="actionModalCtrlNo" class="font-monospace" style="margin-top: 0; color: var(--text-main); border-bottom: 1px solid #eee; padding-bottom: 10px; font-size: 1.35rem; align-self: flex-start;"></h3>
-        <!-- 当前物品的信息展示 -->
         <div style="font-size: 1.15rem; margin: 0 0 15px 15px; align-self: flex-start;">
             <div id="actionModalPn" class="font-monospace" style="font-weight: bold; color: var(--text-main);"></div>
             <span id="actionModalName" style="color: var(--text-muted); font-size: 0.95rem"></span>
         </div>
-        
-        <!-- 这里用来动态注入按钮 -->
-        <div id="actionModalButtons" style="display: flex; gap: 20px;">
-            <!-- 按钮会由 JS 动态生成 -->
-        </div>
+        <div id="actionModalButtons" style="display: flex; gap: 20px;"></div>
     </div>
 </div>
 
@@ -165,16 +159,15 @@
     2. 资产工作流 Modal (Asset / Audit)
 ==============================================-->
 
-<!-- 重复扫码确认Modal -->
 <div id="repeatedConfirmModal" class="custom-modal">
     <div class="custom-modal-content" style="width: 380px; text-align: center;">
         <span class="close-modal" onclick="closeRepeatedConfirmModal()">&times;</span>
         <div><i class="material-icons" style="font-size: 3.5rem; color: #faad14;">announcement</i></div>
-        <h3 style="margin-top:15px; color:var(--text-main);"> {{ t('asset_audit.repeated_title', lang) }}</h3>
+        <h3 style="margin-top:15px; color:var(--text-main);" data-i18n="asset_audit.repeated_title">Repeated Scan</h3>
         <p id="repeatedConfirmText" style="font-size: 1.05rem; color: #666; margin-bottom: 25px; line-height: 2.2;"></p>
         <div style="display: flex; justify-content: center; gap: 15px; width: 100%;">
-            <button type="button" id="repeatedCancelBtn" class="btn-primary" style="background: #f0f2f5; color: #555; box-shadow: none;" onclick="closeRepeatedConfirmModal()">{{ t('asset_view.btn_cancel_modal', lang) }}</button>
-            <button type="submit" id="repeatedSubmitBtn" class="btn-primary" style="width: 120px; background-color: #faad14;">{{ t('asset_audit.repeated_submit', lang) }}</button>
+            <button type="button" id="repeatedCancelBtn" class="btn-primary" style="background: #f0f2f5; color: #555; box-shadow: none;" onclick="closeRepeatedConfirmModal()" data-i18n="asset_view.btn_cancel_modal">Cancel</button>
+            <button type="submit" id="repeatedSubmitBtn" class="btn-primary" style="width: 120px; background-color: #faad14;" data-i18n="asset_audit.repeated_submit">Submit</button>
         </div>
     </div>
 </div>
@@ -183,97 +176,97 @@
     <div class="custom-modal-content" style="display: block; width: 450px;">
         <span class="close-modal" onclick="closeAssetToggleModal()">&times;</span>
         <h3 id="assetToggleTitle" style="margin-top:0; color:var(--text-main); display:flex; align-items:center; gap:8px;">
-            <i class="material-icons" style="color:var(--primary);">swap_horiz</i> {{ t('asset_view.modal_toggle_title', lang) }}
+            <i class="material-icons" style="color:var(--primary);">swap_horiz</i> 
+            <span data-i18n="asset_view.modal_toggle_title">Toggle Status</span>
         </h3>
         <p id="assetToggleHintBox" style="font-size: 0.85rem; color: #666; margin-bottom: 20px; line-height: 1.5; background:#f8f9fa; padding:10px; border-radius:8px; border-left:3px solid var(--primary);"></p>
 
         <form id="assetToggleForm" method="post" action="">
             <div style="margin-bottom: 20px;">
-                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('asset_view.modal_toggle_lbl', lang) }}</label>
-                <input type="text" name="target_loc" id="assetLocInput" autocomplete="off" placeholder=""
-                       style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; outline: none;" value="">
+                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;" data-i18n="asset_view.modal_toggle_lbl">Target Location</label>
+                <input type="text" name="target_loc" id="assetLocInput" autocomplete="off" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; outline: none;">
             </div>
             <div id="toggleUserFields" style="display: none; margin-bottom: 20px;">
                 <input type="hidden" name="matter" id="toggleMatter" value="return">
                 <input type="hidden" name="req_qty" value="1">
-                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('asset_view.location', lang) }} <span style="color:red;">*</span></label>
+                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">
+                    <span data-i18n="asset_view.location">Location</span> <span style="color:red;">*</span>
+                </label>
                 <input type="text" name="department" id="toggleDept" class="edit-input" style="width: 100%; margin-bottom: 10px;">
 
-                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('asset_view.note', lang) }}</label>
+                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;" data-i18n="asset_view.note">Note</label>
                 <input type="text" name="note" id="toggleNote" class="edit-input" style="width: 100%;">
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #555; box-shadow: none;" onclick="closeAssetToggleModal()">{{ t('asset_view.btn_cancel_modal', lang) }}</button>
-                <button type="submit" class="btn-primary">{{ t('asset_view.btn_confirm_modal', lang) }}</button>
+                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #555; box-shadow: none;" onclick="closeAssetToggleModal()" data-i18n="asset_view.btn_cancel_modal">Cancel</button>
+                <button type="submit" class="btn-primary" data-i18n="asset_view.btn_confirm_modal">Confirm</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- 停用Form的Modal -->
 <div id="stopConfirmModal" class="custom-modal">
     <div class="custom-modal-content" style="width: 380px; text-align: center;">
         <span class="close-modal" onclick="closeStopConfirmModal()">&times;</span>
         <div id="stopModalIcon" style="margin-bottom: 15px;"></div>
-        <h3 id="stopModalTitle" style="margin-top:0; color:var(--text-main);">{{ t('asset_view.modal_stop_title', lang) }}</h3>
+        <h3 id="stopModalTitle" style="margin-top:0; color:var(--text-main);" data-i18n="asset_view.modal_stop_title">Stop Asset</h3>
         <p id="stopModalText" style="font-size: 0.95rem; color: #666; margin-bottom: 25px; line-height: 1.5;"></p>
         <form id="stopForm" method="post" action="" style="width: 100%;">
             <div id="locReuseContainer" style="margin-bottom: 20px; display: none;">
-                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('asset_view.modal_toggle_lbl', lang) }}</label>
-                <input type="text" name="target_loc" id="locReuse" autocomplete="off" placeholder=""
-                       style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; outline: none;" value="">
+                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;" data-i18n="asset_view.modal_toggle_lbl">Target</label>
+                <input type="text" name="target_loc" id="locReuse" autocomplete="off" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; outline: none;">
             </div>
             <div id="raisonRadio" style="display: flex; justify-content: center; gap: 30px; margin-bottom: 20px;">
                 <div>
                     <input id="no-use" type="radio" name="is_no_use" value="true" required>
-                    <label class="radio-label" for="no-use">{{ t('asset_scrap.no_use', lang) }}</label>
+                    <label class="radio-label" for="no-use" data-i18n="asset_scrap.no_use">Not Used</label>
                 </div>
                 <div>
                     <input id="broken" type="radio" name="is_no_use" value="false" required checked>
-                    <label class="radio-label" for="broken">{{ t('asset_scrap.broken', lang) }}</label>
+                    <label class="radio-label" for="broken" data-i18n="asset_scrap.broken">Broken</label>
                 </div>
             </div>
             <div id="stopUserFields" style="display: none; margin-bottom: 20px; text-align: left;">
                 <input type="hidden" name="matter" value="broken">
                 <input type="hidden" name="req_qty" value="1">
-                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('asset_view.location', lang) }}<span style="color:red;">*</span></label>
+                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">
+                    <span data-i18n="asset_view.location">Location</span><span style="color:red;">*</span>
+                </label>
                 <input type="text" name="department" id="stopDept" class="edit-input" style="width: 100%; margin-bottom: 10px;">
-                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('asset_view.note', lang) }}</label>
+                <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;" data-i18n="asset_view.note">Note</label>
                 <input type="text" name="note" id="stopNote" class="edit-input" style="width: 100%;">
             </div>
             <div style="display: flex; justify-content: center; gap: 15px;">
-                <button type="button" class="btn-primary" style="background: #f0f2f5; color: #555; box-shadow: none;" onclick="closeStopConfirmModal()">{{ t('asset_view.btn_cancel_modal', lang) }}</button>
+                <button type="button" class="btn-primary" style="background: #f0f2f5; color: #555; box-shadow: none;" onclick="closeStopConfirmModal()" data-i18n="asset_view.btn_cancel_modal">Cancel</button>
                 <button type="submit" id="stopSubmitBtn" class="btn-primary" style="width: 120px;"></button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- 【修复ID】单个资产物品编辑的Modal -->
 <div id="assetItemEditModal" class="custom-modal">
-    <!-- 横向铺开的表单，设置 display: block 和 max-content 保证宽度不会被挤压 -->
     <div class="custom-modal-content" style="display: block; width: max-content; max-width: 95%;">
         <span class="close-modal" onclick="closeAssetItemEditModal()">&times;</span>
         <h4 style="margin: 0 0 15px 0; color: var(--text-main); font-size: 1rem; border-bottom: 1px solid #eee; padding-bottom: 8px;">
             <i class="material-icons" style="font-size: 1.1rem; color: #3498db; vertical-align: middle;">edit_note</i>
-            {{ t('asset_view.modal_item_title', lang) }} <span id="modalCtrlNoDisplay" style="color:#888; font-size:0.85rem; margin-left:10px;"></span>
+            <span data-i18n="asset_view.modal_item_title">Edit Asset</span> <span id="modalCtrlNoDisplay" style="color:#888; font-size:0.85rem; margin-left:10px;"></span>
         </h4>
         <form id="assetItemEditForm" method="post" action="" style="display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(2, 1fr); gap: 15px; align-items: flex-end; margin: 0;">
             <div style="display: flex; flex-direction: column; gap: 6px; grid-column: span 1">
-                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;"> PN</label>
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">PN</label>
                 <input type="text" name="pn_1" id="editPn" class="edit-input" style="width: 160px;" required>
             </div>
             <div style="display: flex; flex-direction: column; gap: 6px; grid-column: span 1">
-                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('asset_view.modal_item_ctrl', lang) }}</label>
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;" data-i18n="asset_view.modal_item_ctrl">Ctrl No</label>
                 <input type="text" name="ctrl_no" id="editCtrlNo" class="edit-input" style="width: 160px;" required>
             </div>
             <div style="display: flex; flex-direction: column; gap: 6px; grid-column: span 1">
-                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('asset_view.modal_item_loc', lang) }}</label>
-                <input type="text" name="location" id="editLocation" class="edit-input" style="width: 160px;" placeholder="{{ t('asset_view.modal_item_loc_ph', lang) }}">
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;" data-i18n="asset_view.modal_item_loc">Location</label>
+                <input type="text" name="location" id="editLocation" class="edit-input" style="width: 160px;" data-i18n-placeholder="asset_view.modal_item_loc_ph">
             </div>
             <div style="display: flex; flex-direction: column; gap: 6px; grid-column: span 1">
-                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('asset_view.modal_item_date', lang) }}</label>
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;" data-i18n="asset_view.modal_item_date">Date</label>
                 <input type="date" name="first_in_date" id="editDate" class="edit-input" style="width: 140px;">
             </div>
             <div style="display: flex; flex-direction: column; gap: 6px; grid-column: span 1">
@@ -296,21 +289,18 @@
                 <input type="text" name="remarks" id="editRemarks" class="edit-input">
             </div>
             <div style="display: flex; gap: 8px; margin-left: 10px; grid-column: span 1;">
-                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #555; box-shadow: none; height: 33px; line-height: 1; padding: 0 15px;" onclick="closeAssetItemEditModal()">{{ t('asset_view.btn_cancel_modal', lang) }}</button>
-                <button type="submit" class="btn-primary" style="background: #3498db; height: 33px; line-height: 1; padding: 0 15px;">{{ t('asset_view.btn_save_changes', lang) }}</button>
+                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #555; box-shadow: none; height: 33px; line-height: 1; padding: 0 15px;" onclick="closeAssetItemEditModal()" data-i18n="asset_view.btn_cancel_modal">Cancel</button>
+                <button type="submit" class="btn-primary" style="background: #3498db; height: 33px; line-height: 1; padding: 0 15px;" data-i18n="asset_view.btn_save_changes">Save</button>
             </div>
         </form>
     </div>
 </div>
 
-
 <!-- =============================================
     3. 审批工作流 Modal (Approve)
 ==============================================-->
 
-<!-- 物料申请审批时的Modal -->
 <div id="approveModal" class="custom-modal">
-    <!-- 内容要求靠左对齐，设置 display: block -->
     <div class="custom-modal-content" style="display: block; width: 450px; overflow-y: hidden;">
         <span class="close-modal" onclick="closeApproveModal()">&times;</span>
         <h3 style="margin-top: 0; color: var(--primary-green); border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; align-items: center; gap: 10px; font-size: 1.35rem;">
@@ -319,37 +309,35 @@
         </h3>
         <form id="approveForm" method="post">
             <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee;">
-                <div style="margin-bottom: 8px; font-size: 1.2rem; color: #666;">{{ t('queue.item_pn', lang) }} <strong id="modalPn" style="color: #333;"></strong></div>
-                <div style="margin-bottom: 8px; font-size: 0.9rem; color: #666;">{{ t('queue.item_name', lang) }} <strong id="modalName" style="color: #333;"></strong></div>
+                <div style="margin-bottom: 8px; font-size: 1.2rem; color: #666;"><span data-i18n="queue.item_pn">PN</span> <strong id="modalPn" style="color: #333;"></strong></div>
+                <div style="margin-bottom: 8px; font-size: 0.9rem; color: #666;"><span data-i18n="queue.item_name">Name</span> <strong id="modalName" style="color: #333;"></strong></div>
                 <div style="display: flex; gap: 15px; margin-top: 15px;">
                     <div style="flex: 1; text-align: center; background: white; padding: 10px; border-radius: 6px; border: 1px solid #ddd;">
-                        <span style="display: block; font-size: 0.75rem; color: #888;">{{ t('queue.sys_stock', lang) }}</span>
+                        <span style="display: block; font-size: 0.75rem; color: #888;" data-i18n="queue.sys_stock">Sys Stock</span>
                         <strong id="modalSysStock" style="font-size: 1.2rem; color: var(--primary-blue);"></strong>
                     </div>
                     <div style="flex: 1; text-align: center; background: #fff0f0; padding: 10px; border-radius: 6px; border: 1px solid #fadbd8;">
-                        <span style="display: block; font-size: 0.75rem; color: #e74c3c;">{{ t('queue.deduct_qty', lang) }}</span>
+                        <span style="display: block; font-size: 0.75rem; color: #e74c3c;" data-i18n="queue.deduct_qty">Req Qty</span>
                         <strong id="modalReqQty" style="font-size: 1.2rem; color: var(--danger-red);"></strong>
                     </div>
                 </div>
             </div>
             <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; color: var(--text-main); margin-bottom: 8px;">{{ t('queue.real_stock', lang) }} <span style="color: red;">*</span></label>
-                <input type="number" id="realStock" name="real_stock" required min="0" step="1"
-                       style="width: 100%; height: 42px; font-size: 1.2rem; text-align: center; border: 2px solid var(--danger-red); border-radius: 6px; outline: none; box-sizing: border-box;">
-                <p style="font-size: 0.75rem; color: #888; margin-top: 5px;"><i class="material-icons" style="font-size: 1rem; vertical-align: middle;">info</i> {{ t('queue.stock_tip', lang) }}</p>
+                <label style="display: block; font-weight: bold; color: var(--text-main); margin-bottom: 8px;">
+                    <span data-i18n="queue.real_stock">Real Stock</span> <span style="color: red;">*</span>
+                </label>
+                <input type="number" id="realStock" name="real_stock" required min="0" step="1" style="width: 100%; height: 42px; font-size: 1.2rem; text-align: center; border: 2px solid var(--danger-red); border-radius: 6px; outline: none; box-sizing: border-box;">
+                <p style="font-size: 0.75rem; color: #888; margin-top: 5px;"><i class="material-icons" style="font-size: 1rem; vertical-align: middle;">info</i> <span data-i18n="queue.stock_tip">Tip</span></p>
             </div>
             <div id="approveError" style="display: none; background: #fce8e6; color: #d93025; padding: 10px; border-radius: 6px; font-size: 0.85rem; margin-bottom: 15px; align-items: center; gap: 5px; border: 1px solid #fadbd8;">
                 <i class="material-icons" style="font-size: 1.2rem;">error_outline</i>
                 <span id="approveErrorText"></span>
             </div>
-            <button type="submit" class="btn-primary" style="width: 100%; height: 42px; background: #1db954; font-size: 1.1rem; border-radius: 6px;">
-                {{ t('queue.confirm_approve', lang) }}
-            </button>
+            <button type="submit" class="btn-primary" style="width: 100%; height: 42px; background: #1db954; font-size: 1.1rem; border-radius: 6px;" data-i18n="queue.confirm_approve">Confirm</button>
         </form>
     </div>
 </div>
 
-<!-- 资产申请审批时的Modal -->
 <div id="assetApproveModal" class="custom-modal">
     <div class="custom-modal-content" style="width: 450px;">
         <span class="close-modal" onclick="closeAssetApproveModal()">&times;</span>
@@ -360,57 +348,52 @@
                 <div id="assetModalCtrlNoBox" style="margin-bottom: 8px; font-size: 1.4rem; color: #666;"><strong id="assetModalCtrlNo" class="font-monospace"></strong></div>
             </div>
             <div id="assetDynamicInput" style="margin-bottom: 15px; width: 100%; text-align: left;"></div>
-            <button type="submit" class="btn-primary" style="width: 100%; height: 42px; background: #1db954; font-size: 1.1rem; border-radius: 6px;">
-                {{ t('queue.confirm_approve', lang) }}
-            </button>
+            <button type="submit" class="btn-primary" style="width: 100%; height: 42px; background: #1db954; font-size: 1.1rem; border-radius: 6px;" data-i18n="queue.confirm_approve">Confirm</button>
         </form>
     </div>
 </div>
-
 
 <!-- =============================================
     4. Simcard 工作流 Modal
 ==============================================-->
 
-<!-- 电话卡分配使用者时的Modal -->
 <div id="simcardToggleModal" class="custom-modal">
     <div class="custom-modal-content" style="display: block; width: 450px;">
         <span class="close-modal" onclick="closeSimcardToggleModal()">&times;</span>
         <h3 id="simcardToggleTitle" style="margin-top:0; color:var(--text-main); display:flex; align-items:center; gap:8px;">
-            <i class="material-icons" style="color:var(--primary);">swap_horiz</i> {{ t('asset_view.modal_toggle_title', lang) }}
+            <i class="material-icons" style="color:var(--primary);">swap_horiz</i> 
+            <span data-i18n="asset_view.modal_toggle_title">Toggle Status</span>
         </h3>
         <p id="simcardToggleHintBox" style="font-size: 0.85rem; color: #666; margin-bottom: 20px; line-height: 1.5; background:#f8f9fa; padding:10px; border-radius:8px; border-left:3px solid var(--primary);"></p>
         <form id="simcardToggleForm" method="post" action="">
             <div id="toggleFields" style="margin-bottom: 20px;">
                 <div class="form-row" style="margin-bottom: 15px;">
-                    <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('simcard_history.target_loc', lang) }}</label>
-                    <input type="text" name="target_loc" id="simcardLocInput" class="edit-input" autocomplete="off" placeholder="" style="width:100%;" required>
+                    <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;" data-i18n="simcard_history.target_loc">Target Location</label>
+                    <input type="text" name="target_loc" id="simcardLocInput" class="edit-input" autocomplete="off" style="width:100%;" required>
                 </div>
                 <div class="form-row" style="margin-bottom: 15px;">
-                    <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('simcard_history.target_user', lang) }}</label>
-                    <input type="text" name="target_user" id="userInput" class="edit-input" autocomplete="off" placeholder="" style="width:100%;">
+                    <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;" data-i18n="simcard_history.target_user">Target User</label>
+                    <input type="text" name="target_user" id="userInput" class="edit-input" autocomplete="off" style="width:100%;">
                 </div>
                 <div class="form-row" style="margin-bottom: 15px;">
-                    <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;">{{ t('simcard_history.target_proj', lang) }}</label>
-                    <input type="text" name="target_project" id="projectInput" class="edit-input" autocomplete="off" placeholder="" style="width:100%;">
+                    <label style="display:block; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px;" data-i18n="simcard_history.target_proj">Target Project</label>
+                    <input type="text" name="target_project" id="projectInput" class="edit-input" autocomplete="off" style="width:100%;">
                 </div>
             </div>
             <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #555; box-shadow: none;" onclick="closeSimcardToggleModal()">{{ t('asset_view.btn_cancel_modal', lang) }}</button>
-                <button type="submit" class="btn-primary">{{ t('asset_view.btn_confirm_modal', lang) }}</button>
+                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #555; box-shadow: none;" onclick="closeSimcardToggleModal()" data-i18n="asset_view.btn_cancel_modal">Cancel</button>
+                <button type="submit" class="btn-primary" data-i18n="asset_view.btn_confirm_modal">Confirm</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- 【修复ID】电话卡编辑属性时的Modal -->
 <div id="simcardEditModal" class="custom-modal">
-    <!-- 同样采用 display: block 防止网格布局被挤扁 -->
     <div class="custom-modal-content" style="display: block; width: 650px; max-width: 95%;">
         <span class="close-modal" onclick="closeSimcardEditModal()">&times;</span>
         <h4 style="margin: 0 0 15px 0; color: var(--text-main); font-size: 1rem; border-bottom: 1px solid #eee; padding-bottom: 8px;">
             <i class="material-icons" style="font-size: 1.1rem; color: #3498db; vertical-align: middle;">edit_note</i>
-            {{ t('asset_view.modal_item_title', lang) }}
+            <span data-i18n="asset_view.modal_item_title">Edit Info</span>
         </h4>
         <form id="simcardEditForm" method="post" action="" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
             <div style="grid-column: span 3;">
@@ -418,38 +401,37 @@
                 <input type="text" name="icc_id" id="editIccid" class="edit-input" style="width:100%" required autocomplete="off">
             </div>
             <div>
-                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('simcard.carrier', lang) }}</label>
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;" data-i18n="simcard.carrier">Carrier</label>
                 <input type="text" name="carrier" id="editCarrier" class="edit-input" style="width:100%" required autocomplete="off">
             </div>
             <div style="grid-column: span 2;">
-                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('simcard.number', lang) }}</label>
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;" data-i18n="simcard.number">Number</label>
                 <input type="text" name="phone_number" id="editPhone" class="edit-input" style="width:100%" required autocomplete="off">
             </div>
             <div>
-                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('simcard.location', lang) }}</label>
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;" data-i18n="simcard.location">Location</label>
                 <input type="text" name="location" id="editLoc" class="edit-input" style="width:100%" autocomplete="off">
             </div>
             <div>
-                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('simcard.direct_user', lang) }}</label>
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;" data-i18n="simcard.direct_user">User</label>
                 <input type="text" name="direct_user" id="editUser" class="edit-input" style="width:100%" autocomplete="off">
             </div>
             <div>
-                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('simcard.project', lang) }}</label>
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;" data-i18n="simcard.project">Project</label>
                 <input type="text" name="project" id="editProject" class="edit-input" style="width:100%" autocomplete="off">
             </div>
             <div style="grid-column: span 3;">
-                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;">{{ t('simcard.note', lang) }}</label>
+                <label style="font-size: 0.75rem; color: #7f8c8d; font-weight: bold;" data-i18n="simcard.note">Note</label>
                 <input type="text" name="note" id="editNote" class="edit-input" style="width:100%" autocomplete="off">
             </div>
             <div style="display: flex; justify-content: flex-end; gap: 10px; grid-column: span 3; margin-top: 10px;">
-                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #555; box-shadow: none;" onclick="closeSimcardEditModal()">{{ t('table.cancel_btn', lang) }}</button>
-                <button type="submit" class="btn-primary" style="background: var(--primary-green)">{{ t('table.save_btn', lang) }}</button>
+                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #555; box-shadow: none;" onclick="closeSimcardEditModal()" data-i18n="table.cancel_btn">Cancel</button>
+                <button type="submit" class="btn-primary" style="background: var(--primary-green)" data-i18n="table.save_btn">Save</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- 电话卡停用时的Modal -->
 <div id="activeToggleModal" class="custom-modal">
     <div class="custom-modal-content" style="width: 380px; text-align: center;">
         <span class="close-modal" onclick="closeActiveToggleModal()">&times;</span>
@@ -458,65 +440,9 @@
         <p id="activeModalText" style="font-size: 0.95rem; color: #666; margin-bottom: 25px; line-height: 1.5;"></p>
         <form id="activeToggleForm" method="post" action="" style="width: 100%;">
             <div style="display: flex; justify-content: center; gap: 15px;">
-                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #555; box-shadow: none;" onclick="closeActiveToggleModal()">{{ t('table.cancel_btn', lang) }}</button>
+                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #555; box-shadow: none;" onclick="closeActiveToggleModal()" data-i18n="table.cancel_btn">Cancel</button>
                 <button type="submit" id="activeSubmitBtn" class="btn-primary"></button>
             </div>
         </form>
     </div>
 </div>
-
-<script>
-    const MODAL_I18N = {
-        generating: "{{ t('base.generating', lang) }}",
-        unknown_error: "{{ t('base.unknown_error', lang) }}",
-        network_error_qr: "{{ t('base.network_error_qr', lang) }}",
-        upload_fail: "{{ t('asset_view.upload_fail', lang) }}",
-        upload_net_err: "{{ t('asset_view.upload_net_err', lang) }}",
-        request_return_title: "{{ t('asset_view.request_return_title', lang) }}",
-        request_return: "{{ t('asset_view.request_return', lang) }}",
-        toggle_out_title: "{{ t('asset_view.toggle_out_title', lang) }}",
-        toggle_out_hint: "{{ t('asset_view.toggle_out_hint', lang) }}",
-        toggle_out_ph: "{{ t('asset_view.toggle_out_ph', lang) }}",
-        toggle_in_title: "{{ t('asset_view.toggle_in_title', lang) }}",
-        toggle_in_hint: "{{ t('asset_view.toggle_in_hint', lang) }}",
-        toggle_in_ph: "{{ t('asset_view.toggle_in_ph', lang) }}",
-        report_broken_title: "{{ t('asset_view.report_broken_title', lang) }}",
-        report_broken: "{{ t('asset_view.report_broken', lang) }}",
-        btn_submit: "{{ t('asset_view.btn_submit', lang) }}",
-        stop_reuse_title: "{{ t('asset_view.stop_reuse_title', lang) }}",
-        stop_reuse_text: "{{ t('asset_view.stop_reuse_text', lang) }}",
-        btn_reuse: "{{ t('asset_view.btn_reuse', lang) }}",
-        stop_freeze_title: "{{ t('asset_view.stop_freeze_title', lang) }}",
-        stop_freeze_text: "{{ t('asset_view.stop_freeze_text', lang) }}",
-        btn_stop: "{{ t('asset_view.btn_stop', lang) }}",
-        dispatch_asset: "{{ t('queue.dispatch_asset', lang) }}",
-        scan_area_label: "{{ t('queue.scan_area_label', lang) }}",
-        scab_area_note: "{{ t('queue.scan_area_note', lang) }}",
-        confirm_return: "{{ t('queue.confirm_return', lang) }}",
-        target_location: "{{ t('queue.target_location', lang) }}",
-        target_location_ph: "{{ t('queue.target_location_ph', lang) }}",
-        confirm_broken: "{{ t('queue.confirm_broken', lang) }}",
-        broken_note: "{{ t('queue.broken_note', lang) }}",
-        simcard_disable: "{{ t('simcard.simcard_disable', lang) }}",
-        disabled_notice: "{{ t('simcard.disable_notice', lang) }}",
-        btn_disable: "{{ t('simcard.btn_disable', lang) }}",
-        simcard_enable: "{{ t('simcard.simcard_enable', lang) }}",
-        enable_notice: "{{ t('simcard.disable_notice', lang) }}",
-        btn_enable: "{{ t('simcard.btn_enable', lang) }}",
-        btn_scrap: "{{ t('card.scrap', lang) }}"
-    };
-    const REPRINT_I18N = {
-        msg_querying: "{{ t('reprint.msg_querying', lang) }}",
-        msg_correct_pn2: "{{ t('reprint.msg_correct_pn2', lang) }}",
-        msg_match_success: "{{ t('reprint.msg_match_success', lang) }}",
-        msg_net_fail: "{{ t('reprint.msg_net_fail', lang) }}",
-        alert_no_pn1: "{{ t('reprint.alert_no_pn1', lang) }}",
-        alert_no_ctrl: "{{ t('reprint.alert_no_ctrl', lang) }}",
-        alert_print_success: "{{ t('reprint.alert_print_success', lang) }}",
-        alert_print_fail: "{{ t('reprint.alert_print_fail', lang) }}",
-        alert_empty_ip: "{{ t('reprint.alert_empty_ip', lang) }}",
-        alert_save_fail: "{{ t('reprint.alert_save_fail', lang) }}",
-        alert_save_net_err: "{{ t('reprint.alert_save_net_err', lang) }}"
-    };
-</script>
-<script src="/static/js/global_modal.js"></script>

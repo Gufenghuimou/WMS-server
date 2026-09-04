@@ -1,0 +1,128 @@
+<div id="page-top-actions" style="display: none;">
+    <div style="display: flex; gap: 15px; align-items: center;">
+        <button id="favToggleBtn" class="btn-fav-filter" onclick="window.toggleFavFilter()" style="white-space: nowrap; overflow: hidden; text-overflow: clip;">
+            <i class="material-icons" id="favToggleIcon">bookmark_border</i> <span data-i18n="card.fav_filter">Fav Filter</span>
+        </button>
+        <div class="select-wrapper">
+            <select class="custom-select" id="sortSelect">
+                <option value="usage_desc" data-i18n="card.sort_usage">Sort Usage</option>
+                <option value="id_desc" data-i18n="card.sort_id">Sort ID</option>
+            </select>
+            <div class="select-arrow"><i class="material-icons">keyboard_arrow_down</i></div>
+        </div>
+        
+    </div>
+</div>
+
+<div class="card-grid" id="inventoryGrid"></div>
+
+<div id="formStorage" style="display: none;">
+    <!-- ================= 出库表单模板 ================= -->
+    <div id="outFormTemplate" style="display: none; height: 100%; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 10px;">
+            <h3 style="margin: 0; color: var(--danger-red); font-size: 1.05rem;">
+                <i class="material-icons" style="vertical-align: middle; font-size: 1.2rem;">outbox</i> 
+                <span data-i18n="card.out_title">Outbound</span>
+            </h3>
+            <span id="showLocation" style="font-size: 0.95rem; color: var(--primary); cursor: pointer;"></span>
+        </div>
+        <form id="outForm" method="post" style="flex: 1; display: flex; flex-direction: column;">
+            <div style="display: flex; gap: 8px;">
+                <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.pn1">PN1</label><input type="text" id="outPn1" disabled></div>
+                <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.current_stock">Stock</label><input type="text" id="outCurrentStock" disabled style="color: var(--primary-blue); font-weight: bold;"></div>
+            </div>
+            <div class="form-group-modal"><label data-i18n="card.name">Name</label><input type="text" id="outName" disabled></div>
+            <div class="form-group-modal"><label><span data-i18n="card.out_qty">QTY</span> <span style="color: red;">*</span></label><input type="number" name="req_qty" id="outQty" required min="1" style="border-color: var(--danger-red);"></div>
+            <div class="form-group-modal"><label><span data-i18n="card.real_stock">Real Stock</span> <span style="color: red;">*</span></label><input type="number" name="real_stock" id="realStock" required min="0" step="1" style="border-color: var(--danger-red);"></div>
+            <div style="display: flex; gap: 8px;">
+                <div class="form-group-modal" style="flex: 1;"><label><span data-i18n="card.dept">Department</span><span style="color: red;">*</span></label><input type="text" name="dept" id="department" style="border-color: var(--danger-red);"></div>
+                <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.applicant">Applicant</label><input type="text" name="applicant" id="outApplicant" readonly style="background: #f5f5f5; color: #888; cursor: not-allowed;"></div>
+            </div>
+            <div class="form-group-modal"><label data-i18n="card.out_note">Note</label><input type="text" name="note" data-i18n-placeholder="card.optional" placeholder="Optional"></div>
+
+            <div id="outFormError" style="display: none; background: #fce8e6; color: #d93025; padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; margin-top: 10px; margin-bottom: 10px; align-items: center; gap: 5px; border: 1px solid #fadbd8; animation: modalFadeIn 0.2s ease-out;">
+                <i class="material-icons" style="font-size: 1.1rem;">error_outline</i>
+                <span id="outFormErrorText"></span>
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: auto; padding-top: 8px;">
+                <button type="button" class="modal-btn btn-cancel" onclick="window.unflipCard()" data-i18n="table.cancel_btn">Cancel</button>
+                <button type="submit" class="modal-btn btn-out-confirm" data-i18n="card.confirm_out">Confirm</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ================= 编辑表单模板 ================= -->
+    <div id="editFormTemplate" style="display: none; height: 100%; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 8px;">
+            <h3 style="margin: 0; color: var(--primary-blue); font-size: 1.05rem;">
+                <i class="material-icons" style="vertical-align: middle; font-size: 1.2rem;">edit</i> 
+                <span data-i18n="card.edit_title">Edit</span>
+            </h3>
+            <button type="button" id="deleteBtn" data-i18n-title="card.scrap" title="Scrap">
+                <i class="material-icons" style="font-size: 0.95rem;">delete_forever</i>
+            </button>
+        </div>
+        <form id="editForm" method="post" style="flex: 1; display: flex; flex-direction: column;">
+            <div class="img-edit-container">
+                <div class="img-edit-tray">
+                    <img id="editImagePreview" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                    <div id="editImagePlaceholder" style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; color: #ccc;"><i class="material-icons" style="font-size: 1.2rem;">insert_photo</i></div>
+                </div>
+                <div class="btn-upload">
+                    <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
+                    <button type="button" onclick="document.getElementById('imageInput').click()" class="btn-primary" style="height: 26px; padding: 0 10px; background-color: var(--primary-blue);"><i class="material-icons" style="font-size: 1rem;">add_photo_alternate</i></button>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+                <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.pn1">PN1</label><input type="text" id="editPn1" name="pn_1" readonly></div>
+                <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.pn2_short">PN2</label><input type="text" id="editPn2" name="pn_2"></div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.book_stock">Stock</label><input type="number" id="editStock" name="stock" required></div>
+                <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.location">Location</label><input type="text" id="editLoc" name="location"></div>
+            </div>
+            <div class="form-group-modal"><label data-i18n="card.name">Name</label><input type="text" id="editName" name="name" required></div>
+            <div style="display: flex; gap: 8px;">
+                <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.category">Category</label><input type="text" id="editDesc1" name="description_1"></div>
+                <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.desc">Description</label><input type="text" id="editDesc2" name="description_2"></div>
+            </div>
+            <div class="form-group-modal"><label data-i18n="card.remarks">Remarks</label><input type="text" id="editRemarks" name="remarks"></div>
+
+            <div style="display: flex; gap: 8px; margin-top: auto; padding-top: 8px;">
+                <button type="button" class="modal-btn btn-cancel" onclick="window.unflipCard()" data-i18n="table.cancel_btn">Cancel</button>
+                <button type="submit" class="modal-btn btn-save" data-i18n="card.save_changes">Save Changes</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ================= 领用申请表单模板 ================= -->
+    <div id="requestFormTemplate" style="display: none; height: 100%; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 10px;">
+            <h3 style="margin: 0; color: var(--primary-blue); font-size: 1.05rem;">
+                <i class="material-icons" style="vertical-align: middle; font-size: 1.2rem;">pan_tool</i> 
+                <span data-i18n="card.req_title">Request</span>
+            </h3>
+            <i class="material-icons" style="cursor: pointer; color: #999; font-size: 1.2rem;" onclick="window.unflipCard()">close</i>
+        </div>
+
+        <form id="requestForm" method="post" style="flex: 1; display: flex; flex-direction: column;" onsubmit="window.submitRequest(event)">
+            <input type="hidden" id="reqItemId" name="item_id">
+            <div style="display: flex; gap: 8px;">
+                <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.pn1">PN1</label><input type="text" id="reqPn1" readonly style="background: #f5f5f5; border: none;"></div>
+                <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.book_remain">Remain</label><input type="text" id="reqStock" readonly style="color: var(--primary-blue); font-weight: bold; background: #f5f5f5; border: none;"></div>
+            </div>
+            <div class="form-group-modal"><label data-i18n="card.name">Name</label><input type="text" id="reqName" readonly style="background: #f5f5f5; border: none;"></div>
+            <div class="form-group-modal">
+                <label><span data-i18n="card.req_qty">Req Qty</span> <span style="color: red;">*</span></label>
+                <input type="number" id="reqQty" name="req_qty" required min="1" style="border-color: var(--primary-blue);">
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.applicant">Applicant</label><input type="text" name="applicant" id="reqApplicant" readonly style="background: #f5f5f5;"></div>
+                <div class="form-group-modal" style="flex: 1;"><label><span data-i18n="card.dept">Dept</span><span style="color: red;">*</span></label><input type="text" id="reqDept" name="department" required autocomplete="on"></div>
+            </div>
+            <div class="form-group-modal"><label data-i18n="card.req_reason">Reason</label><input type="text" id="reqNote" name="note"></div>
+            <button type="submit" class="modal-btn" id="btnSubmitReq" style="margin-top: auto; width: 100%; background: var(--primary-blue); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;" data-i18n="card.send_req">Send Request</button>
+        </form>
+    </div>
+</div>

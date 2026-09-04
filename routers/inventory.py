@@ -383,20 +383,22 @@ def export_mva(request: Request, current_user: dict = Depends(get_current_user))
 # async def stock_in(request: Request, current_user: dict = Depends(get_current_user)):
 #     return templates.TemplateResponse(request, "stock_in.html", {"request": request, "user": current_user, "active_page": "stock_in"})
 
-@router.post("/batch_submit")
+@router.post("/api/batch_submit")
 async def batch_submit(
-        background_tasks: BackgroundTasks,
-        pn_1: List[str] = Form(default=[]),
-        pn_2: List[str] = Form(default=[]),
-        name: List[str] = Form(default=[]),
-        description_1: List[str] = Form(default=[]),
-        description_2: List[str] = Form(default=[]),
-        stock:List[str] = Form(default=[]),
-        location:List[str] = Form(default=[]),
-        first_in_date: List[str] = Form(default=[]),
-        remarks: List[str] = Form(default=[]),
-        current_user: dict = Depends(get_current_user)
+    request: Request,
+    background_tasks: BackgroundTasks,
+    pn_1: List[str] = Form(default=[]),
+    pn_2: List[str] = Form(default=[]),
+    name: List[str] = Form(default=[]),
+    description_1: List[str] = Form(default=[]),
+    description_2: List[str] = Form(default=[]),
+    stock:List[str] = Form(default=[]),
+    location:List[str] = Form(default=[]),
+    first_in_date: List[str] = Form(default=[]),
+    remarks: List[str] = Form(default=[]),
+    current_user: dict = Depends(get_current_user)
 ):
+    lang = request.state.lang
     with Session(engine) as session:
         for i in range(len(pn_1)):
             current_pn = pn_1[i].strip()
@@ -454,7 +456,7 @@ async def batch_submit(
                 )
                 session.add(log)
         session.commit()
-    return RedirectResponse(url= "/stock_in", status_code=303)
+    return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 # -----------------------------历史记录--------------------------#
 

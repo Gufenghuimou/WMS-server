@@ -1,0 +1,30 @@
+
+<div id="page-top-actions" style="display: none;">
+    <div style="display: flex; gap: 8px; align-items: center;">
+        <button class="btn-filter" id="logFilter"><i class="material-icons" style="font-size: 1.2rem;">filter</i> 查看全部</button>
+        <a href="/asset_history/export" style="text-decoration: none;">
+            <button class="btn-primary" style="border-radius: 20px; gap: 8px;">
+                <i class="material-icons" style="font-size: 1.2rem;">file_download</i> <span data-i18n="asset_history.export_btn">Export</span>
+            </button>
+        </a>
+    </div>
+</div>
+
+<div class="history-container">
+    <table id="historyTable">
+        <thead>
+            <tr>
+                <th style="width: 10%; text-align: center;" data-i18n="asset_history.th_time">Time</th>
+                <th style="width: 10%; text-align: center;" data-i18n="asset_history.th_ctrl_no">Ctrl No.</th>
+                <th style="width: 30%; text-align: center;" data-i18n="asset_history.th_name">Name</th>
+                <th style="width: 10%; text-align: center;" data-i18n="asset_history.th_pn1">PN1</th>
+                <th style="width: 10%; text-align: center;" data-i18n="asset_history.th_action_status">Action Status</th>
+                <th style="width: 10%; text-align: center;" data-i18n="asset_history.th_target_loc">Target Location</th>
+                <th style="width: 20%;" data-i18n="asset_history.th_note">Note</th>
+            </tr>
+        </thead>
+        <tbody id="assetHistoryTbody">
+            
+        </tbody>
+    </table>
+</div>

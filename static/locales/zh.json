@@ -22,7 +22,7 @@
     "simcard_history": "电话卡变动记录",
     "reprint": "标签补打"
   },
-    "status": {
+  "status": {
     "base": "系统已就绪",
     "admin": "授权用户数",
     "asset_1": "类别",

@@ -313,7 +313,7 @@
         // ==========================================
         async function doAuditScan(currentLoc, ctrlNo) {
             if (!currentLoc) {
-                resultBox.innerHTML = `<span style="color: var(--danger-red);"><i class="material-icons" style="vertical-align:bottom;">error</i> ${AUDIT_I18N.err_no_loc}</span>`;
+                resultBox.innerHTML = `<span style="color: var(--danger-red);"><i class="material-icons" style="vertical-align:bottom;">error</i> ${t('audit.err_no_loc')}</span>`;
                 // 扫码失败时，给整个控制台一个闪烁警告
                 flashCard('var(--danger-red)');
                 return;
@@ -346,7 +346,7 @@
 
                         let badge = targetCard.querySelector('.cell-status');
                         badge.className = 'status-badge cell-status ' + (data.is_location_changed ? 'status-warn' : 'status-done');
-                        badge.innerText = data.is_location_changed ? AUDIT_I18N.status_warn : AUDIT_I18N.status_done;
+                        badge.innerText = data.is_location_changed ? t('audit.status_warn') : t('audit.status_done');
 
                         // 绿光闪烁反馈
                         targetCard.style.backgroundColor = '#e6f4ea';
@@ -361,7 +361,7 @@
                     flashCard('var(--danger-red)');
                 }
             } catch (err) {
-                resultBox.innerHTML = `<span style="color: var(--danger-red);">${AUDIT_I18N.net_error}</span>`;
+                resultBox.innerHTML = `<span style="color: var(--danger-red);">${t('audit.net_error')}</span>`;
             }
 
             // 清空条码框
