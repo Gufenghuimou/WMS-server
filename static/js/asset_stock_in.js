@@ -158,7 +158,7 @@
         const indicator = document.getElementById('indicator');
         indicator.innerHTML = `
             <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">sim_card</i>
-            ${t('status.asset_stock_in')}:
+            <span data-i18n="status.asset_stock_in">${t('status.asset_stock_in')}</span>:
             <span id="assetStockinCountDisplay" style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                 0
             </span>
@@ -311,7 +311,7 @@
                 let originalBtnText = submitBtn ? submitBtn.innerHTML : '';
                 if (submitBtn) {
                     submitBtn.disabled = true;
-                    submitBtn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite;">autorenew</i> ${t('base.submitting') || '提交中...'}`;
+                    submitBtn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite;">autorenew</i> <span data-i18n="base.submitting">${t('base.submitting')}</span>`;
                 }
 
                 try {

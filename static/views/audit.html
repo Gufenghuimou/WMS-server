@@ -1,13 +1,13 @@
 
 <div id="page-top-actions" style="display: none;">
     <div style="display: flex; gap: 15px; align-items: center;">
-        <form action="/audit/start" method="post" style="margin: 0;" onsubmit="return confirm(t('audit.confirm_start');">
+        <form action="/audit/start" method="post" style="margin: 0;" onsubmit="return confirm(t('audit.confirm_start'))">
             <button type="submit" class="btn-primary" style="background: transparent; color: var(--text-muted);">
                 <i class="material-icons" style="font-size: 1.2rem; margin-right: 5px;">sync</i> <span data-i18n="audit.start_new">Start New</span>
             </button>
         </form>
 
-        <form action="/audit/commit" method="post" style="margin: 0;" onsubmit="return confirm(t('asset_audit.confirm_commit');">
+        <form action="/audit/commit" method="post" style="margin: 0;" onsubmit="return confirm(t('asset_audit.confirm_commit'))">
             <button type="submit" class="btn-primary" style="background-color: var(--primary-green);">
                 <i class="material-icons" style="font-size: 1.2rem; margin-right: 5px;">done_all</i> <span data-i18n="asset_audit.btn_commit">Commit</span>
             </button>

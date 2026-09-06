@@ -3,6 +3,13 @@
 (() => {
 
     window.initAuditPage = async function() {
+        const topActionsContainer = document.querySelector('.top-actions');
+        const pageActions = document.getElementById('page-top-actions');
+        if (pageActions) {
+            topActionsContainer.innerHTML = pageActions.innerHTML;
+            pageActions.remove();
+        }
+
         try {
             const response = await fetch('/api/audit');
             const result = await response.json();
@@ -94,8 +101,8 @@
                         <thead style="position: sticky; top: 0; background: #f1f5f9; z-index: 10; box-shadow: inset 0 -2px 0 var(--border-color);">
                             <tr>
                                 <th style="width: 140px;">${t('audit.th_pn1')}</th>
-                                <th style="width: 140px;">PN2</th> <th style="min-width: 250px;">>${t('audit.th_name')}</th>
-                                <th style="width: 80px; text-align: center;">>${t('audit.th_book_qty')}}</th>
+                                <th style="width: 140px;">PN2</th> <th style="min-width: 250px;">${t('audit.th_name')}</th>
+                                <th style="width: 80px; text-align: center;">${t('audit.th_book_qty')}</th>
                                 <th style="width: 100px; ">${t('audit.th_actual_qty')}</th>
                                 <th style="width: 100px;">${t('audit.th_actual_loc')}</th>
                                 <th style="width: 150px;">${t('audit.th_remarks')}</th>

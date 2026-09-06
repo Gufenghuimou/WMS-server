@@ -19,13 +19,13 @@ os.makedirs(os.path.join(base_dir, "static/avatars"), exist_ok=True)
 # -------------- 多语言引擎 -------------- #
 
 try:
-    with open(os.path.join(base_dir, 'locales/zh.json'), 'r', encoding='utf-8') as f:
+    with open(os.path.join(base_dir, 'static/locales/zh.json'), 'r', encoding='utf-8') as f:
         LANG_ZH = json.load(f)
-    with open(os.path.join(base_dir, 'locales/en.json'), 'r', encoding='utf-8') as f:
+    with open(os.path.join(base_dir, 'static/locales/en.json'), 'r', encoding='utf-8') as f:
         LANG_EN = json.load(f)
-    with open(os.path.join(base_dir, 'locales/jp.json'), 'r', encoding='utf-8') as f:
+    with open(os.path.join(base_dir, 'static/locales/ja.json'), 'r', encoding='utf-8') as f:
         LANG_JP = json.load(f)
-    with open(os.path.join(base_dir, 'locales/vn.json'), 'r', encoding='utf-8') as f:
+    with open(os.path.join(base_dir, 'static/locales/vi.json'), 'r', encoding='utf-8') as f:
         LANG_VN = json.load(f)
 except FileNotFoundError:
     print('WARNING: Can not find locale folder or json file.')
