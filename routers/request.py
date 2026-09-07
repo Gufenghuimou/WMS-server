@@ -22,7 +22,7 @@ router = APIRouter(tags=['Request'])
 # -----------------------------申请队列--------------------------#
 
 @router.get("/api/request_queue")
-async def get_request_queue(request: Request, current_user: dict = Depends(get_current_user)):
+async def get_request_queue(request: Request, current_user: dict = Depends(require_admin)):
     with Session(engine) as session:
         statement = select(OutboundRequest).where(OutboundRequest.status == 'Pending').order_by(OutboundRequest.created_at)
         requests = session.exec(statement).all()
@@ -62,7 +62,7 @@ async def submit_outbound_request(
         if not item:
             return {'status': 'error', 'message': t_lang("do.not_exist", lang)}
 
-        if req_qty < 0:
+        if req_qty <= 0:
             return {'status': 'error', 'message': t_lang("do.illegal_number_1", lang)}
         if req_qty > (item.stock or 0):
             return {'status': 'error', 'message': t_lang("do.illegal_number_2", lang)}
@@ -98,7 +98,7 @@ async def submit_asset_request(
         asset = session.exec(select(AssetItem).where(AssetItem.ctrl_no == ctrl_no)).first()
         if not asset:
             return {'status': 'error', 'message': t_lang("do.not_exist", lang)}
-        if not matter:
+        if not matter or matter not in ['return', 'broken']:
             return {'status': 'error', 'message': "Illegal matter"}
         asset_id = asset.id
         real_applicant = current_user.get('full_name') or current_user.get('username')
@@ -140,13 +140,13 @@ async def submit_asset_request_pn(
         assets = session.exec(statement).all()
         if not assets:
             return {'status': 'error', 'message': t_lang("do.not_exist", lang)}
-        if not matter:
+        if not matter or matter != 'require':
             return {'status': 'error', 'message': "Illegal matter"}
-        if req_qty < 0:
+        if req_qty <= 0:
             return {'status': 'error', 'message': t_lang("do.illegal_number_1", lang)}
         stock = []
         for a in assets:
-            if a.is_stock:
+            if a.is_stock and not a.is_stop:
                 stock.append(a)
         if req_qty > len(stock):
             return {'status': 'error', 'message': t_lang("do.illegal_number_2", lang)}
@@ -166,16 +166,20 @@ async def submit_asset_request_pn(
     return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 @router.post('/request_queue/approve/{req_id}')
-async def approve_request(request: Request, req_id: int, real_stock: int = Form(...), current_user: dict = Depends(get_current_user)):
+async def approve_request(request: Request, req_id: int, real_stock: int = Form(...), current_user: dict = Depends(require_admin)):
     lang = request.state.lang
     with Session(engine) as session:
         req = session.get(OutboundRequest, req_id)
         if not req or req.status != 'Pending':
-            return RedirectResponse(url= "/request_queue", status_code=303)
-
+            return {'status': 'error', 'message': "Request invalid or already processed"}
         item = session.get(InventoryItem, req.item_id)
         if not item:
-            return RedirectResponse(url= "/request_queue", status_code=303)
+            return {'status': 'error', 'message': 'Target asset not found in database'}
+
+        if real_stock < 0 or req.req_qty <= 0:
+            return {'status': 'error', 'message': '数量不合法'}
+        if real_stock < req.req_qty:
+            return {'status': 'error', 'message': '实际库存不足，无法批准'}
 
         if item.stock != real_stock:
             diff = real_stock - item.stock
@@ -194,29 +198,29 @@ async def approve_request(request: Request, req_id: int, real_stock: int = Form(
 
         if item and item.stock >= req.req_qty > 0:
             item.stock -= req.req_qty
-            item.total_in = (item.total_out or 0) + req.req_qty
+            item.total_out = (item.total_out or 0) + req.req_qty
             session.add(item)
 
-        log = HistoryLog(
-            pn_1=item.pn_1,
-            pn_2=item.pn_2,
-            change_qty=-req.req_qty,
-            applicant=req.applicant,
-            department=req.department,
-            note=req.note or ''
-        )
-        session.add(log)
+            log = HistoryLog(
+                pn_1=item.pn_1,
+                pn_2=item.pn_2,
+                change_qty=-req.req_qty,
+                applicant=req.applicant,
+                department=req.department,
+                note=req.note or ''
+            )
+            session.add(log)
 
-        req.status = 'Approved'
-        session.add(req)
+            req.status = 'Approved'
+            session.add(req)
 
-        update_single_usage(session,item.pn_1)
+            update_single_usage(session,item.pn_1)
         session.commit()
 
     return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 @router.post("/request_queue/asset_approve/{req_id}")
-async def approve_asset_request(request: Request, req_id: int, target_location: str = Form(None), ctrl_nos: str=Form(None), current_user: dict = Depends(get_current_user)):
+async def approve_asset_request(request: Request, req_id: int, target_location: str = Form(None), ctrl_nos: str=Form(None), current_user: dict = Depends(require_admin)):
     lang = request.state.lang
     with Session(engine) as session:
         req = session.get(AssetRequest, req_id)
@@ -290,6 +294,8 @@ async def approve_asset_request(request: Request, req_id: int, target_location: 
                 )
                 session.add(log)
                 session.add(ast)
+        else:
+            return {'status': 'error', 'message': 'Illegal matter'}
 
         req.status = 'Approved'
         session.add(req)
@@ -298,10 +304,13 @@ async def approve_asset_request(request: Request, req_id: int, target_location: 
 
 
 @router.post('/request_queue/reject/{req_id}')
-async def reject_request(request: Request, req_id: int, current_user: dict = Depends(get_current_user)):
+async def reject_request(request: Request, req_id: int, current_user: dict = Depends(require_admin)):
     lang = request.state.lang
     with Session(engine) as session:
         req = session.get(OutboundRequest, req_id)
+        if not req or req.status != 'Pending':
+            return {'status': 'error', 'message': "Request invalid or already processed"}
+        
         if req and req.status == 'Pending':
             req.status = 'Rejected'
             session.add(req)
@@ -309,10 +318,12 @@ async def reject_request(request: Request, req_id: int, current_user: dict = Dep
     return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 @router.post("/request_queue/asset_reject/{req_id}")
-async def reject_asset_request(request: Request, req_id: int, current_user: dict = Depends(get_current_user)):
+async def reject_asset_request(request: Request, req_id: int, current_user: dict = Depends(require_admin)):
     lang = request.state.lang
     with Session(engine) as session:
         req = session.get(AssetRequest, req_id)
+        if not req or req.status != 'Pending':
+            return {'status': 'error', 'message': "Request invalid or already processed"}
         if req and req.status == 'Pending':
             req.status = 'Rejected'
             session.add(req)
@@ -326,10 +337,10 @@ async def reject_asset_request(request: Request, req_id: int, current_user: dict
 @router.get("/api/request_log")
 async def get_request_log(request: Request, current_user: dict = Depends(get_current_user)):
     with Session(engine) as session:
-        real_applicant = current_user.get('full_name') or current_user.get('username')
+        applicant_username = current_user.get('username')
         if current_user.get('role') not in ['superadmin', 'admin']:
-            statement_inv = select(OutboundRequest).where(OutboundRequest.applicant == real_applicant).order_by(desc(OutboundRequest.id))
-            statement_asset = select(AssetRequest).where(AssetRequest.applicant == real_applicant).order_by(desc(AssetRequest.id))
+            statement_inv = select(OutboundRequest).where(OutboundRequest.applicant_username == applicant_username).order_by(desc(OutboundRequest.id))
+            statement_asset = select(AssetRequest).where(AssetRequest.applicant_username == applicant_username).order_by(desc(AssetRequest.id))
         else:
             statement_inv = select(OutboundRequest).order_by(desc(OutboundRequest.id))
             statement_asset = select(AssetRequest).order_by(desc(AssetRequest.id))
@@ -352,9 +363,9 @@ async def get_request_log(request: Request, current_user: dict = Depends(get_cur
 def request_log_export(request: Request, current_user: dict = Depends(get_current_user)):
     lang = request.state.lang
     with Session(engine) as session:
-        if current_user.get('role') in ['superadmin', 'admin']:
-            real_applicant = current_user.get('full_name') or current_user.get('username')
-            statement = select(OutboundRequest).where(OutboundRequest.applicant == real_applicant).order_by(desc(OutboundRequest.id))
+        if current_user.get('role') not in ['superadmin', 'admin']:
+            real_applicant = current_user.get('username')
+            statement = select(OutboundRequest).where(OutboundRequest.applicant_username == real_applicant).order_by(desc(OutboundRequest.id))
         else:
             statement = select(OutboundRequest).order_by(desc(OutboundRequest.id))
         contents = session.exec(statement).all()
