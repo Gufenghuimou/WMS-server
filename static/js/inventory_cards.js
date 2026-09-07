@@ -36,7 +36,7 @@
                 if (indicator) {
                     indicator.innerHTML = `
                         <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">manage_history</i>
-                        ${t('status.inventory_cards')}:
+                        <span data-i18n="status.inventory_cards">${t('status.inventory_cards')}</span>:
                         <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                             ${invData.items.length || '-'}
                         </span>
@@ -44,6 +44,11 @@
                 }
 
                 bindEvents();
+                window.onCurrentViewLanguageChange = () => {
+                    if (window.INVENTORY_DATA) {
+                        renderInventory(window.INVENTORY_DATA);
+                    }
+                } 
             }
         } catch (error) {
             console.error("Data Loaded Fail", error);
@@ -371,11 +376,13 @@
                     }
                 }
             } else {
-                alert(result.message || `${t('card.backend_fail')}`);
+                await openAlertModal(result.message || t('card.backend_fail'));
+                // alert(result.message || `${t('card.backend_fail')}`);
             }
         } catch (err) {
-            alert(`${t('card.net_req_fail')}`);
-            console.error(err);
+            await openAlertModal(t('card.net_req_fail'));
+            // alert(`${t('card.net_req_fail')}`);
+            // console.error(err);
         } finally {
             setTimeout(() => {
                 if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = originalBtnText; }
@@ -629,12 +636,14 @@
                 }, 1200);
             } else {
                 showToast(data.message, 'error');
-                alert(`${t('card.req_fail')}` + data.message);
+                await openAlertModal(t('card.req_fail') + data.message);
+                // alert(`${t('card.req_fail')}` + data.message);
                 btn.disabled = false;
                 btn.innerHTML = `${t('card.send_req')}`;
             }
         } catch (err) {
-            alert(`${t('card.net_err')}`);
+            await openAlertModal(t('card.net_err'));
+            // alert(`${t('card.net_err')}`);
             btn.disabled = false;
             btn.innerHTML = `${t('card.send_req')}`;
         }
@@ -702,8 +711,9 @@
                 window.applyFilters();
             }
         } catch (err) {
-            console.error(`${t('card.sync_fail')}`, err);
-            alert(`${t('card.sync_net_err')}`);
+            // console.error(`${t('card.sync_fail')}`, err);
+            // alert(`${t('card.sync_net_err')}`);
+            await openAlertModal(t('card.sync_net_err'));
         }
     };
 

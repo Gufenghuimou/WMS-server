@@ -73,6 +73,11 @@
                     };
                 }
                 window.triggerHistoryFilter = applyFilter;
+                window.onCurrentViewLanguageChange = () => {
+                    if (window.ASSET_HIS_DATA) {
+                        applyFilter(window.ASSET_HIS_DATA);
+                    }
+                } 
             }
         } catch (error) {
             console.error("Data Loaded Fail", error);
@@ -99,21 +104,21 @@
             const logNote = log.note.trim();
             let actionStatus;
             if (logNote.includes('Initial') || logNote.includes('初始')) {
-                actionStatus = `<span class="color-init" data-i18n="asset_history.status_init">${t('asset_history.status_init')}</span>`;
+                actionStatus = `<span class="color-init">${t('asset_history.status_init')}</span>`;
             } else if (logNote.includes('Scrap') || logNote.includes('报废')) {
-                actionStatus = `<span class="color-scrap" data-i18n="asset_history.status_scrap">${t('asset_history.status_scrap')}</span>`;
+                actionStatus = `<span class="color-scrap">${t('asset_history.status_scrap')}</span>`;
             } else if (logNote.includes('Stopped') || logNote.includes('停用')) {
-                actionStatus = `<span class="color-stopped" data-i18n="asset_history.status_stopped">${t('asset_history.status_stopped')}</span>`;
+                actionStatus = `<span class="color-stopped">${t('asset_history.status_stopped')}</span>`;
             } else if (logNote.includes('Enable') || logNote.includes('复用')) {
-                actionStatus = `<span class="color-enable" data-i18n="asset_history.status_enable">${t('asset_history.status_enable')}</span>`;
+                actionStatus = `<span class="color-enable">${t('asset_history.status_enable')}</span>`;
             } else if (logNote.includes('Correction')) {
-                actionStatus = `<span class="color-correction" data-i18n="asset_history.status_correction">${t('asset_history.status_correction')}</span>`;
+                actionStatus = `<span class="color-correction">${t('asset_history.status_correction')}</span>`;
             } else if (log.status === true) {
-                actionStatus = `<span class="color-in" data-i18n="asset_history.status_return">${t('asset_history.status_return')}</span>`;
+                actionStatus = `<span class="color-in">${t('asset_history.status_return')}</span>`;
             } else if (log.status === false) {
-                actionStatus = `<span class="color-out" data-i18n="asset_history.status_takeout">${t('asset_history.status_takeout')}</span>`;
+                actionStatus = `<span class="color-out">${t('asset_history.status_takeout')}</span>`;
             } else {
-                actionStatus = `<span class="color-init" data-i18n="asset_history.status_change">${t('asset_history.status_change')}</span>`;
+                actionStatus = `<span class="color-init">${t('asset_history.status_change')}</span>`;
             }
 
             let safeLoc;

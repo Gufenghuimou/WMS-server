@@ -78,6 +78,7 @@ const router = async () => {
     loadPageCSS(route.css);
 
     try {
+        window.onCurrentViewLanguageChange = null;
         const [htmlResponse] = await Promise.all([
             fetch(route.view),
             loadPageJS(route.js)

@@ -23,12 +23,18 @@
                 const indicatorData = auditData.stats;
                 indicator.innerHTML = `
                     <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">fact_check</i>
-                    ${t('status.audit')}:
+                    <span data-i18n="status.audit">${t('status.audit')}</span>:
                     <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         ${ indicatorData.progress || 0 }% (${indicatorData.completed || 0}/${indicatorData.total || 0})
                     </span>
                 `;
                 bindAuditEvent();
+
+                window.onCurrentViewLanguageChange = () => {
+                    if (window.INV_AUDIT_DATA) {
+                        renderAudit(window.INV_AUDIT_DATA);
+                    }
+                } 
             }
         } catch (error) {
             console.error("Data Loaded Fail", error);
@@ -101,9 +107,10 @@
                         <thead style="position: sticky; top: 0; background: #f1f5f9; z-index: 10; box-shadow: inset 0 -2px 0 var(--border-color);">
                             <tr>
                                 <th style="width: 140px;">${t('audit.th_pn1')}</th>
-                                <th style="width: 140px;">PN2</th> <th style="min-width: 250px;">${t('audit.th_name')}</th>
+                                <th style="width: 140px;">PN2</th>
+                                <th style="min-width: 250px;">${t('audit.th_name')}</th>
                                 <th style="width: 80px; text-align: center;">${t('audit.th_book_qty')}</th>
-                                <th style="width: 100px; ">${t('audit.th_actual_qty')}</th>
+                                <th style="width: 100px;">${t('audit.th_actual_qty')}</th>
                                 <th style="width: 100px;">${t('audit.th_actual_loc')}</th>
                                 <th style="width: 150px;">${t('audit.th_remarks')}</th>
                                 <th style="width: 80px; text-align: center;">${t('audit.th_status')}</th>
@@ -331,10 +338,11 @@
 
                 } else {
                     showToast(result.message, "error");
-                    alert(result.message);
+                    // alert(result.message);
                 }
             } catch(err) {
-                alert("提交时发生网络错误");
+                await openAlertModal("提交时发生网络错误");
+                // alert("提交时发生网络错误");
             } finally {
                 btn.innerHTML = oldHtml;
                 btn.disabled = false;

@@ -20,7 +20,7 @@
             <td><input type="text" name="location" class="cell-input loc-input" data-row="${i}"></td>
             <td><input type="text" name="remarks" class="cell-input rem-input" data-row="${i}"></td>
             <td style="text-align: center; vertical-align: middle;">
-                <button type="button" class="btn-undo" onclick="clearSingleRow(${i})" title="${t('asset_stockin.title_clear_row')}">
+                <button type="button" class="btn-undo" onclick="clearSingleRow(${i})" data-i18n-title="asset_stockin.title_clear_row" title="${t('asset_stockin.title_clear_row')}">
                     <i class="material-icons" style="font-size: 1.1rem">delete_outline</i>
                 </button>
             </td>
@@ -67,8 +67,8 @@
         });
     };
 
-    window.clearAssetGrid = function() {
-        if (confirm(t('asset_stockin.confirm_clear_all'))) {
+    window.clearAssetGrid = async function() {
+        if (await openConfirmModal(t('asset_stockin.confirm_clear_all'))) {
             document.getElementById('gridBody').innerHTML = '';
             currentRowCount = 0;
             addAssetRow();
@@ -283,17 +283,20 @@
                     if (pn1 || name || ctrl) {
                         hasData = true;
                         if (!ctrl) {
-                            alert(t('asset_stockin.err_miss_ctrl').replace('{row}', i + 1));
+                            await openAlertModal(t('asset_stockin.err_miss_ctrl').replace('{row}', i + 1));
+                            // alert(t('asset_stockin.err_miss_ctrl').replace('{row}', i + 1));
                             ctrlInput.focus();
                             isValid = false; break;
                         }
                         if (!pn1) {
-                            alert(t('asset_stockin.err_miss_pn1').replace('{row}', i + 1));
+                            await openAlertModal(t('asset_stockin.err_miss_pn1').replace('{row}', i + 1));
+                            // alert(t('asset_stockin.err_miss_pn1').replace('{row}', i + 1));
                             pn1Input.focus();
                             isValid = false; break;
                         }
                         if (!name) {
-                            alert(t('asset_stockin.err_miss_name').replace('{row}', i + 1));
+                            await openAlertModal(t('asset_stockin.err_miss_name').replace('{row}', i + 1));
+                            // alert(t('asset_stockin.err_miss_name').replace('{row}', i + 1));
                             nameInput.focus();
                             isValid = false; break;
                         }
@@ -301,7 +304,8 @@
                 }
 
                 if (!hasData) {
-                    alert(t('asset_stockin.err_empty_submit'));
+                    await openAlertModal(t('asset_stockin.err_empty_submit'));
+                    // alert(t('asset_stockin.err_empty_submit'));
                     return;
                 }
 
@@ -325,11 +329,13 @@
                         showToast(result.message, 'success');
                         window.clearAssetGrid();
                     } else {
-                        alert('Upload Error');
+                        await openAlertModal('Upload Error');
+                        // alert('Upload Error');
                     }
                 } catch (error) {
                     console.error('提交异常',error);
-                    alert('网络请求错误，请重试！');
+                    await openAlertModal('网络请求错误，请重试！');
+                    // alert('网络请求错误，请重试！');
                 } finally {
                     if (submitBtn) {
                         submitBtn.disabled = false;

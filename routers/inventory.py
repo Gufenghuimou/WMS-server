@@ -191,7 +191,7 @@ async def upload_image(request: Request, item_id: int, file: UploadFile = File(.
         session.add(item)
         session.commit()
 
-    return {'status': 'success', 'url': f'/{file_path}?t={datetime.now().timestamp()}'}
+    return {'status': 'success','message': t_lang("do.success", lang), 'url': f'/{file_path}?t={datetime.now().timestamp()}'}
 
 @router.post("/delete/{item_id}")
 async def delete_item(request: Request, item_id: int, current_user: dict = Depends(require_admin)):

@@ -936,8 +936,9 @@ async def get_asset_audit(request: Request, current_user: dict = Depends(get_cur
         }
     }
 
-@router.post("/asset_audit/start")
+@router.post("/api/asset_audit/start")
 async def start_audit(request: Request, current_user: dict = Depends(get_current_user)):
+    lang = request.state.lang
     with Session(engine) as session:
         for old_record in session.exec(select(AssetAuditRecord)).all():
             session.delete(old_record)
@@ -958,7 +959,8 @@ async def start_audit(request: Request, current_user: dict = Depends(get_current
         session.commit()
     referer = request.headers.get("referer", "")
     target_url = "/mobile/audit_asset" if "mobile" in referer else "/asset_audit"
-    return RedirectResponse(url=target_url, status_code=303)
+    # return RedirectResponse(url=target_url, status_code=303)
+    return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 @router.post("/api/asset_audit/scan")
 async def scan_asset_audit(
@@ -990,7 +992,7 @@ async def scan_asset_audit(
             'expected_location': record.expected_location
         }
 
-@router.post("/asset_audit/commit")
+@router.post("/api/asset_audit/commit")
 async def commit_asset_audit(request: Request, current_user: dict = Depends(get_current_user)):
     lang = request.state.lang
     in_stock_pattern = r'^[A-E]\d{2}-\d+$'
@@ -1023,7 +1025,8 @@ async def commit_asset_audit(request: Request, current_user: dict = Depends(get_
         session.commit()
     referer = request.headers.get("referer", "")
     target_url = "/mobile/audit_asset" if "mobile" in referer else "/asset_audit"
-    return RedirectResponse(url=target_url, status_code=303)
+    # return RedirectResponse(url=target_url, status_code=303)
+    return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 @router.get("/asset_audit/export")
 def export_audit(request: Request, current_user: dict = Depends(get_current_user)):

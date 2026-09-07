@@ -21,7 +21,7 @@
                 const indicatorData = result.data;
                 indicator.innerHTML = `
                     <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">sim_card</i>
-                    ${t('status.asset_2')}:
+                    <span data-i18n="status.asset_2">${t('status.asset_2')}</span>:
                     <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         ${indicatorData.length || '-'}
                     </span>
@@ -50,6 +50,11 @@
                     };
                 }
                 bindEvents();
+                window.onCurrentViewLanguageChange = () => {
+                    if (window.SIMCARD_DATA) {
+                        renderSimcard(window.SIMCARD_DATA);
+                    }
+                } 
             }
         } catch (error) {
             console.error("Data Loaded Fail", error);
@@ -130,9 +135,9 @@
         document.querySelector('h2').innerHTML = `${total}`;
         document.getElementById('simcardChart').innerHTML = `
             <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: bold; margin-bottom: 5px; line-height: 1; width: 100%;">
-                <span style="color: #1db954; width: ${usableWidth}%; min-width: 40px; text-align: left;">${t('simcard.usable')}: ${usable}</span>
-                <span style="color: #95a5a6; width: ${stoppedWidth}%; min-width: 40px; text-align: center;">${t('simcard.stopped')}: ${stopped}</span>
-                <span style="color: #e74c3c; width: ${usingWidth}%; min-width: 40px; text-align: right;">${t('simcard.using')}: ${using}</span>
+                <span style="color: #1db954; width: ${usableWidth}%; min-width: 100px; text-align: left;">${t('simcard.usable')}: ${usable}</span>
+                <span style="color: #95a5a6; width: ${stoppedWidth}%; min-width: 100px; text-align: center;">${t('simcard.stopped')}: ${stopped}</span>
+                <span style="color: #e74c3c; width: ${usingWidth}%; min-width: 100px; text-align: right;">${t('simcard.using')}: ${using}</span>
             </div>
             <div style="width: 100%; height: 6px; background: #ecf0f1; border-radius: 4px; display: flex; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">
                 <div style="width: ${usableWidth}%; background: rgba(29, 185, 84, 0.5); transition: 0.3s;" title="${t('simcard.usable')}: ${usable}"></div>

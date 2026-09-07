@@ -32,6 +32,11 @@
                         ${indicatorData.length || 0}
                     </span>
                 `;
+                window.onCurrentViewLanguageChange = () => {
+                    if (window.ASSET_SCRAP_DATA) {
+                        renderAssetScrap(window.ASSET_SCRAP_DATA);
+                    }
+                } 
 
                 scanInput = document.getElementById('scanInput');
                 scrapList = document.getElementById('scrapList');
@@ -68,7 +73,7 @@
                 <tr id="emptyState">
                     <td colspan="6" style="text-align: center; padding: 80px 20px; color: var(--text-muted); border: none;">
                         <i class="material-icons" style="font-size: 4rem; color: #e0e0e0; display: block; margin-bottom: 15px;">document_scanner</i>
-                        <span style="font-size: 1.1rem;" data-i18n="asset_scrap.empty_table">${t('asset_scrap.empty_table')}</span>
+                        <span style="font-size: 1.1rem;">${t('asset_scrap.empty_table')}</span>
                     </td>
                 </tr>
             `;
@@ -178,10 +183,12 @@
                     window.addAssetToTable(result.data);
                 }
             } else {
-                alert(result.message);
+                await window.closeAlertModal(result.message);
+                // alert(result.message);
             }
         } catch (e) {
-            alert(t('asset_scrap.scan_net_error'));
+            await window.closeAlertModal(t('asset_scrap.scan_net_error'));
+            // alert(t('asset_scrap.scan_net_error'));
         }
 
         window.updateUI();
@@ -195,7 +202,7 @@
         const originalHtml = btn ? btn.innerHTML : '';
 
         if (btn) {
-            btn.innerHTML = `<i class="material-icons" style="font-size: 1.2rem; margin-right: 5px; animation: spin 1s linear infinite;">autorenew</i><span data-i18n="asset_scrap.fetching">${t('asset_scrap.fetching')}</span>`;
+            btn.innerHTML = `<i class="material-icons" style="font-size: 1.2rem; margin-right: 5px; animation: spin 1s linear infinite;">autorenew</i> ${t('asset_scrap.fetching')}`;
             btn.disabled = true;
         }
 
@@ -220,13 +227,17 @@
                 let successMsg = t('asset_scrap.fetch_success')
                                     .replace('{total}', assets.length)
                                     .replace('{added}', addedCount);
-                alert(successMsg);
+                // alert(successMsg);
+                await openAlertModal(successMsg);
             } else {
                 showToast(result.message, 'error');
-                alert(result.message);
+                await openAlertModal('拉取失败');
+                // alert(result.message);
             }
         } catch (e) {
-            alert(t('asset_scrap.fetch_net_error'));
+            // alert(t('asset_scrap.fetch_net_error'));
+            showToast('Fetch Error', error)
+            await openAlertModal(t('asset_scrap.fetch_net_error'));
         } finally {
             if (btn) {
                 btn.innerHTML = originalHtml;
@@ -255,10 +266,11 @@
                 if (scanInput) scanInput.focus();
             } else {
                 showToast(result.message, 'error');
-                alert(result.message);
+                // alert(result.message);
             }
         } catch (e) {
-            alert("Delete Failed, please check internet.")
+            await openAlertModal("Delete Failed, please check internet.");
+            // alert("Delete Failed, please check internet.")
         }
     };
 

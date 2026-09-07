@@ -22,11 +22,11 @@
                 const tabsContainer = document.querySelector('.log-tabs-container');
                 tabsContainer.innerHTML = `
                     <div class="log-tab active" id="switchTabConsumable" onclick="switchLogTab('consumable', this)">
-                        <h3><i class="material-icons">inventory_2</i> ${t('queue.consumables')}</h3>
+                        <h3><i class="material-icons">inventory_2</i> <span data-i18n="queue.consumables">${t('queue.consumables')}</span></h3>
                         <span class="count-badge">${logData.inv_req_log.length}</span>
                     </div>
                     <div class="log-tab inactive" id="switchTabAsset" onclick="switchLogTab('asset', this)">
-                        <h3><i class="material-icons">devices</i> ${t('queue.assets')}</h3>
+                        <h3><i class="material-icons">devices</i> <span data-i18n="queue.assets">${t('queue.assets')}</span></h3>
                         <span class="count-badge">${logData.asset_req_log.length}</span>
                     </div>
                 `;
@@ -36,7 +36,7 @@
                 const indicatorData = parseInt(logData.processed_inv) + parseInt(logData.processed_asset);
                 indicator.innerHTML = `
                     <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">done_all</i>
-                    ${t('status.request_log')}:
+                    <span data-i18n="status.request_log">${t('status.request_log')}</span>:
                     <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         ${indicatorData || 0}
                     </span>
@@ -84,6 +84,13 @@
                         }, 300);
                     }
                 }
+
+                window.onCurrentViewLanguageChange = () => {
+                    if (window.INV_REQ_LOG && window.ASSET_REQ_LOG) {
+                        renderInvReqLog(window.INV_REQ_LOG);
+                        renderAssetReqLog(window.ASSET_REQ_LOG);
+                    }
+                } 
             }
         } catch (error) {
             console.error("Data Loaded Fail", error);

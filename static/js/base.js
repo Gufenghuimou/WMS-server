@@ -344,7 +344,7 @@ window.showToast = function(message, type = 'success') {
     function renderMessages(messages) {
         const body = document.getElementById('chatBody');
         // 保留顶部提示语，清除旧消息
-        body.innerHTML = `<div style="text-align: center; color: #aaa; font-size: 0.8rem; margin-top: 10px;">${t('base.chat_note')}</div>`;
+        body.innerHTML = `<div style="text-align: center; color: #aaa; font-size: 0.8rem; margin-top: 10px;" data-i18n="base.chat_note">${t('base.chat_note')}</div>`;
 
         messages.forEach(msg => {
             const isSelf = msg.sender === window.CURRENT_USER.username;
@@ -383,7 +383,8 @@ window.showToast = function(message, type = 'success') {
             // 发送完毕后立即强制刷新一次列表
             fetchChatHistory();
         } catch (e) {
-            alert(t('base.send_fail'));
+            await openAlertModal(t('base.send_fail'));
+            // alert(t('base.send_fail'));
         }
     };
         
@@ -808,11 +809,13 @@ window.openMobileUploadAuth = async function(event) {
             // 呼出弹窗
             document.getElementById('qrModal').style.display = 'flex';
         } else {
-            alert(t('base.auth_fail') + (data.message || t('base.unknown_error')));
+            await openAlertModal(t('base.auth_fail') + (data.message || t('base.unknown_error')));
+            // alert(t('base.auth_fail') + (data.message || t('base.unknown_error')));
         }
     } catch(e) {
         console.error(e);
-        alert(t('base.network_error_qr'));
+        await openAlertModal(t('base.network_error_qr'));
+        // alert(t('base.network_error_qr'));
     } finally {
         // 恢复按钮状态
         btn.innerHTML = originalHtml;

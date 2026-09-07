@@ -117,11 +117,13 @@
                 });
                 document.getElementById('qrModal').style.display = 'flex';
             } else {
-                alert(data.message || t('base.unknown_error'));
+                await openAlertModal(data.message || t('base.unknown_error'));
+                // alert(data.message || t('base.unknown_error'));
             }
         } catch(e) {
             console.error(e);
-            alert(t('base.network_error_qr'));
+            await openAlertModal(t('base.network_error_qr'));
+            // alert(t('base.network_error_qr'));
         } finally {
             btn.innerHTML = originalHtml;
             btn.disabled = false;
@@ -161,13 +163,13 @@
         if (mode === 'inv') {
             let pn1 = document.getElementById('invPn1').value;
             let pn2 = document.getElementById('invPn2').value;
-            if (!pn1) return alert(t('reprint.alert_no_pn1'));
+            if (!pn1) return await openAlertModal(t('reprint.alert_no_pn1'));
             formData.append('right_barcode', pn1);
             formData.append('left_text', pn2);
         } else {
             let ctrl = document.getElementById('assetCtrl').value;
             let pn1 = document.getElementById('assetPn1').value;
-            if (!ctrl) return alert(t('reprint.alert_no_ctrl'));
+            if (!ctrl) return await openAlertModal(t('reprint.alert_no_ctrl'));
             formData.append('right_barcode', ctrl);
             formData.append('left_text', pn1);
         }
@@ -191,7 +193,8 @@
                 if(typeof window.showToast === 'function') window.showToast(data.message, 'error');
             }
         } catch (e) {
-            alert(t('reprint.alert_print_fail'));
+            await openAlertModal(t('reprint.alert_print_fail'));
+            // alert(t('reprint.alert_print_fail'));
         }
     };
 
@@ -233,7 +236,7 @@
         let ip = document.getElementById('printerIp').value.trim();
         let port = document.getElementById('printerPort').value.trim();
 
-        if (!ip || !port) return alert(t('reprint.alert_empty_ip'));
+        if (!ip || !port) return await openAlertModal(t('reprint.alert_empty_ip'));
 
         let formData = new FormData();
         formData.append('ip', ip);
@@ -250,10 +253,12 @@
                 if(typeof window.showToast === 'function') window.showToast(data.message, 'success');
                 window.checkPrinterStatusManual(); 
             } else {
-                alert(t('reprint.alert_save_fail') + (data.message || "Unknown error"));
+                await openAlertModal(t('reprint.alert_save_fail') + (data.message || "Unknown error"));
+                // alert(t('reprint.alert_save_fail') + (data.message || "Unknown error"));
             }
         } catch (err) {
-            alert(t('reprint.alert_save_net_err'));
+            await openAlertModal(t('reprint.alert_save_net_err'));
+            // alert(t('reprint.alert_save_net_err'));
         }
     };
 
@@ -349,7 +354,7 @@
         let reader = new FileReader();
         reader.onload = function(e) {
             document.getElementById('cropImageTarget').src = e.target.result;
-            document.getElementById('cropModal').style.display = 'block';
+            document.getElementById('cropModal').style.display = 'flex';
             document.getElementById('confirmCrop').setAttribute('onclick', 'window.confirmInventoryCrop()');
 
             if (cropper) { cropper.destroy(); }
@@ -374,23 +379,23 @@
             maxHeight: 800,
             imageSmoothingEnabled: true,
             imageSmoothingQuality: 'high',
-        }).toBlob(function(blob) {
+        }).toBlob(async function(blob) {
             let formData = new FormData();
             formData.append('file', blob, 'image.jpg');
 
-            // 注意：依赖 inventory_card.js 里面暴露的 window.currentEditItemId
-            fetch(`/api/upload_image/${window.currentEditItemId}`, {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                if(data.status === 'success') {
+            try {
+                let response = await fetch(`/api/upload_image/${window.currentEditItemId}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                let result = await response.json();
+                if(result.status === 'success') {
+                    console.log(result);
                     window.closeCropModal();
                     document.getElementById('confirmCrop').onclick = null;
-                    if(typeof window.showToast === 'function') window.showToast(data.message, 'success');
+                    if(typeof window.showToast === 'function') window.showToast(result.message, 'success');
                     
-                    let freshUrl = data.url + '?t=' + new Date().getTime();
+                    let freshUrl = result.url + '?t=' + new Date().getTime();
 
                     let imgPreview = document.getElementById('editImagePreview');
                     if (imgPreview) {
@@ -407,9 +412,9 @@
                         if(cardImg.nextElementSibling) cardImg.nextElementSibling.style.display = 'none';
                     }
                 }
-            })
-            .catch(err => alert(t('asset_view.upload_fail') + err));
-
+            } catch (error) {
+                await openAlertModal(t('asset_view.upload_fail') + error);
+            }
         }, 'image/jpeg', 0.8);
     };
 
@@ -623,7 +628,7 @@
             
             let btn3 = '';
             if (!item.is_stop && !item.is_stock) {
-                btn3 = `<button class="btn-primary" style="background-color: #bdc3c7; color: #fff; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="alert(window.t('asset_view.btn_stop_deny'))"><i class="material-icons">do_not_disturb</i> ${t('asset_view.btn_stop')}</button>`;
+                btn3 = `<button class="btn-primary" style="background-color: #bdc3c7; color: #fff; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="window.openAlertModal(window.t('asset_view.btn_stop_deny'))"><i class="material-icons">do_not_disturb</i> ${t('asset_view.btn_stop')}</button>`;
             } else {
                 let btn3Bg = item.is_stop ? '#95a5a6' : 'var(--danger-red)';
                 let btn3Icon = item.is_stop ? 'settings_backup_restore' : 'do_not_disturb';
@@ -1008,7 +1013,55 @@
     };
 
     // ==========================================
-    // 7. 全局 Escape 键关闭事件
+    // 7. 新增Alert和Confirm替代Modal
+    // ==========================================
+    window.openAlertModal = function(content) {
+        const modal = document.getElementById('alertModal');
+        const title = document.getElementById('alertModalTitle');
+        const checkBtn = document.getElementById('alertCheckBtn');
+        title.innerText = content;
+        modal.style.display = 'flex';
+
+        return new Promise((resolve) => {
+            checkBtn.onclick = function() {
+                modal.style.display = 'none';
+                resolve();
+            }
+        });
+    }
+
+    window.closeAlertModal = function() {
+        const modal = document.getElementById('alertModal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    window.openConfirmModal = function(content) {
+        const modal = document.getElementById('confirmModal');
+        const title = document.getElementById('confirmModalTitle');
+        const confirmBtn = document.getElementById('confirmCheckBtn');
+        const cancelBtn = document.getElementById('confirmCancelBtn');
+        title.innerText = content;
+        modal.style.display = 'flex';
+
+        return new Promise((resolve) => {
+            confirmBtn.onclick = function() {
+                modal.style.display = 'none';
+                resolve(true);
+            }
+            cancelBtn.onclick = function() {
+                modal.style.display = 'none';
+                resolve(false);
+            }
+        });
+    }
+
+    window.closeConfirmModal = function() {
+        const modal = document.getElementById('confirmModal');
+        if (modal) modal.style.display = 'none'
+    }
+
+    // ==========================================
+    // 8. 全局 Escape 键关闭事件
     // ==========================================
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {

@@ -19,7 +19,7 @@
             <td><input type="text" name="location" class="cell-input loc-input" data-row="${i}"></td>
             <td><input type="text" name="remarks" class="cell-input rem-input" data-row="${i}"></td>
             <td style="text-align: center; vertical-align: middle;">
-            <button type="button" class="btn-undo" onclick="clearSingleRow(${i})" title="${t('stockin.clear_row_title')}">
+            <button type="button" class="btn-undo" onclick="clearSingleRow(${i})" data-i18n-title="stockin.clear_row_title" title="${t('stockin.clear_row_title')}">
                 <i class="material-icons" style="font-size: 1.2rem">delete_outline</i>
             </button>
             </td>
@@ -55,7 +55,7 @@
         const indicator = document.getElementById('indicator');
         indicator.innerHTML = `
             <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">sim_card</i>
-            ${t('status.stock_in')}:
+            <span data-i18n="status.stock_in">${t('status.stock_in')}</span>:
             <span id="stockinCountDisplay" style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                 0
             </span>
@@ -148,7 +148,8 @@
             stockInForm.onsubmit = async function(e) {
                 e.preventDefault();
                 if (checkAllDuplicates()) {
-                    alert(t('stockin.err_duplicate'));
+                    await openAlertModal(t('stockin.err_duplicate'));
+                    // alert(t('stockin.err_duplicate'));
                     return;
                 }
 
@@ -169,17 +170,20 @@
                     if (pn1 || name || stock) {
                         hasData = true;
                         if (!pn1) {
-                            alert(t('stockin.err_miss_pn1').replace('{row}', i + 1));
+                            await openAlertModal(t('stockin.err_miss_pn1').replace('{row}', i + 1));
+                            // alert(t('stockin.err_miss_pn1').replace('{row}', i + 1));
                             pn1Input.focus();
                             isValid = false; break;
                         }
                         if (!name) {
-                            alert(t('stockin.err_miss_name').replace('{row}', i + 1));
+                            await openAlertModal(t('stockin.err_miss_name').replace('{row}', i + 1));
+                            // alert(t('stockin.err_miss_name').replace('{row}', i + 1));
                             nameInput.focus();
                             isValid = false; break;
                         }
                         if (!stock) {
-                            alert(t('stockin.err_miss_qty').replace('{row}', i + 1));
+                            await openAlertModal(t('stockin.err_miss_qty').replace('{row}', i + 1));
+                            // alert(t('stockin.err_miss_qty').replace('{row}', i + 1));
                             stockInput.focus();
                             isValid = false; break;
                         }
@@ -187,7 +191,8 @@
                 }
 
                 if (!hasData) {
-                    alert(t('stockin.err_empty_submit'));
+                    await openAlertModal(t('stockin.err_empty_submit'));
+                    // alert(t('stockin.err_empty_submit'));
                     e.preventDefault();
                     return;
                 }
@@ -210,11 +215,13 @@
                         showToast(result.message, 'success');
                         window.clearGrid();
                     } else {
-                        alert('Upload Error');
+                        // alert('Upload Error');
+                        await openAlertModal('Upload Error');
                     }
                 } catch (error) {
-                        console.error('提交异常',error);
-                        alert('网络请求错误，请重试！');
+                        // console.error('提交异常',error);
+                        // alert('网络请求错误，请重试！');
+                        await openAlertModal('网络请求错误，请重试！');
                 } finally {
                     if (submitBtn) {
                         submitBtn.disabled = false;
@@ -241,8 +248,8 @@
         checkAllDuplicates();
     };
 
-    window.clearGrid = function() {
-        if (confirm(t('stockin.confirm_clear_all'))) {
+    window.clearGrid = async function() {
+        if (!(await openConfirmModal(t('stockin.confirm_clear_all')))) {
             document.getElementById('gridBody').innerHTML = '';
             currentRowCount = 0;
             addRow();
