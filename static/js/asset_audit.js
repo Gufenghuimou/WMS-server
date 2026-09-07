@@ -33,8 +33,12 @@
                         ${ indicatorData.progress || 0 }% (${indicatorData.completed || 0}/${indicatorData.total || 0})
                     </span>
                 `;
-
                 bindAssetAuditEvent();
+                window.onCurrentViewLanguageChange = () => {
+                    if (window.ASSET_AUDIT_DATA) {
+                        renderAssetAudit(window.ASSET_AUDIT_DATA);
+                    }
+                } 
             }
         } catch (error) {
             console.error("Data Loaded Fail", error);
@@ -83,12 +87,12 @@
             let rowsHtml = items.map(item => {
                 let statusBadge = ``;
                 if (item.status.toLowerCase() === 'pending') {
-                    statusBadge = `<span class="status-badge status-miss cell-status" data-i18n="asset_audit.status_miss">${t('asset_audit.status_miss')}</span>`;
+                    statusBadge = `<span class="status-badge status-miss cell-status">${t('asset_audit.status_miss')}</span>`;
                 } else {
                     if (item.actual_location.toLowerCase() !== item.expected_location.toLowerCase()) {
-                        statusBadge = `<span class="status-badge status-warn cell-status" data-i18n="asset_audit.status_warn">${t('asset_audit.status_warn')}</span>`;
+                        statusBadge = `<span class="status-badge status-warn cell-status">${t('asset_audit.status_warn')}</span>`;
                     } else {
-                        statusBadge = `<span class="status-badge status-done cell-status" data-i18n="asset_audit.status_done">${t('asset_audit.status_done')}</span>`;
+                        statusBadge = `<span class="status-badge status-done cell-status">${t('asset_audit.status_done')}</span>`;
                     }
                 }
                 return `
@@ -105,11 +109,11 @@
             }).join('');
 
             return `
-                <div class="location-block ${collapsedClass}" data-loc="${loc.toLocaleLowerCase() || t('asset_audit.unassigned')}">
+                <div class="location-block ${collapsedClass}" data-loc="${loc.toLocaleLowerCase() || 'Unallocated'}">
                 <div class="location-header" onclick="this.parentElement.classList.toggle('collapsed')">
                     <h3>
                         <i class="material-icons collapse-icon">expand_more</i>
-                        <i class="material-icons loc-label" style="font-size: 1.2rem;">place</i> ${loc || 'Unallocated'}
+                        <i class="material-icons loc-label" style="font-size: 1.2rem;">place</i> ${loc || t('asset_audit.unassigned')}
                     </h3>
                     <span class="status-badge ${allDoneClass}">${(t('asset_audit.total_devices')).replace('{count}', items.length)}</span>
                 </div>
@@ -117,13 +121,13 @@
                 <table class="audit-table">
                     <thead>
                         <tr>
-                            <th style="width: 12%;" data-i18n="asset_audit.th_ctrl_no">${t('asset_audit.th_ctrl_no')}</th>
-                            <th style="width: 12%;" data-i18n="asset_audit.th_pn1">${t('asset_audit.th_pn1')}</th>
-                            <th style="width: 36%;" data-i18n="asset_audit.th_name">${t('asset_audit.th_name')}</th>
-                            <th style="width: 10%;" data-i18n="asset_audit.th_expected_loc">${t('asset_audit.th_expected_loc')}</th>
-                            <th style="width: 10%;" data-i18n="asset_audit.th_actual_loc">${t('asset_audit.th_actual_loc')}</th>
-                            <th style="width: 10%; text-align: center;" data-i18n="asset_audit.th_status">${t('asset_audit.th_status')}</th>
-                            <th style="width: 10%; text-align: center;" data-i18n="asset_audit.th_time">${t('asset_audit.th_time')}</th>
+                            <th style="width: 12%;">${t('asset_audit.th_ctrl_no')}</th>
+                            <th style="width: 12%;">${t('asset_audit.th_pn1')}</th>
+                            <th style="width: 36%;">${t('asset_audit.th_name')}</th>
+                            <th style="width: 10%;">${t('asset_audit.th_expected_loc')}</th>
+                            <th style="width: 10%;">${t('asset_audit.th_actual_loc')}</th>
+                            <th style="width: 10%; text-align: center;">${t('asset_audit.th_status')}</th>
+                            <th style="width: 10%; text-align: center;">${t('asset_audit.th_time')}</th>
                         </tr>
                     </thead>
                     <tbody>${rowsHtml}</tbody>
@@ -146,6 +150,8 @@
         const resultBox = document.getElementById('scanResult');
         const globalSearch = document.getElementById('globalSearch');
         const auditContainer = document.getElementById('auditContainer');
+        const auditStartForm = document.querySelector('form[action*="/asset_audit/start"]');
+        const auditCommitForm = document.querySelector('form[action*="/asset_audit/commit"]');
 
         if (locInput && barcodeInput && resultBox) {
             // 页面加载后自动对焦到库位输入框
@@ -194,7 +200,7 @@
                 let ctrlNo = barcodeInput.value.trim();
 
                 if (!currentLoc) {
-                    resultBox.innerHTML = `<span style="color:#d93025;"><i class="material-icons" style="vertical-align:bottom;">error</i> <span data-i18n="asset_audit.err_no_loc">${t('asset_audit.err_no_loc')}</span></span>`;
+                    resultBox.innerHTML = `<span style="color:#d93025;"><i class="material-icons" style="vertical-align:bottom;">error</i> ${t('asset_audit.err_no_loc')}</span>`;
                     locInput.focus();
                     return;
                 }
@@ -284,6 +290,66 @@
         if (submitBtn) {
             submitBtn.onkeydown = (e) => { if (e.key === 'Enter') e.preventDefault(); };
         }
+
+        if (auditStartForm) {
+            auditStartForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const submitBtn = auditStartForm.querySelector('button');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite;">autorenew</i> 同步中...`;
+                const isConfirmed = await openConfirmModal(t('asset_audit.confirm_reset'));
+                if (!isConfirmed) return;
+                try {
+                    let response = await fetch('/api/asset_audit/start', {
+                        method: 'POST'
+                    });
+                    let result = await response.json();
+                    if (result.status === 'success') {
+                        showToast(result.message, 'success');
+                        await window.initAssetAuditPage();
+                    } else {
+                        showToast(result.message || '同步失败', 'error');
+                        await openAlertModal('同步失败');
+                    }
+                } catch (error) {
+                    showToast("Sync Error:", error);
+                    await openAlertModal('网络请求异常', 'error');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnHtml;
+                }
+            }
+        }
+        if (auditCommitForm) {
+            auditCommitForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const submitBtn = auditCommitForm.querySelector('button');
+                const originalBtnHtml = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite;">autorenew</i> 提交中...`;
+                const isConfirmed = await openConfirmModal(t('asset_audit.confirm_commit'));
+                if (!isConfirmed) return;
+                try {
+                    let response = await fetch('/api/asset_audit/commit', {
+                        method: 'POST'
+                    });
+                    let result = await response.json();
+                    if (result.status === 'success') {
+                        showToast(result.message, 'success');
+                        await window.initAssetAuditPage();
+                    } else {
+                        showToast(result.message || '提交失败', 'error');
+                        await openAlertModal('提交失败');
+                    }
+                } catch (error) {
+                    showToast("Commit Error:", error);
+                    await openAlertModal('网络请求异常', 'error');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnHtml;
+                }
+            }
+        }
     }
 
     window.executeAuditSubmit = async function(ctrlNo, currentLoc) {
@@ -315,9 +381,9 @@
 
                 if (data.is_location_changed) {
                     let warnText = t('asset_audit.scan_warn').replace('{expected_location}', data.expected_location);
-                    resultBox.innerHTML = `<span style="color:#f29900;"><i class="material-icons" style="vertical-align:bottom;">warning</i> **${ctrlNo}** ${data.message}  ${warnText}</span> <button type="button" class="btn-primary" onclick="doPrintAudit('${ctrlNo}');"><i class="material-icons">print</i> <span data-i18n="asset_audit.reprint">${t('asset_audit.reprint')}</span></button>`;
+                    resultBox.innerHTML = `<span style="color:#f29900;"><i class="material-icons" style="vertical-align:bottom;">warning</i> **${ctrlNo}** ${data.message}  ${warnText}</span> <button type="button" class="btn-primary" onclick="doPrintAudit('${ctrlNo}');"><i class="material-icons">print</i> ${t('title.reprint')}</button>`;
                 } else {
-                    resultBox.innerHTML = `<span style="color:#1e8e3e;"><i class="material-icons" style="vertical-align:bottom;">check_circle</i> **${ctrlNo}** ${data.message}</span> <button type="button" class="btn-primary" onclick="doPrintAudit('${ctrlNo}');"><i class="material-icons">print</i> <span data-i18n="asset_audit.reprint">${t('asset_audit.reprint')}</span></button>`;
+                    resultBox.innerHTML = `<span style="color:#1e8e3e;"><i class="material-icons" style="vertical-align:bottom;">check_circle</i> **${ctrlNo}** ${data.message}</span> <button type="button" class="btn-primary" onclick="doPrintAudit('${ctrlNo}');"><i class="material-icons">print</i> ${t('title.reprint')}</button>`;
                 }
 
                 doneAudio.currentTime = 0;
@@ -328,7 +394,7 @@
                 alertAudio.play().catch(() => console.log("Loading sound fail"));
             }
         } catch (err) {
-            resultBox.innerHTML = `<span style="color:#d93025;" data-i18n="asset_audit.net_error">${t('asset_audit.net_error')}</span>`;
+            resultBox.innerHTML = `<span style="color:#d93025;">${t('asset_audit.net_error')}</span>`;
             alertAudio.currentTime = 0;
             alertAudio.play().catch(() => console.log("Loading sound fail"));
         }
@@ -384,10 +450,12 @@
             if (data.status === 'success') {
                 showToast(data.message, 'success');
             } else {
-                alert(t('asset_audit.alert_print_fail'));
+                await window.closeAlertModal(t('asset_audit.alert_print_fail'));
+                // alert(t('asset_audit.alert_print_fail'));
             }
         } catch (e) {
-            alert(t('asset_audit.alert_print_fail'));
+            await window.closeAlertModal(t('asset_audit.alert_print_fail'));
+            // alert(t('asset_audit.alert_print_fail'));
         }
         if (barcodeInput) barcodeInput.focus();
     }

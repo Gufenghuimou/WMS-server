@@ -25,13 +25,20 @@ async function initApplication() {
 
             applyRolePermissions(context.user.role);
 
-            const userlang = navigator.language || navigator.userLanguage;
-            if (userlang) {
-                let lang = userlang.split('-')[0];
-                await window.loadI18nDict(lang || 'en');
-                window.CURRENT_LANG = lang || 'en';
+            const cachedLang = localStorage.getItem('userLang');
+            let targetLang = 'en';
+            if (cachedLang) {
+                targetLang = cachedLang;
+            } else {
+                const browserlang = navigator.language || navigator.userLanguage;
+                if (browserlang) {
+                    targetLang = browserlang.split('-')[0];
+                }
             }
 
+            await window.loadI18nDict(targetLang);
+            window.CURRENT_LANG = targetLang;
+           
             // 语言选择
             const langBtns = document.querySelectorAll('.lang-flag');
             if (langBtns.length > 0) {
@@ -49,8 +56,14 @@ async function initApplication() {
                         await window.loadI18nDict(btn.id);
                         window.CURRENT_LANG = btn.id;
 
+                        localStorage.setItem('userLang', btn.id);
+
                         if (typeof window.renderI18n === 'function') {
                             window.renderI18n();
+                        }
+
+                        if (typeof window.onCurrentViewLanguageChange === 'function') {
+                            window.onCurrentViewLanguageChange();
                         }
                     });
                 });

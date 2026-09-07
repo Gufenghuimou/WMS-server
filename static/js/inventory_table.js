@@ -25,7 +25,7 @@
                 const indicatorData = invData.alarmCount;
                 indicator.innerHTML = `
                     <i class="material-icons" style="font-size: 1.45rem; color: var(--danger-red);">report_problem</i>
-                    ${t('status.inventory_table')}:
+                    <span data-i18n="status.inventory_table">${t('status.inventory_table')}</span>:
                     <span style="font-size: 1.2rem; font-weight: bold; color: var(--danger-red); margin-left: 4px;">
                         ${indicatorData || 0}
                     </span>
@@ -55,6 +55,11 @@
                 }
 
                 bindTableEvents();
+                window.onCurrentViewLanguageChange = () => {
+                    if (window.INV_TAB_DATA) {
+                        renderInvTab(window.INV_TAB_DATA);
+                    }
+                } 
             }
         } catch (error) {
             console.error("Data Loaded Fail", error);
@@ -124,17 +129,17 @@
                                             </label>
                                         </div>
                                         <div class="detail-long-text">
-                                            <label>${t('table.description_2')}:
+                                            <label>${t('inv.description_2')}:
                                                 <input class="detail-input" type="text" value="${item.description_2}" readonly name="description_2">
                                             </label>
                                         </div>
                                         <div class="detail-text">
-                                            <label>${t('table.description_1')}:
+                                            <label>${t('inv.description_1')}:
                                                 <input class="detail-input" type="text" value="${item.description_1}" readonly name="description_1">
                                             </label>
                                         </div>
                                         <div class="detail-long-text">
-                                            <label>${t('table.remarks')}:
+                                            <label>${t('inv.remarks')}:
                                                 <input class="detail-input" type="text" value="${item.remarks}" readonly name="remarks">
                                             </label>
                                         </div>
@@ -147,11 +152,11 @@
                                         </div>
                                         <div class="detail-text" style="display: flex; justify-content: space-around;">
                                             <div>
-                                                <span>${t('table.total_in')}: </span>
+                                                <span>${t('inv.total_in')}: </span>
                                                 <span style="font-size: 1.05rem; font-weight: 600;">${item.total_in}</span>
                                             </div>
                                             <div>
-                                                <span>${t('table.total_out')}: </span>
+                                                <span>${t('inv.total_out')}: </span>
                                             <span style="font-size: 1.05rem; font-weight: 600;">${item.total_out}</span>
                                             </div>
                                             <input type="hidden" name="pn_1" value="${item.pn_1}">
@@ -180,7 +185,7 @@
     function bindTableEvents() {
         const tbody = document.querySelector('#advancedTable tbody');
         if (!tbody) return;
-        tbody.onclick = (e) => {
+        tbody.onclick = async (e) => {
             const editBtn = e.target.closest('.edit-btn')
             const cancelBtn = e.target.closest('.cancel-btn');
             const saveBtn = e.target.closest('.save-btn')
@@ -244,14 +249,14 @@
                     }
                     saveBtn.disabled = true;
 
-                    fetch(`/edit/${itemId}`, {
-                        method: 'POST',
-                        body: formData
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.status === 'success') {
-                                showToast(data.message, "success")
+                    try {
+                        let response = await fetch(`/edit/${itemId}`, {
+                            method: 'POST',
+                            body: formData
+                        });
+                        let result = await response.json();
+                        if (result.status === 'success') {
+                                showToast(result.message, "success")
 
                                 if (window.INV_TAB_DATA) {
                                     const dataItem = window.INV_TAB_DATA.find(i => i.id == itemId);
@@ -277,16 +282,58 @@
                                 detailRow.classList.add('row-saved');
                                 mainRow.classList.add('row-saved');
                             } else {
-                                alert('Save Failed: ' + data.message);
+                                await openAlertModal('Save Failed: ' + result.message);
+                                // alert('Save Failed: ' + result.message);
                             }
-                        })
-                        .catch(error => {
-                            console.error('Save Alert: ', error);
-                            alert('Cannot attach the server');
-                        })
-                        .finally(() => {
-                            saveBtn.disabled = false;
-                        });
+                    } catch (error) {
+                        await openAlertModal('Cannot attach the server' + error);
+                    } finally {
+                        saveBtn.disabled = false;
+                    }
+
+                    // fetch(`/edit/${itemId}`, {
+                    //     method: 'POST',
+                    //     body: formData
+                    // })
+                    //     .then(response => response.json())
+                    //     .then(data => {
+                    //         if (data.status === 'success') {
+                    //             showToast(data.message, "success")
+
+                    //             if (window.INV_TAB_DATA) {
+                    //                 const dataItem = window.INV_TAB_DATA.find(i => i.id == itemId);
+                    //                 if (dataItem) {
+                    //                     dataItem.name = nameInput ? nameInput.value.trim() : dataItem.name;
+                    //                     detailInner.querySelectorAll('input[name]').forEach(input => {
+                    //                         dataItem[input.name] = input.value.trim();
+                    //                     });
+                    //                 }
+                    //             }
+
+                    //             detailInner.querySelectorAll('.detail-input').forEach(input => {
+                    //                 input.dataset.originalValue = input.value;
+                    //             });
+                    //             if (nameInput) {
+                    //                 nameInput.dataset.originalValue = nameInput.value;
+                    //             }
+                    //             detailInner.querySelector('.cancel-btn').click();
+                    //             detailRow.classList.remove('row-saved');
+                    //             mainRow.classList.remove('row-saved');
+                    //             void detailRow.offsetWidth;
+                    //             void mainRow.offsetWidth;
+                    //             detailRow.classList.add('row-saved');
+                    //             mainRow.classList.add('row-saved');
+                    //         } else {
+                    //             alert('Save Failed: ' + data.message);
+                    //         }
+                    //     })
+                    //     .catch(error => {
+                    //         console.error('Save Alert: ', error);
+                    //         alert('Cannot attach the server');
+                    //     })
+                    //     .finally(() => {
+                    //         saveBtn.disabled = false;
+                    //     });
                     return;
                 }
 
@@ -307,7 +354,8 @@
                         window.openFooterMap(rackName);
                         }
                     } else {
-                        alert('Undefined Location');
+                        await openAlertModal('Undefined Location');
+                        // alert('Undefined Location');
                     }
                     return;
                 }
@@ -466,7 +514,8 @@
                 tr.classList.add('row-saved');
             }
         } catch (err) {
-            alert(t('table.net_err_save'));
+            await openAlertModal(t('table.net_err_save'));
+            // alert(t('table.net_err_save'));
         }
     };
 

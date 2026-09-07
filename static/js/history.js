@@ -23,7 +23,7 @@
                 const indicatorData = result.data;
                 indicator.innerHTML = `
                     <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">history</i>
-                    ${t('status.history')}:
+                    <span data-i18n="status.history">${t('status.history')}</span>:
                     <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         ${indicatorData.length || '-'}
                     </span>
@@ -50,6 +50,12 @@
                         }, 300);
                     }
                 }
+
+                window.onCurrentViewLanguageChange = () => {
+                    if (window.HISTORY_DATA) {
+                        renderHistory(window.HISTORY_DATA);
+                    }
+                } 
             }
         } catch (error) {
             console.error("Data Loaded Fail", error);
@@ -129,14 +135,14 @@
 
     // Ajax
     window.undoHistoryLog = async function(logId, btnElement) {
-        if(!confirm(history.confirm_undo)) return;
+        if(!(await openConfirmModal(t('history.confirm_undo')))) return;
 
         let originalHtml = btnElement.innerHTML;
         btnElement.disabled = true;
         btnElement.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite; font-size:1rem;">autorenew</i>`;
 
         try {
-            let response = await fetch(`/undo/${log.id}`, { method: 'POST' });
+            let response = await fetch(`/undo/${logId}`, { method: 'POST' });
             let result = await response.json();
 
             if (result.status === 'success') {
@@ -146,12 +152,14 @@
                     renderHistory(res.data);
                 });
             } else {
-                showToast(result.message, 'error');
+                // showToast(result.message, 'error');
+                await openAlertModal(t('do.undo_fail'));
                 btnElement.disabled = false;
                 btnElement.innerHTML = originalHtml;
             }
         } catch (error) {
-            showToast('Loading Fail', 'error');
+            await openAlertModal('Loading Fail');
+            // showToast('Loading Fail', 'error');
             btnElement.disabled = false;
             btnElement.innerHTML = originalHtml;
         }

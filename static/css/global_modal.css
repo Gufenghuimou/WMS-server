@@ -20,7 +20,7 @@
     background-color: var(--surface, #fff);
     padding: 25px 30px;
     border-radius: 12px;
-    width: 500px; /* 默认宽度 */
+    /* min-width: 500px; */
     max-width: 90%;
     box-shadow: 0 10px 40px rgba(0,0,0,0.2);
     position: relative;
@@ -165,7 +165,7 @@ justify-content: center;
 }
 
 /* 打印标签Modal单独样式 */
-.reprint-container { max-width: 600px; margin: 0 auto; background: var(--surface); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+.reprint-container { width: 100%; margin: 0 auto; background: var(--surface); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
 .tab-box { display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
 .tab-btn { flex: 1; padding: 10px; font-size: 0.95rem; font-weight: bold; border: none; background: #f8f9fa; color: #888; border-radius: 8px; cursor: pointer; transition: 0.2s; }
 .tab-btn.active { background: var(--primary-blue); color: white; box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3); }

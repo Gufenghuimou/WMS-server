@@ -23,7 +23,7 @@
                 const indicatorData = result.data;
                 indicator.innerHTML = `
                     <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">manage_history</i>
-                    ${t('status.asset_history')}:
+                    <span data-i18n="status.asset_history">${t('status.asset_history')}</span>:
                     <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         ${indicatorData.length || '-'}
                     </span>
@@ -50,6 +50,12 @@
                         }, 300);
                     };
                 }
+                
+                window.onCurrentViewLanguageChange = () => {
+                    if (window.SIMCARD_LOG_DATA) {
+                        renderSimcardLog(window.SIMCARD_LOG_DATA);
+                    }
+                } 
             }
         } catch (error) {
             console.error("Data Loaded Fail", error);

@@ -16,11 +16,11 @@
                 const tabsContainer = document.querySelector('.queue-headers-container');
                 tabsContainer.innerHTML = `
                     <div id="switchTabConsumable" class="queue-header-tab active" onclick="switchQueueTab('consumable', this)">
-                        <h2><i class="material-icons">inventory_2</i> ${t('queue.consumables')}</h2>
+                        <h2><i class="material-icons">inventory_2</i> <span data-i18n="queue.consumables">${t('queue.consumables')}</span></h2>
                         <span class="count-badge">${reqData.inv_req.length}</span>
                     </div>
                     <div id="switchTabAsset" class="queue-header-tab inactive" onclick="switchQueueTab('asset', this)">
-                        <h2><i class="material-icons">devices</i> ${t('queue.assets')}</h2>
+                        <h2><i class="material-icons">devices</i> <span data-i18n="queue.assets">${t('queue.assets')}</span></h2>
                         <span class="count-badge">${reqData.asset_req.length}</span>
                     </div>
                 `;
@@ -29,7 +29,7 @@
                 const indicatorData = reqData.inv_req.length + reqData.asset_req.length;
                 indicator.innerHTML = `
                     <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">pending_actions</i>
-                    ${t('status.request_queue')}:
+                    <span data-i18n="status.request_queue">${t('status.request_queue')}</span>:
                     <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         ${indicatorData || 0}
                     </span>
@@ -43,6 +43,12 @@
                 }
 
                 bindEvents();
+                window.onCurrentViewLanguageChange = () => {
+                    if (window.INV_REQ_DATA && window.ASSET_REQ_DATA) {
+                        renderInvReq(window.INV_REQ_DATA);
+                        renderAssetReq(window.ASSET_REQ_DATA);
+                    }
+                } 
             }
         } catch (error) {
             console.error("Data Loaded Fail", error);
@@ -104,7 +110,7 @@
 
                     <div class="req-actions">
                         ${actionBtn}
-                        <form action="/request_queue/reject/${invReq.req.id}" method="post" style="margin: 0;" onsubmit="return confirm('${t('queue.confirm_reject')}');">
+                        <form action="/request_queue/reject/${invReq.req.id}" method="post" style="margin: 0;">
                             <button type="submit" class="btn-primary" style="background: white; border: 1px solid #ccc; color: #7f8c8d; height: 40px; padding: 0 15px;">
                                 <i class="material-icons">block</i> ${t('queue.reject')}
                             </button>
@@ -167,7 +173,7 @@
                                 <i class="material-icons" style="font-size: 0.9rem; vertical-align: middle;">chat_bubble_outline</i>
                                 ${assReq.req.note || t('queue.no_reason')}
                             </span>
-                            <span style="font-size: 1.05rem; font-weight: bold; color: var(--text-main); cursor: pointer;" onclick="openFooterMap('${safeLoc}')"><i class="material-icons" style="vertical-align: bottom;">place</i>${assReq.req.department}</span>
+                            <span style="font-size: 0.95rem; font-weight: bold; color: var(--primary); cursor: pointer;" onclick="openFooterMap('${safeLoc}')"><i class="material-icons" style="vertical-align: bottom; font-size: 1.05rem;">place</i>${assReq.req.department}</span>
                         </div>
                     </div>
 
@@ -182,7 +188,7 @@
                             <i class="material-icons">check_circle</i> ${t('queue.approve')}
                         </button>
 
-                        <form action="/request_queue/asset_reject/${assReq.req.id}" method="post" style="margin: 0;" onsubmit="return confirm('${t('queue.confirm_reject')}');">
+                        <form action="/request_queue/asset_reject/${assReq.req.id}" method="post" style="margin: 0;">
                             <button type="submit" class="btn-primary" style="background: white; border: 1px solid #ccc; color: #7f8c8d; height: 40px; padding: 0 15px;">
                                 <i class="material-icons">block</i> ${t('queue.reject')}
                             </button>
@@ -324,12 +330,12 @@
 
         // reject逻辑
         const handleRejectSubmit = async function(e) {
-            if (e.defaultPrevented) return;
+            e.preventDefault();
             const form = e.target;
             if (form.id === 'assetApproveForm' || form.id === 'approveForm') return;
             if (form.tagName === 'FORM' && form.action.includes('reject')) {
-                e.preventDefault();
-
+                const isConfirmed = await window.openConfirmModal(t('queue.confirm_reject'));
+                if (!isConfirmed) return;
                 const submitBtn = form.querySelector("button[type='submit']");
                 const originalHtml = submitBtn.innerHTML;
 

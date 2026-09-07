@@ -66,6 +66,12 @@
                     };
                 }
                 bindEvents();
+
+                window.onCurrentViewLanguageChange = () => {
+                    if (window.ASSET_DATA) {
+                        renderAssetCards(window.ASSET_DATA);
+                    }
+                } 
             }
         } catch (error) {
             console.error("Data Loaded Fail", error);
@@ -150,24 +156,12 @@
 
                         <div style="font-size: 0.9rem; color: #666; margin-top: 4px; line-height: 1.5;">
                             <div style="display:flex; justify-content:space-between;">
-                                <div class="text-truncate info-desc1" style="max-width: 300px;" title="${ group.description_1 }" >
-                                    <span data-i18n="asset_view.category_lbl">${t('asset_view.category_lbl')}</span>
-                                    <span> ${ group.description_1 || '-' }</span>
-                                </div>
-                                <div class="text-truncate info-usefor" style="max-width: 300px; color: var(--primary); font-weight: 600;" title="${ group.use_for }">
-                                    <span data-i18n="asset_view.dest_lbl">${t('asset_view.dest_lbl')}</span>
-                                    <span> ${ group.use_for || '-' }</span>
-                                </div>
+                                <span class="text-truncate info-desc1" style="max-width: 300px;" title="${ group.description_1 }" >${t('asset_view.category_lbl')} ${ group.description_1 || '-' }</span>
+                                <span class="text-truncate info-usefor" style="max-width: 300px; color: var(--primary); font-weight: 600;" title="${ group.use_for }">${t('asset_view.dest_lbl')} ${ group.use_for || '-' }</span>
                             </div>
                             <div style="display:flex; justify-content:space-between;">
-                                <div class="text-truncate info-desc2" style="max-width: 300px;" title="${ group.description_2 }">
-                                    <span data-i18n="asset_view.desc_lbl">${t('asset_view.desc_lbl')}</span>
-                                    <span> ${ group.description_2 || '-' }</span>
-                                </div>
-                                <div class="text-truncate info-model" style="max-width: 300px; color: var(--primary-blue); font-weight: 600;" title="model">
-                                    <span>MODEL:</span>
-                                    <span> ${ group.model || '-' }</span>
-                                </div>
+                                <span class="text-truncate info-desc2" style="max-width: 300px;" title="${ group.description_2 }">${t('asset_view.desc_lbl')} ${ group.description_2 || '-' }</span>
+                                <span class="text-truncate info-model" style="max-width: 300px; color: var(--primary-blue); font-weight: 600;" title="model">MODEL: ${ group.model || '-' }</span>
                             </div>
                         </div>
 
@@ -176,18 +170,9 @@
                             <!-- Minichart部分 -->
                             <div id="chart-container-${groupId}" style="flex: 1; margin-right: 20px; display: flex; flex-direction: column; justify-content: center;">
                                 <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: bold; margin-bottom: 5px; line-height: 1;">
-                                    <div  style="color: #1db954;">
-                                        <span data-i18n="asset_view.stocking">${t('asset_view.stocking')} </span>
-                                        <span>: ${ good_qty }</span>
-                                    </div>
-                                    <div style="color: #95a5a6;">
-                                        <span data-i18n="asset_view.stopped">${t('asset_view.stopped')} </span>
-                                        <span>: ${ broken_qty }</span>
-                                    </div>
-                                    <div style="color: #e74c3c;">
-                                        <span data-i18n="asset_view.using">${t('asset_view.using')} </span>
-                                        <span>: ${ used_qty }</span>
-                                    </div>   
+                                    <span style="color: #1db954;">${t('asset_view.stocking')} : ${ good_qty }</span>
+                                    <span style="color: #95a5a6;">${t('asset_view.stopped')} : ${ broken_qty }</span>
+                                    <span style="color: #e74c3c;">${t('asset_view.using')} : ${ used_qty }</span>
                                 </div>
                                 <div style="width: 100%; height: 6px; background: #ecf0f1; border-radius: 4px; display: flex; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">
                                     ${good_qty > 0 ? `<div style="width: ${good_pct}%; background: rgba(29, 185, 84, 0.5);"></div>` : ''}
@@ -235,20 +220,20 @@
                 <tr>
                     <td colspan="5" style="text-align: center; padding: 120px 0; color: #ccc; border: none;">
                         <i class="material-icons" style="font-size: 4rem; margin-bottom: 15px; display: block;">inventory_2</i>
-                        <span style="font-size: 1.1rem;" data-i18n="asset_view.no_detail_data">${t('asset_view.no_detail_data')}</span>
+                        <span style="font-size: 1.1rem;">${t('asset_view.no_detail_data')}</span>
                     </td>
                 </tr>`;
             return;
         }
 
         let rowsHtml = groupData.items.map(item => {
-            let statusHtml = `<span style="background: rgba(231, 76, 60, 0.15); color: #c0392b; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap" data-i18n="asset_view.status_out_stock">${t('asset_view.status_out_stock')}</span>`;
+            let statusHtml = `<span style="background: rgba(231, 76, 60, 0.15); color: #c0392b; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap">${t('asset_view.status_out_stock')}</span>`;
             if (item.is_stop) {
-                statusHtml = `<span style="background: rgba(149, 165, 166, 0.15); color: #7f8c8d; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; text-decoration: line-through; white-space: nowrap" data-i18n="asset_view.status_stop">${t('asset_view.status_stop')}</span>`;
+                statusHtml = `<span style="background: rgba(149, 165, 166, 0.15); color: #7f8c8d; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; text-decoration: line-through; white-space: nowrap">${t('asset_view.status_stop')}</span>`;
             } else if (item.is_stock) {
-                statusHtml = `<span style="background: rgba(29, 185, 84, 0.15); color: #158e40; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap" data-i18n="asset_view.status_in_stock">${t('asset_view.status_in_stock')}</span>`;
+                statusHtml = `<span style="background: rgba(29, 185, 84, 0.15); color: #158e40; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap">${t('asset_view.status_in_stock')}</span>`;
             } else if (item.is_request) {
-                statusHtml = `<span style="background: rgba(230, 126, 34, 0.1); color: #e67e22; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap" data-i18n="log.status_pending">${t('log.status_pending')}</span>`;
+                statusHtml = `<span style="background: rgba(230, 126, 34, 0.1); color: #e67e22; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap">${t('log.status_pending')}</span>`;
             }
 
             let rawLoc = item.location ? String(item.location).trim() : '';
@@ -349,19 +334,19 @@
                 cardBackForm = `
                     <form method="post" action="/asset_edit_group/${group.pn1}" class="admin-edit-form" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
                         <div class="edit-form-grid">
-                            <div><label class="edit-label" data-i18n="asset_view.edit_pn1">${t('asset_view.edit_pn1')}</label><input type="text" name="pn_1" class="edit-input" value="${group.pn1}" readonly style="background:#eee; cursor:not-allowed; color:#888;"></div>
-                            <div><label class="edit-label" data-i18n="asset_view.edit_pn2">${t('asset_view.edit_pn2')}</label><input type="text" name="pn_2" class="edit-input" value="${group.pn2 || ''}"></div>
-                            <div><label class="edit-label" data-i18n="asset_view.edit_dest">${t('asset_view.edit_dest')}</label><input type="text" name="use_for" class="edit-input" value="${ group.use_for || '' }"></div>
+                            <div><label class="edit-label">${t('asset_view.edit_pn1')}</label><input type="text" name="pn_1" class="edit-input" value="${group.pn1}" readonly style="background:#eee; cursor:not-allowed; color:#888;"></div>
+                            <div><label class="edit-label">${t('asset_view.edit_pn2')}</label><input type="text" name="pn_2" class="edit-input" value="${group.pn2 || ''}"></div>
+                            <div><label class="edit-label">${t('asset_view.edit_dest')}</label><input type="text" name="use_for" class="edit-input" value="${ group.use_for || '' }"></div>
 
-                            <div style="grid-column: span 3;"><label class="edit-label" data-i18n="asset_view.edit_name">${t('asset_view.edit_name')}</label><input type="text" name="name" class="edit-input" value="${group.name || ''}"></div>
+                            <div style="grid-column: span 3;"><label class="edit-label">${t('asset_view.edit_name')}</label><input type="text" name="name" class="edit-input" value="${group.name || ''}"></div>
 
-                            <div style="grid-column: span 1;"><label class="edit-label" data-i18n="asset_view.edit_desc1">${t('asset_view.edit_desc1')}</label><input type="text" name="description_1" class="edit-input" value="${group.description_1 || ''}"></div>
-                            <div style="grid-column: span 2;"><label class="edit-label" data-i18n="asset_view.edit_desc2">${t('asset_view.edit_desc2')}</label><input type="text" name="description_2" class="edit-input" value="${group.description_2 || ''}"></div>
+                            <div style="grid-column: span 1;"><label class="edit-label">${t('asset_view.edit_desc1')}</label><input type="text" name="description_1" class="edit-input" value="${group.description_1 || ''}"></div>
+                            <div style="grid-column: span 2;"><label class="edit-label">${t('asset_view.edit_desc2')}</label><input type="text" name="description_2" class="edit-input" value="${group.description_2 || ''}"></div>
 
                             <div style="grid-column: span 1;"><label class="edit-label">Model</label><input type="text" name="model" class="edit-input" value="${group.model || ''}"></div>
                             <div style="display: flex; gap: 8px; grid-column: span 2; align-items: end; justify-content: flex-end;">
-                                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #333; box-shadow: none;" onclick="cancelEdit(event, 'card-${groupId}')" data-i18n="asset_view.btn_cancel">${t('asset_view.btn_cancel')}</button>
-                                <button type="submit" class="btn-primary" style="background: #1db954;" data-i18n="asset_view.btn_save">${t('asset_view.btn_save')}</button>
+                                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #333; box-shadow: none;" onclick="cancelEdit(event, 'card-${groupId}')">${t('asset_view.btn_cancel')}</button>
+                                <button type="submit" class="btn-primary" style="background: #1db954;">${t('asset_view.btn_save')}</button>
                             </div>
                         </div>
                     </form>
@@ -373,17 +358,17 @@
                         <div class="edit-form-grid" style="grid-template-columns: 1fr 1fr;">
                             <div style="grid-column: span 2; margin-bottom: 5px;">
                                 <h4 style="margin: 0; color: var(--primary-blue); font-size: 1.1rem; display: flex; align-items: center; gap: 5px;">
-                                    <i class="material-icons">add_shopping_cart</i> <span data-i18n="asset_view.submit_requirement">${t('asset_view.submit_requirement')}</span>
+                                    <i class="material-icons">add_shopping_cart</i> ${t('asset_view.submit_requirement')}
                                 </h4>
                             </div>
 
-                            <div><label class="edit-label" data-i18n="asset_view.required_qty"> ${t('asset_view.required_qty')} <span style="color:red;">*</span></label><input type="number" name="req_qty" class="edit-input" min="1" required></div>
-                            <div><label class="edit-label" data-i18n="asset_view.target_location"> ${t('asset_view.target_location')} <span style="color:red;">*</span></label><input type="text" name="department" class="edit-input" required></div>
-                            <div style="grid-column: span 2;"><label class="edit-label" data-i18n="asset_view.note"> ${t('asset_view.note')} </label><input type="text" name="note" class="edit-input"></div>
+                            <div><label class="edit-label"> ${t('asset_view.required_qty')} <span style="color:red;">*</span></label><input type="number" name="req_qty" class="edit-input" min="1" required></div>
+                            <div><label class="edit-label"> ${t('asset_view.target_location')} <span style="color:red;">*</span></label><input type="text" name="department" class="edit-input" required></div>
+                            <div style="grid-column: span 2;"><label class="edit-label"> ${t('asset_view.note')} </label><input type="text" name="note" class="edit-input"></div>
 
                             <div style="display: flex; gap: 8px; grid-column: span 2; align-items: end; justify-content: flex-end; margin-top: 15px;">
-                                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #333; box-shadow: none;" onclick="cancelEdit(event, 'card-${groupId}')" data-i18n="asset_view.btn_cancel">${t('asset_view.btn_cancel')}</button>
-                                <button type="submit" class="btn-primary" style="background: var(--primary-blue);" data-i18n="asset_view.btn_save">${t('asset_view.btn_save')}</button>
+                                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #333; box-shadow: none;" onclick="cancelEdit(event, 'card-${groupId}')">${t('asset_view.btn_cancel')}</button>
+                                <button type="submit" class="btn-primary" style="background: var(--primary-blue);">${t('asset_view.btn_save')}</button>
                             </div>
                         </div>
                     </form>
@@ -457,7 +442,7 @@
         let originalBtnText = submitBtn ? submitBtn.innerHTML : '保存';
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite;">autorenew</i> <span data-i18n="asset_view.btn_processing">${t('asset_view.btn_processing')}</span>`;
+            submitBtn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite;">autorenew</i> ${t('asset_view.btn_processing')}`;
         }
 
         try {
@@ -554,30 +539,10 @@
         let descDivs = cardElement.querySelectorAll('.info-desc1, .info-usefor, .info-desc2, .info-model');
 
         if (descDivs.length >= 4) {
-            if (data.description_1 !== undefined) descDivs[0].innerHTML = `
-                <div class="text-truncate info-desc1" style="max-width: 300px;" title="${data.description_1}" >
-                    <span data-i18n="asset_view.category_lbl">${t('asset_view.category_lbl')}</span>
-                    <span> ${data.description_1 || '-'}</span>
-                </div>
-            `;
-            if (data.use_for !== undefined) descDivs[1].innerHTML = `
-                <div class="text-truncate info-usefor" style="max-width: 300px; color: var(--primary); font-weight: 600;" title="${data.use_for}">
-                    <span data-i18n="asset_view.dest_lbl">${t('asset_view.dest_lbl')}</span>
-                    <span> ${data.use_for || '-'}</span>
-                </div>
-            `;
-            if (data.description_2 !== undefined) descDivs[2].innerHTML = `
-                <div class="text-truncate info-desc2" style="max-width: 300px;" title="${data.description_2}">
-                    <span data-i18n="asset_view.desc_lbl">${t('asset_view.desc_lbl')}</span>
-                    <span> ${data.description_2 || '-'}</span>
-                </div>
-            `;
-            if (data.model !== undefined) descDivs[3].innerHTML = `
-                <div class="text-truncate info-model" style="max-width: 300px; color: var(--primary-blue); font-weight: 600;" title="model">
-                    <span>MODEL:</span>
-                    <span> ${data.model || '-'}</span>
-                </div>
-            `;
+            if (data.description_1 !== undefined) descDivs[0].innerHTML = `<span class="text-truncate info-desc1" style="max-width: 300px;" title="${data.description_1}" >${t('asset_view.category_lbl')} ${data.description_1 || '-'}</span>`;
+            if (data.use_for !== undefined) descDivs[1].innerHTML = `<span class="text-truncate info-usefor" style="max-width: 300px; color: var(--primary); font-weight: 600;" title="${data.use_for}">${t('asset_view.dest_lbl')} ${data.use_for || '-'}</span>`;
+            if (data.description_2 !== undefined) descDivs[2].innerHTML = `<span class="text-truncate info-desc2" style="max-width: 300px;" title="${data.description_2}">${t('asset_view.desc_lbl')} ${data.description_2 || '-'}</span>`;
+            if (data.model !== undefined) descDivs[3].innerHTML = `<span class="text-truncate info-model" style="max-width: 300px; color: var(--primary-blue); font-weight: 600;" title="model">MODEL: ${data.model || '-'}</span>`;
         }
     }
 
@@ -605,18 +570,9 @@
         container.innerHTML = `
             <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: bold; margin-bottom: 5px; line-height: 1;">
                 <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: bold; margin-bottom: 5px; line-height: 1;">
-                    <div  style="color: #1db954;">
-                        <span data-i18n="asset_view.stocking">${t('asset_view.stocking')} </span>
-                        <span>: ${ good_qty }</span>
-                    </div>
-                    <div style="color: #95a5a6;">
-                        <span data-i18n="asset_view.stopped">${t('asset_view.stopped')} </span>
-                        <span>: ${ broken_qty }</span>
-                    </div>
-                    <div style="color: #e74c3c;">
-                        <span data-i18n="asset_view.using">${t('asset_view.using')} </span>
-                        <span>: ${ used_qty }</span>
-                    </div>   
+                    <span style="color: #1db954;">${t('asset_view.stocking')} : ${ good_qty }</span>
+                    <span style="color: #95a5a6;">${t('asset_view.stopped')} : ${ broken_qty }</span>
+                    <span style="color: #e74c3c;">${t('asset_view.using')} : ${ used_qty }</span>
                 </div>
             </div>
             <div style="width: 100%; height: 6px; background: #ecf0f1; border-radius: 4px; display: flex; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">        

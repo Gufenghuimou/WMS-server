@@ -135,7 +135,16 @@ body {
     font-weight: 600;
     user-select: none;
 }
-.nav-item { display: flex; align-items: center; gap: 15px; padding: 12px 15px; color: var(--text-light); text-decoration: none; border-radius: 6px; font-weight: 500; transition: 0.2s; }
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 15px; padding: 12px 15px;
+    color: var(--text-light);
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: 0.2s;
+}
 .nav-item:hover, .nav-item.active { background-color: rgba(255,255,255,0.1); color: var(--text-white); }
 .nav-item i { font-size: 1.2rem; }
 

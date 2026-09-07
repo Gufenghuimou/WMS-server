@@ -11,7 +11,7 @@
             <td><input type="text" name="phone_number" class="cell-input number-input" data-row="${i}" autocomplete="off"></td>
             <td><input type="text" name="note" class="cell-input note-input" data-row="${i}" autocomplete="off"></td>
             <td style="text-align: center; vertical-align: middle;">
-            <button type="button" class="btn-undo" onclick="clearSingleRow(${i})" title="${t('stockin.clear_row_title')}">
+            <button type="button" class="btn-undo" onclick="clearSingleRow(${i})" data-i18n-title="stockin.clear_row_title" title="${t('stockin.clear_row_title')}">
                 <i class="material-icons" style="font-size: 1.2rem">delete_outline</i>
             </button>
             </td>
@@ -41,8 +41,8 @@
         checkAllDuplicates();
     }
 
-    window.clearSimcardGrid = function() {
-        if (confirm(t('stockin.confirm_clear_all'))) {
+    window.clearSimcardGrid = async function() {
+        if (!(await openConfirmModal(t('stockin.confirm_clear_all')))) {
             document.getElementById("gridBody").innerHTML = '';
             currentRowCount = 0;
             addSimcardRow();
@@ -61,7 +61,7 @@
         const indicator = document.getElementById('indicator');
         indicator.innerHTML = `
             <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">sim_card</i>
-            ${t('status.asset_stock_in')}:
+            <span data-i18n="status.asset_stock_in">${t('status.asset_stock_in')}</span>:
             <span id="simcardStockinCountDisplay" style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                 0
             </span>
@@ -138,7 +138,8 @@
                 let hasTableDuplicates = checkAllDuplicates();
                 let hasDbDuplicates = document.querySelector('.db-exist-warn') !== null;
                 if (hasTableDuplicates || hasDbDuplicates) {
-                    alert(t('stockin.err_duplicate'));
+                    await openAlertModal(t('stockin.err_duplicate'));
+                    // alert(t('stockin.err_duplicate'));
                     return;
                 }
 
@@ -159,17 +160,20 @@
                     if (iccId || carrier || number) {
                         hasData = true;
                         if (!iccId) {
-                            alert(t('stockin.err_miss_pn1').replace('{row}', i + 1));
+                            await openAlertModal(t('stockin.err_miss_pn1').replace('{row}', i + 1));
+                            // alert(t('stockin.err_miss_pn1').replace('{row}', i + 1));
                             iccInput.focus();
                             isValid = false; break;
                         }
                         if (!carrier) {
-                            alert(t('stockin.err_miss_name').replace('{row}', i + 1));
+                            await openAlertModal(t('stockin.err_miss_name').replace('{row}', i + 1));
+                            // alert(t('stockin.err_miss_name').replace('{row}', i + 1));
                             carrierInput.focus();
                             isValid = false; break;
                         }
                         if (!number) {
-                            alert(t('stockin.err_miss_qty').replace('{row}', i + 1));
+                            await openAlertModal(t('stockin.err_miss_qty').replace('{row}', i + 1));
+                            // alert(t('stockin.err_miss_qty').replace('{row}', i + 1));
                             numberInput.focus();
                             isValid = false; break;
                         }
@@ -177,7 +181,8 @@
                 }
 
                 if (!hasData) {
-                    alert(t('stockin.err_empty_submit'));
+                    await openAlertModal(t('stockin.err_empty_submit'));
+                    // alert(t('stockin.err_empty_submit'));
                     e.preventDefault();
                     return;
                 }
@@ -201,11 +206,13 @@
                         showToast(result.message, 'success');
                         window.clearSimcardGrid();
                     } else {
-                        alert('Upload Error');
+                        // alert('Upload Error');
+                        await openAlertModal('Upload Error');
                     }
                 } catch (error) {
-                        console.error('提交异常',error);
-                        alert('网络请求错误，请重试！');
+                        // console.error('提交异常',error);
+                        // alert('网络请求错误，请重试！');
+                        await openAlertModal('网络请求错误，请重试！');
                 } finally {
                     if (submitBtn) {
                         submitBtn.disabled = false;

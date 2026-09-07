@@ -49,6 +49,12 @@
 
                 // 绑定异步表单事件
                 bindAsyncForms();
+
+                window.onCurrentViewLanguageChange = () => {
+                    if (window.USERS_LIST) {
+                        renderUsers(window.USERS_LIST);
+                    }
+                } 
             }
         } catch (error) {
             console.error("Data Loaded Fail", error);
@@ -92,11 +98,11 @@
         }
 
         const rowsHtml = data.map(u => {
-            let userBadge = `<span style="background: rgba(46, 125, 50, 0.1); color: #2e7d32; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;" data-i18n="admin.badge_operator">${t('admin.badge_operator')}</span>`;
+            let userBadge = `<span style="background: rgba(46, 125, 50, 0.1); color: #2e7d32; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">${t('admin.badge_operator')}</span>`;
             if (u.role === 'superadmin') {
-                userBadge = `<span style="background: rgba(217, 48, 37, 0.1); color: #d93025; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;" data-i18n="admin.badge_superadmin">${t('admin.badge_superadmin')}</span>`;
+                userBadge = `<span style="background: rgba(217, 48, 37, 0.1); color: #d93025; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">${t('admin.badge_superadmin')}</span>`;
             } else if (u.role === 'admin') {
-                userBadge = `<span style="background: rgba(230, 81, 0, 0.1); color: #e65100; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;" data-i18n="admin.badge_admin">${t('admin.badge_admin')}</span>`;
+                userBadge = `<span style="background: rgba(230, 81, 0, 0.1); color: #e65100; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">${t('admin.badge_admin')}</span>`;
             }
             let actionBtn = `
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
@@ -110,13 +116,13 @@
                     <form action="/delete_user/${u.id}" method="post" class="async-form" style="margin: 0;" data-confirm="${t('admin.confirm_delete_user').replace('{username}', u.username)}">
                         <input type="hidden" name="username" value="${u.username}">
                         <button type="submit" class="btn-primary btn-sm" style="background: var(--danger-red);">
-                            <i class="material-icons" style="font-size: 1.1rem;">person_remove</i> <span data-i18n="admin.btn_delete_user">${t('admin.btn_delete_user')}</span>
+                            <i class="material-icons" style="font-size: 1.1rem;">person_remove</i> ${t('admin.btn_delete_user')}
                         </button>
                     </form>
                 </div>
             `;
             if (window.CURRENT_USER && u.username === window.CURRENT_USER.username) {
-                actionBtn = `<span style="color: #1db954; font-weight: bold; font-size: 0.9rem; padding-right: 15px;" data-i18n="admin.status_online">${t('admin.status_online')}</span>`;
+                actionBtn = `<span style="color: #1db954; font-weight: bold; font-size: 0.9rem; padding-right: 15px;">${t('admin.status_online')}</span>`;
             }
             return `
                 <tr>
@@ -138,7 +144,7 @@
                 e.preventDefault();
 
                 let confirmText = this.getAttribute('data-confirm');
-                if (confirmText && !confirm(confirmText)) return;
+                if (confirmText && !(await openConfirmModal(confirmText))) return;
 
                 let formData = new FormData(this);
                 let msgBox = document.getElementById('globalAdminMsg');
@@ -146,7 +152,7 @@
                 let originalBtnHtml = btn.innerHTML;
 
                 btn.disabled = true;
-                btn.innerHTML = `<i class="material-icons" style="font-size: 1.2rem; animation: spin 1s linear infinite;">autorenew</i> <span data-i18n="admin.processing">${t('admin.processing')}</span>`;
+                btn.innerHTML = `<i class="material-icons" style="font-size: 1.2rem; animation: spin 1s linear infinite;">autorenew</i> ${t('admin.processing')}`;
                 msgBox.style.display = 'none';
                 msgBox.className = 'admin-msg-box';
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -164,7 +170,7 @@
                         btn.innerHTML = originalBtnHtml;
                     } else if (data.status === 'success') {
                         msgBox.classList.add('msg-success');
-                        btn.innerHTML = `<i class="material-icons" style="font-size: 1.2rem;">check</i> <span data-i18n="admin.success">${t('admin.success')}</span>`;
+                        btn.innerHTML = `<i class="material-icons" style="font-size: 1.2rem;">check</i> ${t('admin.success')}`;
                         btn.style.background = '#1db954';
                         setTimeout(() => window.location.reload(), 1500); // Admin页允许整页刷新确保权限干净
                     }
@@ -447,13 +453,26 @@
         updatePropPanel(); drawEditor();
     };
 
-    window.saveMapToDb = function() {
-        if (confirm(t('admin.confirm_deploy'))) {
-            fetch('/api/layout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(editorRacks) })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') alert(t('admin.deploy_success')); else alert(t('admin.deploy_fail') + data.message);
-            });
+    window.saveMapToDb = async function() {
+        if (await openConfirmModal(t('admin.confirm_deploy'))) {
+            try {
+                let response = await fetch('/api/layout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(editorRacks)
+                });
+
+                let result = await response.json();
+                if (result.status === 'success') {
+                    await openAlertModal(t('admin.deploy_success'));
+                    // alert(t('admin.deploy_success'));
+                } else {
+                    await openAlertModal(t('admin.deploy_fail') + result.message);
+                    // alert(t('admin.deploy_fail') + result.message);
+                }
+            } catch (error) {
+                await openAlertModal(t('admin.deploy_fail'));
+            }
         }
     };
 
