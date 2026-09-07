@@ -99,7 +99,7 @@ async def process_login(request: Request, username: str = Form(...), password: s
                 "role": user.role
             }
 
-            return RedirectResponse(url="/all", status_code=303)
+            return RedirectResponse(url="/", status_code=303)
         else:
             error_msg = t_lang("login.error", lang)
             return templates.TemplateResponse(request, "login.html", {"error": error_msg ,"lang": lang})
@@ -144,18 +144,26 @@ async def logout(request: Request):
     request.session.clear()
     return RedirectResponse(url="/login", status_code=303)
 
-@router.get("/settings", response_class=HTMLResponse)
-async def get_settings_page(request: Request, current_user:dict = Depends(get_current_user)):
-    with Session(engine) as session:
-        user = session.exec(select(User).where(User.username == current_user["username"])).first()
-        if not user:
-            return RedirectResponse(url="/login", status_code=303)
+# @router.get("/settings", response_class=HTMLResponse)
+# async def get_settings_page(request: Request, current_user:dict = Depends(get_current_user)):
+#     with Session(engine) as session:
+#         user = session.exec(select(User).where(User.username == current_user["username"])).first()
+#         if not user:
+#             return RedirectResponse(url="/login", status_code=303)
 
-        return templates.TemplateResponse(
-            request,
-            "settings.html",
-            {'user': user, 'active_page': 'settings'},
-        )
+#         return templates.TemplateResponse(
+#             request,
+#             "settings.html",
+#             {'user': user, 'active_page': 'settings'},
+#         )
+
+# @router.get("/api/settings")
+# async def get_settings_page(request: Request, current_user: dict = Depends(get_current_user)):
+#     with Session(engine) as session:
+#         user = session.exec(select(User).where(User.username == current_user["username"])).first()
+#         if not user:
+#                     return RedirectResponse(url="/login", status_code=303)
+#     return {'status': 'success', 'data': user}
 
 @router.post("/user/update_settings")
 async def update_user_settings(
@@ -259,7 +267,7 @@ async def add_user(
         session.commit()
     return {"status": "success", "message": t_lang("admin.add_user_success", lang, new_username=new_username)}
 
-@router.post("/admin/reset_password")
+@router.post("/backend/reset_password")
 async def reset_password(request: Request, target_username: str = Form(...), current_user:dict = Depends(require_admin)):
     lang = request.state.lang
     with Session(engine) as session:

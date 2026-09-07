@@ -2,27 +2,27 @@
 
 // 🌟 1. 路由配置表：将 HTML视图、Init函数 和 专属CSS 绑定在一起
 const routes = {
-    '/backend': { view: '/static/views/admin.html', init: window.initAdminPage, css: 'admin' },
-    '/asset_audit': { view: '/static/views/asset_audit.html', init: window.initAssetAuditPage, css: 'asset_audit' },
-    '/asset_history': { view: '/static/views/asset_history.html', init: window.initAssetHistoryPage, css: 'asset_history' },
-    '/asset_scrap': { view: '/static/views/asset_scrap.html', init: window.initAssetScrapPage, css: 'asset_scrap' },
-    '/asset_stock_in': { view: '/static/views/asset_stock_in.html', init: window.initAssetStockPage, css: 'asset_stock_in' },
-    '/asset': { view: '/static/views/asset.html', init: window.initAssetPage, css: 'asset' },
-    '/audit': { view: '/static/views/audit.html', init: window.initAuditPage, css: 'audit' },
-    '/history': { view: '/static/views/history.html', init: window.initHistoryPage, css: 'history' },
-    '/all': { view: '/static/views/inventory_cards.html', init: window.initInventoryPage, css: 'inventory_card' },
-    '/inventory_table': { view: '/static/views/inventory_table.html', init: window.initInventoryTablePage, css: 'inventory_table' },
-    '/request_log': { view: '/static/views/request_log.html', init: window.initRequestLogPage, css: 'request_log' },
-    '/request_queue': { view: '/static/views/request_queue.html', init: window.initRequestQueuePage, css: 'request_queue' },
-    '/settings': { view: '/static/views/settings.html', init: window.initSettingsPage, css: 'settings' },
-    '/simcard_history': { view: '/static/views/simcard_history.html', init: window.initSimcardHistoryPage, css: 'simcard_history' },
-    '/simcard_stock_in': { view: '/static/views/simcard_stock_in.html', init: window.initSimcardStockPage, css: 'simcard_stock_in' },
-    '/simcard': { view: '/static/views/simcard.html', init: window.initSimcardPage, css: 'simcard' },
-    '/stock_in': { view: '/static/views/stock_in.html', init: window.initStockPage, css: 'stock_in' },
-    '/settings': { view: '/static/views/settings.html', init: window.initSettingsPage, css: 'settings' }
+    '/backend':             { view: '/static/views/backend.html',           js: 'backend',          init: 'initAdminPage',          css: 'backend'          },
+    '/asset_audit':         { view: '/static/views/asset_audit.html',       js: 'asset_audit',      init: 'initAssetAuditPage',     css: 'asset_audit'      },
+    '/asset_history':       { view: '/static/views/asset_history.html',     js: 'asset_history',    init: 'initAssetHistoryPage',   css: 'asset_history'    },
+    '/asset_scrap':         { view: '/static/views/asset_scrap.html',       js: 'asset_scrap',      init: 'initAssetScrapPage',     css: 'asset_scrap'      },
+    '/asset_stock_in':      { view: '/static/views/asset_stock_in.html',    js: 'asset_stock_in',   init: 'initAssetStockPage',     css: 'asset_stock_in'   },
+    '/asset':               { view: '/static/views/asset.html',             js: 'asset',            init: 'initAssetPage',          css: 'asset'            },
+    '/audit':               { view: '/static/views/audit.html',             js: 'audit',            init: 'initAuditPage',          css: 'audit'            },
+    '/history':             { view: '/static/views/history.html',           js: 'history',          init: 'initHistoryPage',        css: 'history'          },
+    '/inventory_cards':     { view: '/static/views/inventory_cards.html',   js: 'inventory_cards',  init: 'initInventoryPage',      css: 'inventory_cards'  },
+    '/inventory_table':     { view: '/static/views/inventory_table.html',   js: 'inventory_table',  init: 'initInventoryTablePage', css: 'inventory_table'  },
+    '/request_log':         { view: '/static/views/request_log.html',       js: 'request_log',      init: 'initRequestLogPage',     css: 'request_log'      },
+    '/request_queue':       { view: '/static/views/request_queue.html',     js: 'request_queue',    init: 'initRequestQueuePage',   css: 'request_queue'    },
+    '/settings':            { view: '/static/views/settings.html',          js: 'settings',         init: 'initSettingsPage',       css: 'settings'         },
+    '/simcard_history':     { view: '/static/views/simcard_history.html',   js: 'simcard_history',  init: 'initSimcardHistoryPage', css: 'simcard_history'  },
+    '/simcard_stock_in':    { view: '/static/views/simcard_stock_in.html',  js: 'simcard_stock_in', init: 'initSimcardStockPage',   css: 'simcard_stock_in' },
+    '/simcard':             { view: '/static/views/simcard.html',           js: 'simcard',          init: 'initSimcardPage',        css: 'simcard'          },
+    '/stock_in':            { view: '/static/views/stock_in.html',          js: 'stock_in',         init: 'initStockPage',          css: 'stock_in'         },
+    '/settings':            { view: '/static/views/settings.html',          js: 'settings',         init: 'initSettingsPage',       css: 'settings'         }
 };
 
-// 🌟 2. 动态 CSS 加载引擎
+// 加载CSS
 function loadPageCSS(cssFileName) {
     // a. 查找并卸载上一页的动态 CSS（物理隔离，消除污染）
     document.querySelectorAll('link[data-dynamic-css]').forEach(el => el.remove());
@@ -36,6 +36,21 @@ function loadPageCSS(cssFileName) {
         link.setAttribute('data-dynamic-css', 'true'); // 打上标记，方便下次清理
         document.head.appendChild(link);
     }
+}
+
+// 加载JS
+function loadPageJS(jsFileName) {
+    return new Promise((resolve, reject) => {
+        if (!jsFileName) return resolve();
+        if (document.querySelector(`script[data-route-js="${jsFileName}"]`)) return resolve();
+
+        const script = document.createElement('script');
+        script.src = `/static/js/${jsFileName}.js?t=${window.SYS_VER || new Date().getTime()}`;
+        script.setAttribute('data-route-js', jsFileName);
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
 }
 
 // 核心路由控制器
@@ -55,15 +70,18 @@ const router = async () => {
     }
 
     const viewContainer = document.getElementById('router-view');
-    
     if (viewContainer) {
         viewContainer.innerHTML = ``;
     }
+
     // 在请求 HTML 的同时，并行触发 CSS 加载
     loadPageCSS(route.css);
 
     try {
-        const htmlResponse = await fetch(route.view);
+        const [htmlResponse] = await Promise.all([
+            fetch(route.view),
+            loadPageJS(route.js)
+        ]);
         if (!htmlResponse.ok) throw new Error("View not found");
         const htmlContent = await htmlResponse.text();
 
@@ -76,8 +94,8 @@ const router = async () => {
         }
 
         // 触发页面专属初始化函数
-        if (typeof route.init === 'function') {
-            await route.init();
+        if (route.init && typeof window[route.init] === 'function') {
+            await window[route.init]();
         }
 
         // 更新侧边栏高亮状态
@@ -87,7 +105,6 @@ const router = async () => {
         viewContainer.innerHTML = '<div style="color:red; padding: 50px; text-align: center;">页面加载失败或模块开发中</div>';
         console.error("Router Load Error:", error);
     } finally {    
-        // 即使出错也要把 Loader 关掉，防止死锁
         if (typeof window.hideGlobalLoader === 'function') {
             window.hideGlobalLoader();
         }

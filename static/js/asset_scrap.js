@@ -27,7 +27,7 @@
                 const indicatorData = result.data;
                 indicator.innerHTML = `
                     <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">delete_sweep</i>
-                    ${t('status.asset_scrap')}:
+                    <span data-i18n="status.asset_scrap">${t('status.asset_scrap')}</span>:
                     <span id="scrapCountDisplay" style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         ${indicatorData.length || 0}
                     </span>
@@ -68,7 +68,7 @@
                 <tr id="emptyState">
                     <td colspan="6" style="text-align: center; padding: 80px 20px; color: var(--text-muted); border: none;">
                         <i class="material-icons" style="font-size: 4rem; color: #e0e0e0; display: block; margin-bottom: 15px;">document_scanner</i>
-                        <span style="font-size: 1.1rem;">${t('asset_scrap.empty_table')}</span>
+                        <span style="font-size: 1.1rem;" data-i18n="asset_scrap.empty_table">${t('asset_scrap.empty_table')}</span>
                     </td>
                 </tr>
             `;
@@ -195,7 +195,7 @@
         const originalHtml = btn ? btn.innerHTML : '';
 
         if (btn) {
-            btn.innerHTML = `<i class="material-icons" style="font-size: 1.2rem; margin-right: 5px; animation: spin 1s linear infinite;">autorenew</i>${t('asset_scrap.fetching')}`;
+            btn.innerHTML = `<i class="material-icons" style="font-size: 1.2rem; margin-right: 5px; animation: spin 1s linear infinite;">autorenew</i><span data-i18n="asset_scrap.fetching">${t('asset_scrap.fetching')}</span>`;
             btn.disabled = true;
         }
 

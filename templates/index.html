@@ -6,35 +6,35 @@
     
     <!-- 🌟 只保留全局公用的 CSS，业务 CSS 全部删掉，交由 Router 动态加载 -->
     <link rel="stylesheet" href="/static/css/base.css">
-    <link rel="stylesheet" href="/static/css/admin.css">
+    <link rel="stylesheet" href="/static/css/backend.css">
     <link rel="stylesheet" href="/static/css/cropper.min.css">
     <link rel="stylesheet" href="/static/css/global_modal.css">
 
     <!-- 所有的 JS 依然可以全部 defer 加载，因为 JS 我们已经用 IIFE 做了作用域隔离 -->
-    <script src="/static/js/admin.js" defer></script>
-    <script src="/static/js/asset.js" defer></script>
-    <script src="/static/js/asset_audit.js" defer></script>
-    <script src="/static/js/asset_history.js" defer></script>
-    <script src="/static/js/asset_scrap.js" defer></script>
-    <script src="/static/js/asset_stock_in.js" defer></script>
-    <script src="/static/js/audit.js" defer></script>
+    <script src="/static/js/backend.js" defer></script>
+    <!-- <script src="/static/js/asset.js" defer></script> -->
+    <!-- <script src="/static/js/asset_audit.js" defer></script> -->
+    <!-- <script src="/static/js/asset_history.js" defer></script> -->
+    <!-- <script src="/static/js/asset_scrap.js" defer></script> -->
+    <!-- <script src="/static/js/asset_stock_in.js" defer></script> -->
+    <!-- <script src="/static/js/audit.js" defer></script> -->
     <script src="/static/js/base.js" defer></script>
     <script src="/static/js/cropper.min.js" defer></script>
     <script src="/static/js/global_modal.js" defer></script>
-    <script src="/static/js/history.js" defer></script>
+    <!-- <script src="/static/js/history.js" defer></script> -->
     <script src="/static/js/html5-qrcode.min.js"></script>
     <script src="/static/js/index.js"></script>
-    <script src="/static/js/inventory_card.js" defer></script>
-    <script src="/static/js/inventory_table.js" defer></script>
+    <!-- <script src="/static/js/inventory_cards.js" defer></script> -->
+    <!-- <script src="/static/js/inventory_table.js" defer></script> -->
     <script src="/static/js/login.js" defer></script>
     <script src="/static/js/qrious.min.js" defer></script>
-    <script src="/static/js/request_log.js" defer></script>
-    <script src="/static/js/request_queue.js"></script>
-    <script src="/static/js/settings.js" defer></script>
-    <script src="/static/js/simcard.js" defer></script>
-    <script src="/static/js/simcard_history.js" defer></script>
-    <script src="/static/js/simcard_stock_in.js" defer></script>
-    <script src="/static/js/stock_in.js" defer></script>
+    <!-- <script src="/static/js/request_log.js" defer></script> -->
+    <!-- <script src="/static/js/request_queue.js"></script> -->
+    <!-- <script src="/static/js/settings.js" defer></script> -->
+    <!-- <script src="/static/js/simcard.js" defer></script> -->
+    <!-- <script src="/static/js/simcard_history.js" defer></script> -->
+    <!-- <script src="/static/js/simcard_stock_in.js" defer></script> -->
+    <!-- <script src="/static/js/stock_in.js" defer></script> -->
     <script src="/static/js/router.js"defer></script>
 </head>
 <body class="is-loading">
@@ -87,7 +87,7 @@
             <a href="/request_queue" class="nav-item auth-admin" data-link><i class="material-icons">notifications</i><span data-i18n="title.request_queue">Request Queue</span><span id="badge-pending" style="display: none; background-color: var(--danger-red); color: white; border-radius: 12px; min-width: 24px; height: 24px; font-size: 0.9rem; font-weight: bold; margin-left: auto; text-align: center; line-height: 24px;"></span></a>
             <a href="/request_log" class="nav-item" data-link><i class="material-icons">list_alt</i><span data-i18n="title.request_log">Request Log</span></a>
             <div class="nav-group-title" data-i18n="base.inventory">Inventory</div>
-            <a href="/all" class="nav-item" data-link><i class="material-icons">inventory_2</i><span data-i18n="title.inventory_cards">Inventory Cards</span></a>
+            <a href="/inventory_cards" class="nav-item" data-link><i class="material-icons">inventory_2</i><span data-i18n="title.inventory_cards">Inventory Cards</span></a>
             <a href="/inventory_table" class="nav-item auth-admin" data-link><i class="material-icons">view_list</i><span data-i18n="title.inventory_table">Inventory Table</span></a>
             <a href="/stock_in" class="nav-item auth-admin" data-link><i class="material-icons">add_box</i><span data-i18n="title.stock_in">Stock In</span></a>
             <a href="/history" class="nav-item auth-admin" data-link><i class="material-icons">history</i><span data-i18n="title.history">History</span></a>

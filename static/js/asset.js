@@ -23,12 +23,12 @@
                 const indicatorData = assetData.stats;
                 indicator.innerHTML = `
                     <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">category</i>
-                    ${t('status.asset_1')}:
+                    <span data-i18n="status.asset_1">${t('status.asset_1')}</span>:
                     <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         ${indicatorData.categories || 0}
                     </span>
                     <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green); margin-left: 15px;">devices</i>
-                    ${t('status.asset_2')}:
+                    <span data-i18n="status.asset_2">${t('status.asset_2')}</span>:
                     <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         ${indicatorData.total || 0}
                     </span>
@@ -74,7 +74,7 @@
     };
 
     function renderAssetCards(data) {
-        const isAdmin = (window.USER_ROLE === 'superadmin' || window.USER_ROLE === 'admin');
+        const isAdmin = (window.CURRENT_USER.role === 'superadmin' || window.CURRENT_USER.role === 'admin');
         const listContainer = document.getElementById('assetCardList');
         const groupKeys = Object.keys(data).sort((a, b) => a.localeCompare(b));
 
@@ -88,7 +88,7 @@
         }
 
         let htmlString = '';
-        let count = 0;
+        // let count = 0;
 
         for (let groupId of groupKeys) {
             
@@ -112,55 +112,6 @@
                         <i class="material-icons" style="font-size: 0.9rem;">${isAdmin ? 'edit' : 'add_shopping_cart'}</i> ${isAdmin ? t('asset_view.btn_edit') : t('asset_view.btn_require')}
                     </button>
                 `;
-
-            let imgChangeLabel = `<label style="font-size:0.75rem; color:#888; text-align:center;"> ${isAdmin ? t('asset_view.click_to_change_img') : ''}</label>`;
-
-            let cardBackForm = null;
-            if (isAdmin) {
-                cardBackForm = `
-                    <form method="post" action="/asset_edit_group/${group.pn1}" class="admin-edit-form" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
-                        <div class="edit-form-grid">
-                            <div><label class="edit-label">${t('asset_view.edit_pn1')}</label><input type="text" name="pn_1" class="edit-input" value="${ group.pn1 }" readonly style="background:#eee; cursor:not-allowed; color:#888;"></div>
-                            <div><label class="edit-label">${t('asset_view.edit_pn2')}</label><input type="text" name="pn_2" class="edit-input" value="${ group.pn2 || '' }"></div>
-                            <div><label class="edit-label">${t('asset_view.edit_dest')}</label><input type="text" name="use_for" class="edit-input" value="${ group.use_for || '' }"></div>
-
-                            <div style="grid-column: span 3;"><label class="edit-label">${t('asset_view.edit_name')}</label><input type="text" name="name" class="edit-input" value="${ group.name || '' }"></div>
-
-                            <div style="grid-column: span 1;"><label class="edit-label">${t('asset_view.edit_desc1')}</label><input type="text" name="description_1" class="edit-input" value="${ group.description_1 || '' }"></div>
-                            <div style="grid-column: span 2;"><label class="edit-label">${t('asset_view.edit_desc2')}</label><input type="text" name="description_2" class="edit-input" value="${ group.description_2 || '' }"></div>
-
-                            <div style="grid-column: span 1;"><label class="edit-label">Model</label><input type="text" name="model" class="edit-input" value="${ group.model || '' }"></div>
-                            <div style="display: flex; gap: 8px; grid-column: span 2; align-items: end; justify-content: flex-end;">
-                                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #333; box-shadow: none;" onclick="cancelEdit(event, 'card-${groupId}')">${t('asset_view.btn_cancel')}</button>
-                                <button type="submit" class="btn-primary" style="background: #1db954;">${t('asset_view.btn_save')}</button>
-                            </div>
-                        </div>
-                    </form>
-                `;
-            } else {
-                cardBackForm = `
-                    <form method="post" action="/api/request_asset_by_pn/${group.pn1}" class="require-form" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
-                        <input type="hidden" name="matter" value="require">
-                        <div class="edit-form-grid" style="grid-template-columns: 1fr 1fr;">
-                            <div style="grid-column: span 2; margin-bottom: 5px;">
-                                <h4 style="margin: 0; color: var(--primary-blue); font-size: 1.1rem; display: flex; align-items: center; gap: 5px;">
-                                    <i class="material-icons">add_shopping_cart</i> ${t('asset_view.submit_requirement')}
-                                </h4>
-                            </div>
-
-                            <div><label class="edit-label"> ${t('asset_view.required_qty')} <span style="color:red;">*</span></label><input type="number" name="req_qty" class="edit-input" min="1" required></div>
-                            <div><label class="edit-label"> ${t('asset_view.target_location')} <span style="color:red;">*</span></label><input type="text" name="department" class="edit-input" required></div>
-                            <div style="grid-column: span 2;"><label class="edit-label"> ${t('asset_view.note')} </label><input type="text" name="note" class="edit-input"></div>
-
-                            <div style="display: flex; gap: 8px; grid-column: span 2; align-items: end; justify-content: flex-end; margin-top: 15px;">
-                                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #333; box-shadow: none;" onclick="cancelEdit(event, 'card-${groupId}')">${t('asset_view.btn_cancel')}</button>
-                                <button type="submit" class="btn-primary" style="background: var(--primary-blue);">${t('asset_view.btn_save')}</button>
-                            </div>
-                        </div>
-                    </form>
-                `;
-            }
-
 
             // 拼接搜索关键字
             let itemKeys = group.items.map(item => `${item.ctrl_no} ${item.location || ''}`).join(' ');
@@ -197,14 +148,26 @@
                             </div>
                         </div>
 
-                        <div style="font-size: 0.8rem; color: #666; margin-top: 4px; line-height: 1.5;">
+                        <div style="font-size: 0.9rem; color: #666; margin-top: 4px; line-height: 1.5;">
                             <div style="display:flex; justify-content:space-between;">
-                                <span class="text-truncate info-desc1" style="max-width: 300px;" title="${ group.description_1 }">${t('asset_view.category_lbl')} ${ group.description_1 || '-' }</span>
-                                <span class="text-truncate info-usefor" style="max-width: 300px; color: var(--primary); font-weight: 600;" title="${ group.use_for }">${t('asset_view.dest_lbl')} ${ group.use_for || '-' }</span>
+                                <div class="text-truncate info-desc1" style="max-width: 300px;" title="${ group.description_1 }" >
+                                    <span data-i18n="asset_view.category_lbl">${t('asset_view.category_lbl')}</span>
+                                    <span> ${ group.description_1 || '-' }</span>
+                                </div>
+                                <div class="text-truncate info-usefor" style="max-width: 300px; color: var(--primary); font-weight: 600;" title="${ group.use_for }">
+                                    <span data-i18n="asset_view.dest_lbl">${t('asset_view.dest_lbl')}</span>
+                                    <span> ${ group.use_for || '-' }</span>
+                                </div>
                             </div>
                             <div style="display:flex; justify-content:space-between;">
-                                <span class="text-truncate info-desc2" style="max-width: 300px;" title="${ group.description_2 }">${t('asset_view.desc_lbl')} ${ group.description_2 || '-' }</span>
-                                <span class="text-truncate info-model" style="max-width: 300px; color: var(--primary-blue); font-weight: 600;" title="model">MODEL: ${ group.model || '-' }</span>
+                                <div class="text-truncate info-desc2" style="max-width: 300px;" title="${ group.description_2 }">
+                                    <span data-i18n="asset_view.desc_lbl">${t('asset_view.desc_lbl')}</span>
+                                    <span> ${ group.description_2 || '-' }</span>
+                                </div>
+                                <div class="text-truncate info-model" style="max-width: 300px; color: var(--primary-blue); font-weight: 600;" title="model">
+                                    <span>MODEL:</span>
+                                    <span> ${ group.model || '-' }</span>
+                                </div>
                             </div>
                         </div>
 
@@ -213,9 +176,18 @@
                             <!-- Minichart部分 -->
                             <div id="chart-container-${groupId}" style="flex: 1; margin-right: 20px; display: flex; flex-direction: column; justify-content: center;">
                                 <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: bold; margin-bottom: 5px; line-height: 1;">
-                                    <span style="color: #1db954;">${t('asset_view.stocking')}: ${ good_qty }</span>
-                                    <span style="color: #95a5a6;">${t('asset_view.stopped')}: ${ broken_qty }</span>
-                                    <span style="color: #e74c3c;">${t('asset_view.using')}: ${ used_qty }</span>
+                                    <div  style="color: #1db954;">
+                                        <span data-i18n="asset_view.stocking">${t('asset_view.stocking')} </span>
+                                        <span>: ${ good_qty }</span>
+                                    </div>
+                                    <div style="color: #95a5a6;">
+                                        <span data-i18n="asset_view.stopped">${t('asset_view.stopped')} </span>
+                                        <span>: ${ broken_qty }</span>
+                                    </div>
+                                    <div style="color: #e74c3c;">
+                                        <span data-i18n="asset_view.using">${t('asset_view.using')} </span>
+                                        <span>: ${ used_qty }</span>
+                                    </div>   
                                 </div>
                                 <div style="width: 100%; height: 6px; background: #ecf0f1; border-radius: 4px; display: flex; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">
                                     ${good_qty > 0 ? `<div style="width: ${good_pct}%; background: rgba(29, 185, 84, 0.5);"></div>` : ''}
@@ -228,40 +200,27 @@
                     </div>
                 </div>
 
-                <div class="card-back" onclick="event.stopPropagation();">
-                    <div style="width: 130px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                        ${imgChangeLabel}
-                        <div style="position:relative; cursor:pointer;" onclick="document.getElementById('edit-upload-${first.id}').click();">
-
-                            <img id="edit-preview-${first.id}" class="card-img" style="display:${!group.has_image ? 'none' : 'flex'}; width:130px; height:130px; border-radius:8px; object-fit:cover; border: 1px solid #ddd;"
-                                    src="${ group.has_image ? `/static/asset_images/${group.pn1}.jpg?t=${window.SYS_VER}` : 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}" loading="lazy"
-                                    onerror="this.style.display='none'; document.getElementById('edit-placeholder-${first.id}').style.display='flex';">
-
-                            <div id="edit-placeholder-${first.id}" class="card-img" style="display:${group.has_image ? 'none' : 'flex'}; justify-content: center; align-items: center; background: #f8f9fa; color: #dcdcdc; border: 1px dashed #ddd; width:130px; height:130px; border-radius:8px;">
-                                <i class="material-icons" style="font-size: 2.2rem;">${group.has_image ? 'inventory_2' : 'add_photo_alternate'}</i>
-                            </div>
-
-                            <div style="position:absolute; bottom:5px; right:5px; background:rgba(0,0,0,0.5); color:#fff; border-radius:50%; width:24px; height:24px; display:flex; justify-content:center; align-items:center;"><i class="material-icons" style="font-size: 14px;">photo_camera</i></div>
-                        </div>
-                        ${isAdmin ? `<input type="file" id="edit-upload-${first.id}" style="display:none;" accept="image/*" onchange="uploadCardImage(this, '${group.pn1}', '${first.id}')">` : ''}
-                    </div>
-                    ${cardBackForm}
-                </div>
-            </div>`;
-            count++;
+                <div class="card-back" onclick="event.stopPropagation();"></div>
+            </div>
+            `;
+            // count++;
         }
 
         // 一次性渲染到页面中
         listContainer.innerHTML = htmlString;
         
         // 默认点开第一张卡片
-        let firstCard = document.querySelector('.asset-card');
-        if (firstCard) firstCard.click();
+        setTimeout(() => {
+            let firstCard = document.querySelector('.asset-card');
+            if (firstCard) firstCard.click();
+        }, 100);
     }
 
     // Hydration Engine
     window.switchAssetType = function(groupId) {
-        document.querySelectorAll('.asset-card').forEach(el => el.classList.remove('active'));
+        const activeCard = document.querySelector('.asset-card.active');
+        if (activeCard) activeCard.classList.remove('active');
+
         let targetCard = document.getElementById('card-' + groupId);
         if (targetCard) targetCard.classList.add('active');
 
@@ -276,20 +235,20 @@
                 <tr>
                     <td colspan="5" style="text-align: center; padding: 120px 0; color: #ccc; border: none;">
                         <i class="material-icons" style="font-size: 4rem; margin-bottom: 15px; display: block;">inventory_2</i>
-                        <span style="font-size: 1.1rem;">${t('asset_view.no_detail_data')}</span>
+                        <span style="font-size: 1.1rem;" data-i18n="asset_view.no_detail_data">${t('asset_view.no_detail_data')}</span>
                     </td>
                 </tr>`;
             return;
         }
 
         let rowsHtml = groupData.items.map(item => {
-            let statusHtml = `<span style="background: rgba(231, 76, 60, 0.15); color: #c0392b; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap">${t('asset_view.status_out_stock')}</span>`;
+            let statusHtml = `<span style="background: rgba(231, 76, 60, 0.15); color: #c0392b; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap" data-i18n="asset_view.status_out_stock">${t('asset_view.status_out_stock')}</span>`;
             if (item.is_stop) {
-                statusHtml = `<span style="background: rgba(149, 165, 166, 0.15); color: #7f8c8d; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; text-decoration: line-through; white-space: nowrap">${t('asset_view.status_stop')}</span>`;
+                statusHtml = `<span style="background: rgba(149, 165, 166, 0.15); color: #7f8c8d; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; text-decoration: line-through; white-space: nowrap" data-i18n="asset_view.status_stop">${t('asset_view.status_stop')}</span>`;
             } else if (item.is_stock) {
-                statusHtml = `<span style="background: rgba(29, 185, 84, 0.15); color: #158e40; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap">${t('asset_view.status_in_stock')}</span>`;
+                statusHtml = `<span style="background: rgba(29, 185, 84, 0.15); color: #158e40; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap" data-i18n="asset_view.status_in_stock">${t('asset_view.status_in_stock')}</span>`;
             } else if (item.is_request) {
-                statusHtml = `<span style="background: rgba(230, 126, 34, 0.1); color: #e67e22; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap">${t('log.status_pending')}</span>`;
+                statusHtml = `<span style="background: rgba(230, 126, 34, 0.1); color: #e67e22; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; white-space: nowrap" data-i18n="log.status_pending">${t('log.status_pending')}</span>`;
             }
 
             let rawLoc = item.location ? String(item.location).trim() : '';
@@ -377,12 +336,93 @@
         let front = card.querySelector('.card-front');
         let back = card.querySelector('.card-back');
 
+        if (back.innerHTML.trim() === '') {
+            const groupId = cardId.replace('card-', '');
+            const group = window.ASSET_DATA[groupId];
+            const first = group.items[0];
+            const isAdmin = (window.CURRENT_USER.role === 'superadmin' || window.CURRENT_USER.role === 'admin');
+
+            let imgChangeLabel = `<label style="font-size:0.75rem; color:#888; text-align:center;"> ${isAdmin ? t('asset_view.click_to_change_img') : ''}</label>`;
+
+            let cardBackForm = null;
+            if (isAdmin) {
+                cardBackForm = `
+                    <form method="post" action="/asset_edit_group/${group.pn1}" class="admin-edit-form" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div class="edit-form-grid">
+                            <div><label class="edit-label" data-i18n="asset_view.edit_pn1">${t('asset_view.edit_pn1')}</label><input type="text" name="pn_1" class="edit-input" value="${group.pn1}" readonly style="background:#eee; cursor:not-allowed; color:#888;"></div>
+                            <div><label class="edit-label" data-i18n="asset_view.edit_pn2">${t('asset_view.edit_pn2')}</label><input type="text" name="pn_2" class="edit-input" value="${group.pn2 || ''}"></div>
+                            <div><label class="edit-label" data-i18n="asset_view.edit_dest">${t('asset_view.edit_dest')}</label><input type="text" name="use_for" class="edit-input" value="${ group.use_for || '' }"></div>
+
+                            <div style="grid-column: span 3;"><label class="edit-label" data-i18n="asset_view.edit_name">${t('asset_view.edit_name')}</label><input type="text" name="name" class="edit-input" value="${group.name || ''}"></div>
+
+                            <div style="grid-column: span 1;"><label class="edit-label" data-i18n="asset_view.edit_desc1">${t('asset_view.edit_desc1')}</label><input type="text" name="description_1" class="edit-input" value="${group.description_1 || ''}"></div>
+                            <div style="grid-column: span 2;"><label class="edit-label" data-i18n="asset_view.edit_desc2">${t('asset_view.edit_desc2')}</label><input type="text" name="description_2" class="edit-input" value="${group.description_2 || ''}"></div>
+
+                            <div style="grid-column: span 1;"><label class="edit-label">Model</label><input type="text" name="model" class="edit-input" value="${group.model || ''}"></div>
+                            <div style="display: flex; gap: 8px; grid-column: span 2; align-items: end; justify-content: flex-end;">
+                                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #333; box-shadow: none;" onclick="cancelEdit(event, 'card-${groupId}')" data-i18n="asset_view.btn_cancel">${t('asset_view.btn_cancel')}</button>
+                                <button type="submit" class="btn-primary" style="background: #1db954;" data-i18n="asset_view.btn_save">${t('asset_view.btn_save')}</button>
+                            </div>
+                        </div>
+                    </form>
+                `;
+            } else {
+                cardBackForm = `
+                    <form method="post" action="/api/request_asset_by_pn/${group.pn1}" class="require-form" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                        <input type="hidden" name="matter" value="require">
+                        <div class="edit-form-grid" style="grid-template-columns: 1fr 1fr;">
+                            <div style="grid-column: span 2; margin-bottom: 5px;">
+                                <h4 style="margin: 0; color: var(--primary-blue); font-size: 1.1rem; display: flex; align-items: center; gap: 5px;">
+                                    <i class="material-icons">add_shopping_cart</i> <span data-i18n="asset_view.submit_requirement">${t('asset_view.submit_requirement')}</span>
+                                </h4>
+                            </div>
+
+                            <div><label class="edit-label" data-i18n="asset_view.required_qty"> ${t('asset_view.required_qty')} <span style="color:red;">*</span></label><input type="number" name="req_qty" class="edit-input" min="1" required></div>
+                            <div><label class="edit-label" data-i18n="asset_view.target_location"> ${t('asset_view.target_location')} <span style="color:red;">*</span></label><input type="text" name="department" class="edit-input" required></div>
+                            <div style="grid-column: span 2;"><label class="edit-label" data-i18n="asset_view.note"> ${t('asset_view.note')} </label><input type="text" name="note" class="edit-input"></div>
+
+                            <div style="display: flex; gap: 8px; grid-column: span 2; align-items: end; justify-content: flex-end; margin-top: 15px;">
+                                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #333; box-shadow: none;" onclick="cancelEdit(event, 'card-${groupId}')" data-i18n="asset_view.btn_cancel">${t('asset_view.btn_cancel')}</button>
+                                <button type="submit" class="btn-primary" style="background: var(--primary-blue);" data-i18n="asset_view.btn_save">${t('asset_view.btn_save')}</button>
+                            </div>
+                        </div>
+                    </form>
+                `;
+            }
+            let backHtml = `
+                <div style="width: 130px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                    ${imgChangeLabel}
+                    <div style="position:relative; cursor:pointer;" onclick="document.getElementById('edit-upload-${first.id}').click();">
+
+                        <img id="edit-preview-${first.id}" class="card-img" style="display:${!group.has_image ? 'none' : 'flex'}; width:130px; height:130px; border-radius:8px; object-fit:cover; border: 1px solid #ddd;"
+                                src="${ group.has_image ? `/static/asset_images/${group.pn1}.jpg?t=${window.SYS_VER}` : 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}" loading="lazy"
+                                onerror="this.style.display='none'; document.getElementById('edit-placeholder-${first.id}').style.display='flex';">
+
+                        <div id="edit-placeholder-${first.id}" class="card-img" style="display:${group.has_image ? 'none' : 'flex'}; justify-content: center; align-items: center; background: #f8f9fa; color: #dcdcdc; border: 1px dashed #ddd; width:130px; height:130px; border-radius:8px;">
+                            <i class="material-icons" style="font-size: 2.2rem;">${group.has_image ? 'inventory_2' : 'add_photo_alternate'}</i>
+                        </div>
+
+                        <div style="position:absolute; bottom:5px; right:5px; background:rgba(0,0,0,0.5); color:#fff; border-radius:50%; width:24px; height:24px; display:flex; justify-content:center; align-items:center;"><i class="material-icons" style="font-size: 14px;">photo_camera</i></div>
+                    </div>
+                    ${isAdmin ? `<input type="file" id="edit-upload-${first.id}" style="display:none;" accept="image/*" onchange="uploadCardImage(this, '${group.pn1}', '${first.id}')">` : ''}
+                </div>
+                ${cardBackForm}
+            `;
+            back.innerHTML = backHtml;
+            let newForm = back.querySelector('form');
+            if (newForm) {
+                newForm.onsubmit = handleFormSubmit;
+            }
+        }
+        
         if (!card.dataset.frontHeight) {
             card.dataset.frontHeight = front.offsetHeight + 'px';
         }
 
-        card.style.height = back.offsetHeight + 'px';
-        card.classList.add('is-flipped');
+        setTimeout(() => {
+            card.style.height = back.offsetHeight + 'px';
+            card.classList.add('is-flipped');
+        }, 10);
     };
 
     window.cancelEdit = function(event, cardId) {
@@ -417,7 +457,7 @@
         let originalBtnText = submitBtn ? submitBtn.innerHTML : '保存';
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite;">autorenew</i> ${t('asset_view.btn_processing')}`;
+            submitBtn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite;">autorenew</i> <span data-i18n="asset_view.btn_processing">${t('asset_view.btn_processing')}</span>`;
         }
 
         try {
@@ -511,12 +551,33 @@
         if (nameNode && data.name !== undefined) nameNode.innerText = data.name || t('asset_view.unnamed');
 
         // let descDivs = cardElement.querySelectorAll('.right-part > div:nth-child(2) span, .right-part > div:nth-child(2) div');
-        let descDivs = cardElement.querySelectorAll('.info-desc1, .info-usefor, .info-desc2');
+        let descDivs = cardElement.querySelectorAll('.info-desc1, .info-usefor, .info-desc2, .info-model');
 
-        if (descDivs.length >= 3) {
-            if (data.description_1 !== undefined) descDivs[0].innerText = `${t('asset_view.category_lbl')} ${data.description_1 || '-'}`;
-            if (data.use_for !== undefined) descDivs[1].innerText = `${t('asset_view.dest_lbl')} ${data.use_for || '-'}`;
-            if (data.description_2 !== undefined) descDivs[2].innerText = `${t('asset_view.desc_lbl')} ${data.description_2 || '-'}`;
+        if (descDivs.length >= 4) {
+            if (data.description_1 !== undefined) descDivs[0].innerHTML = `
+                <div class="text-truncate info-desc1" style="max-width: 300px;" title="${data.description_1}" >
+                    <span data-i18n="asset_view.category_lbl">${t('asset_view.category_lbl')}</span>
+                    <span> ${data.description_1 || '-'}</span>
+                </div>
+            `;
+            if (data.use_for !== undefined) descDivs[1].innerHTML = `
+                <div class="text-truncate info-usefor" style="max-width: 300px; color: var(--primary); font-weight: 600;" title="${data.use_for}">
+                    <span data-i18n="asset_view.dest_lbl">${t('asset_view.dest_lbl')}</span>
+                    <span> ${data.use_for || '-'}</span>
+                </div>
+            `;
+            if (data.description_2 !== undefined) descDivs[2].innerHTML = `
+                <div class="text-truncate info-desc2" style="max-width: 300px;" title="${data.description_2}">
+                    <span data-i18n="asset_view.desc_lbl">${t('asset_view.desc_lbl')}</span>
+                    <span> ${data.description_2 || '-'}</span>
+                </div>
+            `;
+            if (data.model !== undefined) descDivs[3].innerHTML = `
+                <div class="text-truncate info-model" style="max-width: 300px; color: var(--primary-blue); font-weight: 600;" title="model">
+                    <span>MODEL:</span>
+                    <span> ${data.model || '-'}</span>
+                </div>
+            `;
         }
     }
 
@@ -543,9 +604,20 @@
         let broken_pct = total_qty > 0 ? (broken_qty / total_qty) * 100 : 0;
         container.innerHTML = `
             <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: bold; margin-bottom: 5px; line-height: 1;">
-                <span style="color: #1db954;">${t('asset_view.stocking')}: ${ good_qty }</span>
-                <span style="color: #95a5a6;">${t('asset_view.stopped')}: ${ broken_qty }</span>
-                <span style="color: #e74c3c;">${t('asset_view.using')}: ${ used_qty }</span>
+                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: bold; margin-bottom: 5px; line-height: 1;">
+                    <div  style="color: #1db954;">
+                        <span data-i18n="asset_view.stocking">${t('asset_view.stocking')} </span>
+                        <span>: ${ good_qty }</span>
+                    </div>
+                    <div style="color: #95a5a6;">
+                        <span data-i18n="asset_view.stopped">${t('asset_view.stopped')} </span>
+                        <span>: ${ broken_qty }</span>
+                    </div>
+                    <div style="color: #e74c3c;">
+                        <span data-i18n="asset_view.using">${t('asset_view.using')} </span>
+                        <span>: ${ used_qty }</span>
+                    </div>   
+                </div>
             </div>
             <div style="width: 100%; height: 6px; background: #ecf0f1; border-radius: 4px; display: flex; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">        
                 ${good_qty > 0 ? `<div style="width: ${good_pct}%; background: rgba(29, 185, 84, 0.5); transition: 0.3s;" title="${t('asset_view.stocking')}: ${ good_qty }"></div>` : ''}

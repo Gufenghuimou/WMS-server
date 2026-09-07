@@ -28,7 +28,7 @@
                 const indicatorData = aduitData.stats;
                 indicator.innerHTML = `
                     <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">barcode_reader</i>
-                    ${t('status.asset_audit')}:
+                    <span data-i18n="status.asset_audit">${t('status.asset_audit')}</span>:
                     <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         ${ indicatorData.progress || 0 }% (${indicatorData.completed || 0}/${indicatorData.total || 0})
                     </span>
@@ -83,12 +83,12 @@
             let rowsHtml = items.map(item => {
                 let statusBadge = ``;
                 if (item.status.toLowerCase() === 'pending') {
-                    statusBadge = `<span class="status-badge status-miss cell-status">${t('asset_audit.status_miss')}</span>`;
+                    statusBadge = `<span class="status-badge status-miss cell-status" data-i18n="asset_audit.status_miss">${t('asset_audit.status_miss')}</span>`;
                 } else {
                     if (item.actual_location.toLowerCase() !== item.expected_location.toLowerCase()) {
-                        statusBadge = `<span class="status-badge status-warn cell-status">${t('asset_audit.status_warn')}</span>`;
+                        statusBadge = `<span class="status-badge status-warn cell-status" data-i18n="asset_audit.status_warn">${t('asset_audit.status_warn')}</span>`;
                     } else {
-                        statusBadge = `<span class="status-badge status-done cell-status">${t('asset_audit.status_done')}</span>`;
+                        statusBadge = `<span class="status-badge status-done cell-status" data-i18n="asset_audit.status_done">${t('asset_audit.status_done')}</span>`;
                     }
                 }
                 return `
@@ -117,13 +117,13 @@
                 <table class="audit-table">
                     <thead>
                         <tr>
-                            <th style="width: 12%;">${t('asset_audit.th_ctrl_no')}</th>
-                            <th style="width: 12%;">${t('asset_audit.th_pn1')}</th>
-                            <th style="width: 36%;">${t('asset_audit.th_name')}</th>
-                            <th style="width: 10%;">${t('asset_audit.th_expected_loc')}</th>
-                            <th style="width: 10%;">${t('asset_audit.th_actual_loc')}</th>
-                            <th style="width: 10%; text-align: center;">${t('asset_audit.th_status')}</th>
-                            <th style="width: 10%; text-align: center;">${t('asset_audit.th_time')}</th>
+                            <th style="width: 12%;" data-i18n="asset_audit.th_ctrl_no">${t('asset_audit.th_ctrl_no')}</th>
+                            <th style="width: 12%;" data-i18n="asset_audit.th_pn1">${t('asset_audit.th_pn1')}</th>
+                            <th style="width: 36%;" data-i18n="asset_audit.th_name">${t('asset_audit.th_name')}</th>
+                            <th style="width: 10%;" data-i18n="asset_audit.th_expected_loc">${t('asset_audit.th_expected_loc')}</th>
+                            <th style="width: 10%;" data-i18n="asset_audit.th_actual_loc">${t('asset_audit.th_actual_loc')}</th>
+                            <th style="width: 10%; text-align: center;" data-i18n="asset_audit.th_status">${t('asset_audit.th_status')}</th>
+                            <th style="width: 10%; text-align: center;" data-i18n="asset_audit.th_time">${t('asset_audit.th_time')}</th>
                         </tr>
                     </thead>
                     <tbody>${rowsHtml}</tbody>
@@ -194,7 +194,7 @@
                 let ctrlNo = barcodeInput.value.trim();
 
                 if (!currentLoc) {
-                    resultBox.innerHTML = `<span style="color:#d93025;"><i class="material-icons" style="vertical-align:bottom;">error</i> ${t('asset_audit.err_no_loc')}</span>`;
+                    resultBox.innerHTML = `<span style="color:#d93025;"><i class="material-icons" style="vertical-align:bottom;">error</i> <span data-i18n="asset_audit.err_no_loc">${t('asset_audit.err_no_loc')}</span></span>`;
                     locInput.focus();
                     return;
                 }
@@ -315,9 +315,9 @@
 
                 if (data.is_location_changed) {
                     let warnText = t('asset_audit.scan_warn').replace('{expected_location}', data.expected_location);
-                    resultBox.innerHTML = `<span style="color:#f29900;"><i class="material-icons" style="vertical-align:bottom;">warning</i> **${ctrlNo}** ${data.message}  ${warnText}</span> <button type="button" class="btn-primary" onclick="doPrintAudit('${ctrlNo}');"><i class="material-icons">print</i> ${t('asset_audit.reprint')}</button>`;
+                    resultBox.innerHTML = `<span style="color:#f29900;"><i class="material-icons" style="vertical-align:bottom;">warning</i> **${ctrlNo}** ${data.message}  ${warnText}</span> <button type="button" class="btn-primary" onclick="doPrintAudit('${ctrlNo}');"><i class="material-icons">print</i> <span data-i18n="asset_audit.reprint">${t('asset_audit.reprint')}</span></button>`;
                 } else {
-                    resultBox.innerHTML = `<span style="color:#1e8e3e;"><i class="material-icons" style="vertical-align:bottom;">check_circle</i> **${ctrlNo}** ${data.message}</span> <button type="button" class="btn-primary" onclick="doPrintAudit('${ctrlNo}');"><i class="material-icons">print</i>${t('asset_audit.reprint')}</button>`;
+                    resultBox.innerHTML = `<span style="color:#1e8e3e;"><i class="material-icons" style="vertical-align:bottom;">check_circle</i> **${ctrlNo}** ${data.message}</span> <button type="button" class="btn-primary" onclick="doPrintAudit('${ctrlNo}');"><i class="material-icons">print</i> <span data-i18n="asset_audit.reprint">${t('asset_audit.reprint')}</span></button>`;
                 }
 
                 doneAudio.currentTime = 0;
@@ -328,7 +328,7 @@
                 alertAudio.play().catch(() => console.log("Loading sound fail"));
             }
         } catch (err) {
-            resultBox.innerHTML = `<span style="color:#d93025;">${t('asset_audit.net_error')}</span>`;
+            resultBox.innerHTML = `<span style="color:#d93025;" data-i18n="asset_audit.net_error">${t('asset_audit.net_error')}</span>`;
             alertAudio.currentTime = 0;
             alertAudio.play().catch(() => console.log("Loading sound fail"));
         }

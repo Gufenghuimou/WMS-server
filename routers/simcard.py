@@ -297,7 +297,7 @@ async def simcard_delete(request: Request, item_id: int, current_user: dict = De
             session.delete(item)
             session.commit()
             referer = request.headers.get('referer')
-            redirect_url = referer if referer else "/all"
+            redirect_url = referer if referer else "/simcard"
     return RedirectResponse(url=redirect_url, status_code=303)
 
 # @router.get("/simcard_history", response_class=HTMLResponse)

@@ -426,7 +426,7 @@
         const form = document.getElementById('scrapForm');
 
         let currentPage = document.querySelector('.nav-item.active');
-        if (currentPage.getAttribute('href') === '/all') {
+        if (currentPage.getAttribute('href') === '/inventory_cards') {
             form.action = `/delete/${itemId}`;
         } else if (currentPage.getAttribute('href') === '/simcard') {
             form.action = `/simcard_delete/${itemId}`;
@@ -548,7 +548,7 @@
         
         let sysVer = window.GLOBAL_SYS_VER || window.SYS_VER || new Date().getTime();
 
-        if (currentPage.getAttribute('href') === '/all' || currentPage.getAttribute('href') === '/inventory_table') {
+        if (currentPage.getAttribute('href') === '/inventory_cards' || currentPage.getAttribute('href') === '/inventory_table') {
             imgMain.innerHTML = `<img style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px;" src="/static/item_images/${itemId}.jpg?t=${sysVer}">`;
         } else if (currentPage.getAttribute('href') === '/asset') {
             imgMain.innerHTML = `<img style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px;" src="/static/asset_images/${pn1}.jpg?t=${sysVer}">`;

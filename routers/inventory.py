@@ -33,11 +33,7 @@ async def root(request: Request):
     if is_mobile:
         return RedirectResponse(url="/mobile/approve" if user else "/mobile/login", status_code=303)
     else:
-        return RedirectResponse(url="/all" if user else "/login", status_code=303)
-
-# @router.get("/all", response_class=HTMLResponse)
-# async def get_all(request: Request, current_user: dict = Depends(get_current_user)):
-#     return templates.TemplateResponse(request, "inventory_cards.html", {'user': current_user, 'active_page': 'inventory'})
+        return RedirectResponse(url="/inventory_cards" if user else "/login", status_code=303)
 
 @router.get("/api/inventory")
 async def get_inventory(request: Request, query: Optional[str] = None, warning_only: Optional[str] = None, current_user: dict = Depends(get_current_user)):
@@ -221,7 +217,7 @@ async def delete_item(request: Request, item_id: int, current_user: dict = Depen
             session.delete(item)
             session.commit()
             referer = request.headers.get('referer')
-            redirect_url = referer if referer else "/all"
+            redirect_url = referer if referer else "/inventory_cards"
     return RedirectResponse(url=redirect_url, status_code=303)
 
 
@@ -274,16 +270,6 @@ async def import_excel(request: Request, file: UploadFile = File(...), current_u
 
 # -----------------------------库存管理--------------------------#
 
-# @router.get("/inventory_table", response_class=HTMLResponse)
-# async def view_inventory_table(request: Request, current_user: dict = Depends(get_current_user)):
-#     if current_user.get('role') not in ['superadmin', 'admin']:
-#         return RedirectResponse(url= "/all", status_code=303)
-#     with Session(engine) as session:
-#         items =session.exec(select(InventoryItem).order_by(desc(InventoryItem.pn_1))).all()
-#         alarm_items = session.exec(select(InventoryItem).where(InventoryItem.warning_level > 0, InventoryItem.warning_level >= InventoryItem.stock)).all()
-#         alarm_count = len(alarm_items)
-#     return templates.TemplateResponse(request,"inventory_table.html", {"items": items, "user": current_user, "active_page": "inventory_table", "alarm_count": alarm_count})
-
 @router.get("/api/inventory_table")
 async def get_inventory_table(request: Request, current_user: dict = Depends(get_current_user)):
     with Session(engine) as session:
@@ -316,7 +302,7 @@ async def update_advanced(request: Request,
             session.commit()
     return {'status': 'success', 'message': t_lang("do.success", lang)}
 
-@router.get("/all/export")
+@router.get("/inventory/export")
 def export_all(request: Request, current_user: dict = Depends(get_current_user)):
     lang = request.state.lang
     with Session(engine) as session:
@@ -353,7 +339,7 @@ def export_all(request: Request, current_user: dict = Depends(get_current_user))
         }
         return StreamingResponse(output, headers=headers, media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
-@router.get("/all/mva_export")
+@router.get("/inventory/mva_export")
 def export_mva(request: Request, current_user: dict = Depends(get_current_user)):
     with Session(engine) as session:
         contents = session.exec(select(InventoryItem).where(InventoryItem.is_mva == True, InventoryItem.warning_level > 0, InventoryItem.warning_level > InventoryItem.stock)).all()

@@ -41,7 +41,7 @@
                 const indicator = document.getElementById('indicator');
                 indicator.innerHTML = `
                     <i class="material-icons" style="font-size: 1.45rem; color: var(--primary-green);">group</i>
-                    ${t('status.admin')}:
+                    <span data-i18n="status.admin">${t('status.admin')}</span>:
                     <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-green); margin-left: 4px;">
                         ${usersData.users_list.length || '-'}
                     </span>
@@ -92,15 +92,15 @@
         }
 
         const rowsHtml = data.map(u => {
-            let userBadge = `<span style="background: rgba(46, 125, 50, 0.1); color: #2e7d32; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">${t('admin.badge_operator')}</span>`;
+            let userBadge = `<span style="background: rgba(46, 125, 50, 0.1); color: #2e7d32; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;" data-i18n="admin.badge_operator">${t('admin.badge_operator')}</span>`;
             if (u.role === 'superadmin') {
-                userBadge = `<span style="background: rgba(217, 48, 37, 0.1); color: #d93025; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">${t('admin.badge_superadmin')}</span>`;
+                userBadge = `<span style="background: rgba(217, 48, 37, 0.1); color: #d93025; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;" data-i18n="admin.badge_superadmin">${t('admin.badge_superadmin')}</span>`;
             } else if (u.role === 'admin') {
-                userBadge = `<span style="background: rgba(230, 81, 0, 0.1); color: #e65100; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">${t('admin.badge_admin')}</span>`;
+                userBadge = `<span style="background: rgba(230, 81, 0, 0.1); color: #e65100; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;" data-i18n="admin.badge_admin">${t('admin.badge_admin')}</span>`;
             }
             let actionBtn = `
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                    <form action="/admin/reset_password" method="post" class="async-form" style="margin: 0;" data-confirm="${t('admin.confirm_reset_pwd').replace('{username}', u.username)}">
+                    <form action="/backend/reset_password" method="post" class="async-form" style="margin: 0;" data-confirm="${t('admin.confirm_reset_pwd').replace('{username}', u.username)}">
                         <input type="hidden" name="target_username" value="${u.username}">
                         <button type="submit" class="btn-primary btn-sm" style="background: #f39c12;">
                             <i class="material-icons" style="font-size: 1.1rem;">lock_reset</i> ${t('admin.btn_reset_pwd')}
@@ -110,13 +110,13 @@
                     <form action="/delete_user/${u.id}" method="post" class="async-form" style="margin: 0;" data-confirm="${t('admin.confirm_delete_user').replace('{username}', u.username)}">
                         <input type="hidden" name="username" value="${u.username}">
                         <button type="submit" class="btn-primary btn-sm" style="background: var(--danger-red);">
-                            <i class="material-icons" style="font-size: 1.1rem;">person_remove</i> ${t('admin.btn_delete_user')}
+                            <i class="material-icons" style="font-size: 1.1rem;">person_remove</i> <span data-i18n="admin.btn_delete_user">${t('admin.btn_delete_user')}</span>
                         </button>
                     </form>
                 </div>
             `;
             if (window.CURRENT_USER && u.username === window.CURRENT_USER.username) {
-                actionBtn = `<span style="color: #1db954; font-weight: bold; font-size: 0.9rem; padding-right: 15px;">${t('admin.status_online')}</span>`;
+                actionBtn = `<span style="color: #1db954; font-weight: bold; font-size: 0.9rem; padding-right: 15px;" data-i18n="admin.status_online">${t('admin.status_online')}</span>`;
             }
             return `
                 <tr>
@@ -146,7 +146,7 @@
                 let originalBtnHtml = btn.innerHTML;
 
                 btn.disabled = true;
-                btn.innerHTML = `<i class="material-icons" style="font-size: 1.2rem; animation: spin 1s linear infinite;">autorenew</i> ${t('admin.processing')}`;
+                btn.innerHTML = `<i class="material-icons" style="font-size: 1.2rem; animation: spin 1s linear infinite;">autorenew</i> <span data-i18n="admin.processing">${t('admin.processing')}</span>`;
                 msgBox.style.display = 'none';
                 msgBox.className = 'admin-msg-box';
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -164,7 +164,7 @@
                         btn.innerHTML = originalBtnHtml;
                     } else if (data.status === 'success') {
                         msgBox.classList.add('msg-success');
-                        btn.innerHTML = `<i class="material-icons" style="font-size: 1.2rem;">check</i> ${t('admin.success')}`;
+                        btn.innerHTML = `<i class="material-icons" style="font-size: 1.2rem;">check</i> <span data-i18n="admin.success">${t('admin.success')}</span>`;
                         btn.style.background = '#1db954';
                         setTimeout(() => window.location.reload(), 1500); // Admin页允许整页刷新确保权限干净
                     }
