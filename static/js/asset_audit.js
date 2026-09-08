@@ -150,8 +150,8 @@
         const resultBox = document.getElementById('scanResult');
         const globalSearch = document.getElementById('globalSearch');
         const auditContainer = document.getElementById('auditContainer');
-        const auditStartForm = document.querySelector('form[action*="/asset_audit/start"]');
-        const auditCommitForm = document.querySelector('form[action*="/asset_audit/commit"]');
+        const auditStartForm = document.querySelector('form[action*="/api/asset_audit/start"]');
+        const auditCommitForm = document.querySelector('form[action*="/api/asset_audit/commit"]');
 
         if (locInput && barcodeInput && resultBox) {
             // 页面加载后自动对焦到库位输入框
@@ -295,11 +295,12 @@
             auditStartForm.onsubmit = async (e) => {
                 e.preventDefault();
                 const submitBtn = auditStartForm.querySelector('button');
+                const originalBtnHtml = submitBtn.innerHTML;
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite;">autorenew</i> 同步中...`;
                 const isConfirmed = await openConfirmModal(t('asset_audit.confirm_reset'));
-                if (!isConfirmed) return;
                 try {
+                    if (!isConfirmed) return;
                     let response = await fetch('/api/asset_audit/start', {
                         method: 'POST'
                     });
@@ -328,9 +329,9 @@
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite;">autorenew</i> 提交中...`;
                 const isConfirmed = await openConfirmModal(t('asset_audit.confirm_commit'));
-                if (!isConfirmed) return;
                 try {
-                    let response = await fetch('/api/asset_audit/commit', {
+                    if (!isConfirmed) return;
+                    let response = await fetch('/api/audit/commit', {
                         method: 'POST'
                     });
                     let result = await response.json();

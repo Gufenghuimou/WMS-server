@@ -228,7 +228,7 @@
                                     .replace('{total}', assets.length)
                                     .replace('{added}', addedCount);
                 // alert(successMsg);
-                await openAlertModal(successMsg);
+                await openInfoModal(successMsg);
             } else {
                 showToast(result.message, 'error');
                 await openAlertModal('拉取失败');

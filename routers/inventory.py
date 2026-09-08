@@ -592,8 +592,9 @@ async def get_audit(request: Request, current_user: dict = Depends(get_current_u
         }
     }
 
-@router.post("/audit/start")
+@router.post("/api/audit/start")
 async def start_audit(request: Request, current_user: dict = Depends(get_current_user)):
+    lang = request.state.lang
     with Session(engine) as session:
         for old_record in session.exec(select(AuditRecord)).all():
             session.delete(old_record)
@@ -615,7 +616,8 @@ async def start_audit(request: Request, current_user: dict = Depends(get_current
         session.commit()
     referer = request.headers.get("referer", "")
     target_url = "/mobile/audit_inventory" if "mobile" in referer else "/audit"
-    return RedirectResponse(url=target_url, status_code=303)
+    # return RedirectResponse(url=target_url, status_code=303)
+    return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 @router.post("/audit/submit/{audit_id}")
 async def submit_audit(
@@ -696,8 +698,9 @@ async def submit_audit_by_pn(
         }
     }
 
-@router.post("/audit/commit")
+@router.post("/api/audit/commit")
 async def commit_audit(request: Request, current_user: dict = Depends(get_current_user)):
+    lang = request.state.lang
     with Session(engine) as session:
         records = session.exec(select(AuditRecord).where(AuditRecord.status != 'Pending')).all()
         for r in records:
@@ -724,7 +727,8 @@ async def commit_audit(request: Request, current_user: dict = Depends(get_curren
         session.commit()
     referer = request.headers.get("referer", "")
     target_url = "/mobile/audit_inventory" if "mobile" in referer else "/audit"
-    return RedirectResponse(url=target_url, status_code=303)
+    # return RedirectResponse(url=target_url, status_code=303)
+    return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 @router.get("/audit/export")
 def export_audit(request: Request, current_user: dict = Depends(get_current_user)):

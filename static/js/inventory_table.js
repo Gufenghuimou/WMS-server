@@ -501,7 +501,7 @@
                     if (indicator) {
                         indicator.innerHTML = `
                             <i class="material-icons" style="font-size: 1.45rem; color: var(--danger-red);">report_problem</i>
-                            ${t('base.inventory_table')}:
+                            ${t('status.inventory_table')}:
                             <span style="font-size: 1.2rem; font-weight: bold; color: var(--danger-red); margin-left: 4px;">
                                 ${newAlarmCount || 0}
                             </span>

@@ -4,7 +4,7 @@
 
 <!-- 二维码生成的Modal -->
 <div id="qrModal" class="custom-modal" style="z-index: 5000;">
-    <div class="custom-modal-content" style="text-align: center; width:380px;">
+    <div class="custom-modal-content" style="text-align: center; width:380px; border-top: 6px solid #8e44ad;">
         <span class="close-modal" onclick="closeQrModal()">&times;</span>
         <h3 style="margin-top:0; color: var(--text-main); display: flex; align-items: center; justify-content: center; gap: 8px;">
             <i class="material-icons" style="color: #8e44ad;">qr_code_scanner</i>
@@ -21,7 +21,7 @@
 
 <!-- 打印标签的Modal -->
 <div id="printModal" class="custom-modal" style="z-index:5000;">
-    <div class="custom-modal-content" style="text-align: center; width: 760px; overflow:hidden;">
+    <div class="custom-modal-content" style="text-align: center; width: 760px; overflow:hidden; border-top: 6px solid var(--primary-blue);">
         <span class="close-modal" onclick="closeReprintModal()">&times;</span>
         <h3 style="margin: 0; color: var(--primary-blue); font-size: 1.1rem; margin-bottom:15px; align-self: flex-start;">
             <i class="material-icons" style="vertical-align: middle;">print</i> 
@@ -90,7 +90,7 @@
 
 <!-- 物品图像上传剪裁的Modal -->
 <div id="cropModal" class="custom-modal" style="z-index: 9999;">
-    <div class="custom-modal-content" style="display: block; max-width: 600px; padding: 20px;">
+    <div class="custom-modal-content" style="display: block; max-width: 600px; padding: 20px; border-top: 6px solid var(--primary-blue)">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 15px;">
             <h3 style="margin: 0; color: var(--primary-blue); font-size: 1.1rem;">
                 <i class="material-icons" style="vertical-align: middle;">crop</i> 剪裁物料图片
@@ -109,12 +109,12 @@
 
 <!-- 报废滑动确认Modal -->
 <div id="scrapModal" class="custom-modal" style="z-index: 9999;">
-    <div class="custom-modal-content" style="width: 380px; text-align: center; border-top: 6px solid var(--danger-red, #d93025);">
+    <div class="custom-modal-content" style="width: 380px; text-align: center; border-top: 6px solid var(--danger-red);">
         <span class="close-modal" onclick="closeScrapModal()">&times;</span>
         <i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red); margin-bottom: 10px; width: auto; height: auto; line-height: 1;">report_problem</i>
         <h3 style="margin-top: 0; color: #333; font-size: 1.3rem;" data-i18n="asset_scrap.modal_title">Scrap Warning</h3>
         
-        <div data-i18n="asset_scrap.modal_warning" style="background: #fce8e6; color: #c0392b; padding: 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 25px; text-align: left; line-height: 1.5;"></div>
+        <div data-i18n="asset_scrap.modal_warning" style="background: #fce8e6; color: #c0392b; padding: 12px; border-radius: 8px; font-size: 1.05rem; margin-bottom: 25px; text-align: left; line-height: 1.5;"></div>
         
         <form id="scrapForm" method="post" action="" style="width: 100%;"></form>
         <div class="slider-container" id="sliderContainer" style="width: 100%;">
@@ -134,7 +134,7 @@
 
 <!-- 图片大尺寸展示的modal -->
 <div id="showImgModal" class="custom-modal">
-    <div class="custom-modal-content" style="text-align: center; width: 50vw; height: 80vh; overflow:hidden;">
+    <div class="custom-modal-content" style="text-align: center; width: 50vw; height: 80vh; overflow:hidden; border-top: 6px solid var(--primary-blue);">
         <span class="close-modal" onclick="closeShowImgModal()">&times;</span>
         <h3 id="showImgModalPn" class="font-monospace" style="margin: 0; color: var(--text-main); border-bottom: 1px solid #eee; padding-bottom: 10px; font-size: 1.35rem;"></h3>
         <div id="showImgModalText" style="margin-top: 10px; margin-bottom: 15px; box-sizing: border-box;"></div>
@@ -144,7 +144,7 @@
 
 <!-- 单项功能按钮的模态框 -->
 <div id="actionModal" class="custom-modal" style="z-index: 1000;">
-    <div class="custom-modal-content" style="width: 400px; text-align: left; padding: 20px;">
+    <div class="custom-modal-content" style="width: 400px; text-align: left; padding: 20px;  border-top: 6px solid var(--primary)">
         <span class="close-modal" onclick="closeActionModal()">&times;</span>
         <h3 id="actionModalCtrlNo" class="font-monospace" style="margin-top: 0; color: var(--text-main); border-bottom: 1px solid #eee; padding-bottom: 10px; font-size: 1.35rem; align-self: flex-start;"></h3>
         <div style="font-size: 1.15rem; margin: 0 0 15px 15px; align-self: flex-start;">
@@ -155,25 +155,39 @@
     </div>
 </div>
 
+<!-- 新增提示Notice的模态框 -->
+<div id="infoModal" class="custom-modal" style="z-index: 1000;">
+    <div class="custom-modal-content" style="width: 400px; text-align: left; padding: 20px; border-top: 6px solid var(--primary-green)">
+        <i class="material-icons" style="font-size: 3.5rem; color: var(--primary-green); margin-bottom: 10px; width: auto; height: auto; line-height: 1;">check_circle</i>
+        <h3 style="margin-top: 0; color: #333; font-size: 1.3rem;" data-i18n="base.info_title">Notice</h3>
+        <p id="infoModalText" style="width:100%; font-size: 1.05rem; color: #666; margin-bottom: 20px; line-height: 1.5; background:#f8f9fa; padding:10px; border-radius:8px; border-left:3px solid var(--primary-green);"></p>
+        <div style="display: flex; justify-content:center; gap: 15px; width: 100%">
+            <button type="button" id="infoCheckBtn" class="btn-primary" style="background: var(--primary-green); box-shadow: none;" data-i18n="base.check_btn">OK</button>
+        </div>
+    </div>
+</div>
+
 <!-- 替代Alert的模态框 -->
 <div id="alertModal" class="custom-modal" style="z-index: 1000;">
-    <div class="custom-modal-content" style="width: 400px; text-align: left; padding: 20px;">
-        <i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red); margin-bottom: 10px; width: auto; height: auto; line-height: 1;">error</i>
-        <h3 style="margin-top: 0; color: #333; font-size: 1.3rem;">Alert</h3>
-        <p id="alertModalTitle" style="font-size: 0.85rem; color: #666; margin-bottom: 20px; line-height: 1.5; background:#f8f9fa; padding:10px; border-radius:8px; border-left:3px solid var(--primary);"></p>
+    <div class="custom-modal-content" style="width: 400px; text-align: left; padding: 20px; border-top: 6px solid var(--danger-red)">
+        <i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red); margin-bottom: 10px; width: auto; height: auto; line-height: 1;">info</i>
+        <h3 style="margin-top: 0; color: #333; font-size: 1.3rem;" data-i18n="base.alert_title">Alert</h3>
+        <p id="alertModalText" style="width:100%; font-size: 1.05rem; color: #666; margin-bottom: 20px; line-height: 1.5; background:#f8f9fa; padding:10px; border-radius:8px; border-left:3px solid var(--danger-red);"></p>
         <div style="display: flex; justify-content:center; gap: 15px; width: 100%">
-            <button type="button" id="alertCheckBtn" class="btn-primary" style="background: #f1f3f4; color: #555; box-shadow: none;">Check</button>
+            <button type="button" id="alertCheckBtn" class="btn-primary" style="background: #f1f3f4; color: #555; box-shadow: none;" data-i18n="base.check_btn">Check</button>
         </div>
     </div>
 </div>
 
 <!-- 替代Confirm的模态框 -->
 <div id="confirmModal" class="custom-modal" style="z-index: 1000;">
-    <div class="custom-modal-content" style="width: 400px; text-align: left; padding: 20px;">
-        <h3 id="confirmModalTitle" style="margin-top: 0; color: #333; font-size: 1.3rem;" data-i18n="asset_scrap.modal_title"></h3>
+    <div class="custom-modal-content" style="width: 400px; text-align: left; padding: 20px; border-top: 6px solid #faad14">
+        <i class="material-icons" style="font-size: 3.5rem; color: #faad14; margin-bottom: 10px; width: auto; height: auto; line-height: 1;">help</i>
+        <h3 style="margin-top: 0; color: #333; font-size: 1.3rem;" data-i18n="base.confirm_title">Confirm</h3>
+        <p id="confirmModalText" style="width:100%; font-size: 1.05rem; color: #666; margin-bottom: 20px; line-height: 1.5; background:#f8f9fa; padding:10px; border-radius:8px; border-left:3px solid #faad14;"></p>
         <div style="display: flex; justify-content:center; gap: 15px; width: 100%">
-            <button type="button" id="confirmCancelBtn" class="btn-primary">Cancel</button>
-            <button type="button" id="confirmCheckBtn" class="btn-primary">Confirm</button>
+            <button type="button" id="confirmCancelBtn" class="btn-primary" style="background: #f1f3f4; color: #555; box-shadow: none;" data-i18n="table.cancel_btn">Cancel</button>
+            <button type="button" id="confirmCheckBtn" class="btn-primary" style="background: #faad14" data-i18n="base.check_btn">Confirm</button>
         </div>
     </div>
 </div>
@@ -183,7 +197,7 @@
 ==============================================-->
 
 <div id="repeatedConfirmModal" class="custom-modal">
-    <div class="custom-modal-content" style="width: 380px; text-align: center;">
+    <div class="custom-modal-content" style="width: 380px; text-align: center; border-top: 6px solid #faad14;">
         <span class="close-modal" onclick="closeRepeatedConfirmModal()">&times;</span>
         <div><i class="material-icons" style="font-size: 3.5rem; color: #faad14;">announcement</i></div>
         <h3 style="margin-top:15px; color:var(--text-main);" data-i18n="asset_audit.repeated_title">Repeated Scan</h3>
@@ -196,7 +210,7 @@
 </div>
 
 <div id="assetToggleModal" class="custom-modal">
-    <div class="custom-modal-content" style="display: block; width: 450px;">
+    <div class="custom-modal-content" style="display: block; width: 450px; border-top: 6px solid var(--primary);">
         <span class="close-modal" onclick="closeAssetToggleModal()">&times;</span>
         <h3 id="assetToggleTitle" style="margin-top:0; color:var(--text-main); display:flex; align-items:center; gap:8px;">
             <i class="material-icons" style="color:var(--primary);">swap_horiz</i> 
@@ -230,7 +244,7 @@
 </div>
 
 <div id="stopConfirmModal" class="custom-modal">
-    <div class="custom-modal-content" style="width: 380px; text-align: center;">
+    <div class="custom-modal-content" style="width: 380px; text-align: center; border-top: 6px solid var(--danger-red);">
         <span class="close-modal" onclick="closeStopConfirmModal()">&times;</span>
         <div id="stopModalIcon" style="margin-bottom: 15px;"></div>
         <h3 id="stopModalTitle" style="margin-top:0; color:var(--text-main);" data-i18n="asset_view.modal_stop_title">Stop Asset</h3>
@@ -269,7 +283,7 @@
 </div>
 
 <div id="assetItemEditModal" class="custom-modal">
-    <div class="custom-modal-content" style="display: block; width: max-content; max-width: 95%;">
+    <div class="custom-modal-content" style="display: block; width: max-content; max-width: 95%; border-top: 6px solid var(--primary-blue);">
         <span class="close-modal" onclick="closeAssetItemEditModal()">&times;</span>
         <h4 style="margin: 0 0 15px 0; color: var(--text-main); font-size: 1rem; border-bottom: 1px solid #eee; padding-bottom: 8px;">
             <i class="material-icons" style="font-size: 1.1rem; color: #3498db; vertical-align: middle;">edit_note</i>
@@ -324,7 +338,7 @@
 ==============================================-->
 
 <div id="approveModal" class="custom-modal">
-    <div class="custom-modal-content" style="display: block; width: 450px; overflow-y: hidden;">
+    <div class="custom-modal-content" style="width: 450px; border-top: 6px solid var(--primary-green);">
         <span class="close-modal" onclick="closeApproveModal()">&times;</span>
         <h3 style="margin-top: 0; color: var(--primary-green); border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; align-items: center; gap: 10px; font-size: 1.35rem;">
             <i class="material-icons" style="vertical-align: middle;">place</i>
@@ -362,7 +376,7 @@
 </div>
 
 <div id="assetApproveModal" class="custom-modal">
-    <div class="custom-modal-content" style="width: 450px;">
+    <div class="custom-modal-content" style="width: 450px; border-top: 6px solid var(--primary-green);">
         <span class="close-modal" onclick="closeAssetApproveModal()">&times;</span>
         <h3 id="assetModalTitle" style="margin-top: 0; display: flex; align-items: center; gap: 10px; font-size: 1.5rem; width: 100%;"></h3>
         <form id="assetApproveForm" method="post" action="" style="width: 100%;">
@@ -381,7 +395,7 @@
 ==============================================-->
 
 <div id="simcardToggleModal" class="custom-modal">
-    <div class="custom-modal-content" style="display: block; width: 450px;">
+    <div class="custom-modal-content" style="display: block; width: 450px; border-top: 6px solid var(--primary);">
         <span class="close-modal" onclick="closeSimcardToggleModal()">&times;</span>
         <h3 id="simcardToggleTitle" style="margin-top:0; color:var(--text-main); display:flex; align-items:center; gap:8px;">
             <i class="material-icons" style="color:var(--primary);">swap_horiz</i> 
@@ -412,7 +426,7 @@
 </div>
 
 <div id="simcardEditModal" class="custom-modal">
-    <div class="custom-modal-content" style="display: block; width: 650px; max-width: 95%;">
+    <div class="custom-modal-content" style="display: block; width: 650px; max-width: 95%; border-top: 6px solid var(--primary-blue);">
         <span class="close-modal" onclick="closeSimcardEditModal()">&times;</span>
         <h4 style="margin: 0 0 15px 0; color: var(--text-main); font-size: 1rem; border-bottom: 1px solid #eee; padding-bottom: 8px;">
             <i class="material-icons" style="font-size: 1.1rem; color: #3498db; vertical-align: middle;">edit_note</i>
@@ -456,7 +470,7 @@
 </div>
 
 <div id="activeToggleModal" class="custom-modal">
-    <div class="custom-modal-content" style="width: 380px; text-align: center;">
+    <div class="custom-modal-content" style="width: 380px; text-align: center; border-top: 6px solid var(--danger-red);">
         <span class="close-modal" onclick="closeActiveToggleModal()">&times;</span>
         <div id="activeModalIcon" style="margin-bottom: 15px;"></div>
         <h3 id="activeModalTitle" style="margin-top: 0; color: var(--text-main);"></h3>

@@ -68,7 +68,11 @@
     "admin_tag": "[管理员] ",
     "send_fail": "发送失败，请检查网络。",
     "screen_locked": "屏幕已锁定",
-    "long_time_no_see": "长时间无操作，请重新输入密码"
+    "long_time_no_see": "长时间无操作，请重新输入密码",
+    "info_title": "请注意",
+    "alert_title": "出错了",
+    "confirm_title": "请确认",
+    "check_btn": "确定"
   },
   "login": {
     "error": "用户名或密码错误",
@@ -120,7 +124,7 @@
     "status_online": "当前在线",
     "confirm_reset_pwd": "确定要将账号 [{username}] 的密码强制重置为 123456 吗？",
     "btn_reset_pwd": "重置密码",
-    "confirm_delete_user": "危险操作：\\n\\n确定要彻底抹除账号 [{username}] 吗？此操作不可逆！",
+    "confirm_delete_user": "危险操作：\n\n确定要彻底抹除账号 [{username}] 吗？此操作不可逆！",
     "btn_delete_user": "抹除账号",
     "system_init": "系统级数据初始化 / 批量覆盖",
     "warning_init": "<b>注意：</b> 此区域操作为系统底层库覆写，将<b>直接清空</b>当前所有数据并以 Excel 内容替代。日常入库请使用左侧菜单的【快速入库】功能。",
@@ -143,7 +147,7 @@
     "btn_deploy_map": "部署地图",
     "selected_count": "[ 已选中 {count} 个 ]",
     "new_rack_name": "NEW-RACK",
-    "confirm_deploy": "确认将当前布局保存到服务器吗？\\n所有终端用户的地图将同步更新。",
+    "confirm_deploy": "确认将当前布局保存到服务器吗？\n所有终端用户的地图将同步更新。",
     "deploy_success": "部署成功！",
     "deploy_fail": "保存失败：",
     "processing": "处理中...",
@@ -259,7 +263,7 @@
     "req_sent": "申请已发送！",
     "req_fail": "申请失败：",
     "net_err": "网络错误！",
-    "scrap_warn": "⚠️ 危险操作警报：\\n\\n确定要彻底报废并删除该物料吗？此操作不可逆，将清除其所有账面数据！",
+    "scrap_warn": "确定要彻底报废并删除该物料吗？\n此操作不可逆，将清除其所有账面数据！",
     "upload_fail": "上传失败: ",
     "sync_fail": "云同步失败:",
     "sync_net_err": "⚠️ 网络连接异常，收藏未能同步到服务器！",
@@ -378,11 +382,11 @@
     "th_note": "备注说明",
     "th_action": "操作",
     "undo": "撤销",
-    "confirm_undo": "⚠️ 确定要红字冲销这条记录吗？"
+    "confirm_undo": "确定要红字冲销这条记录吗？"
   },
   "audit": {
     "start_new": "开始新一轮盘点",
-    "confirm_start": "警告：这会清空之前的盘点进度，并根据当前最新库存重新生成盘点表！\\n\\n确定要开始新一轮的全局盘点吗？",
+    "confirm_start": "警告：这会清空之前的盘点进度，并根据当前最新库存重新生成盘点表！\n\n确定要开始新一轮的全局盘点吗？",
     "export_report": "导出盘点报告",
     "total_items": "共 {count} 项物料",
     "th_pn1": "PN1",
@@ -446,7 +450,7 @@
     "status_out_stock": "出借中",
     "btn_take_out": "领用出库",
     "btn_return_in": "归还入库",
-    "btn_stop_deny": "操作被拒绝：\\n\\n该资产当前处于【出借中】。\\n请先执行【归还入库】操作，然后再进行停用！",
+    "btn_stop_deny": "操作被拒绝：\n\n该资产当前处于【出借中】。\n请先执行【归还入库】操作，然后再进行停用！",
     "btn_stop": "停用",
     "btn_reuse": "复用",
     "loc_unassigned": "未分配",
@@ -483,9 +487,9 @@
     "report_broken": "提交资产破损报告"
   },
   "asset_audit": {
-    "confirm_reset": "警告：这会抹除当前的盘点进度，并根据最新的资产台账重新生成待盘快照！\\n\\n确定要开始新一轮的全局盘点吗？",
+    "confirm_reset": "警告：这会抹除当前的盘点进度，并根据最新的资产台账重新生成待盘快照！\n\n确定要开始新一轮的全局盘点吗？",
     "btn_reset": "重置盘点快照",
-    "confirm_commit": "确定要结案吗？\\n\\n系统将把所有【已盘点】资产的最新实盘位置覆盖回主数据库，并自动生成位置纠偏的历史流水记录。",
+    "confirm_commit": "确定要结案吗？\n\n系统将把所有【已盘点】资产的最新实盘位置覆盖回主数据库，并自动生成位置纠偏的历史流水记录。",
     "btn_commit": "一键台账同步",
     "btn_export": "导出盘点报告",
     "lbl_current_loc": "当前所在工位 / 库位",
@@ -560,7 +564,7 @@
     "btn_think_again": "我再想想",
     "btn_destroy_now": "立即毁灭",
     "fetching": "拉取中...",
-    "fetch_success": "拉取完成！\\n找到 {total} 条停用资产，其中 {added} 条已加入报废清单。",
+    "fetch_success": "拉取完成！\n找到 {total} 条停用资产，其中 {added} 条已加入报废清单。",
     "fetch_net_error": "网络错误，拉取失败！",
     "scan_net_error": "网络请求失败，请检查连接",
     "destroying": "毁灭中...",

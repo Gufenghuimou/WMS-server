@@ -140,6 +140,8 @@
         const globalSearch = document.getElementById('globalSearch');
         const scanInput = document.getElementById('scanInput');
         const resultBox = document.getElementById('scanResultBox');
+        const auditStartForm = document.querySelector('form[action*="/api/audit/start"]');
+        const auditCommitForm = document.querySelector('form[action*="/api/audit/commit"]');
 
         if (scanInput) {
             scanInput.onkeydown = function(e) {
@@ -277,6 +279,68 @@
                         void firstMatch.offsetWidth;
                     }
                 }, 400);
+            }
+        }
+
+        if (auditStartForm) {
+            auditStartForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const submitBtn = auditStartForm.querySelector('button');
+                const originalBtnHtml = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite;">autorenew</i> 同步中...`;
+                const isConfirmed = await openConfirmModal(t('audit.confirm_start'));
+                try {
+                    if (!isConfirmed) return;
+                    let response = await fetch('/api/audit/start', {
+                        method: 'POST'
+                    })
+                    let result = await response.json();
+                    if (result.status === 'success') {
+                        showToast(result.message, 'success');
+                        await window.initAuditPage();
+                    } else {
+                        showToast(result.message || '同步失败', 'error');
+                        await openAlertModal('同步失败');
+                    }
+                } catch (error) {
+                    showToast("Sync Error:", error);
+                    await openAlertModal('网络请求异常', 'error');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnHtml;
+                }
+            }
+        }
+
+        if (auditCommitForm) {
+            auditCommitForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const submitBtn = auditCommitForm.querySelector('button');
+                const originalBtnHtml = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite;">autorenew</i> 提交中...`;
+                const isConfirmed = await openConfirmModal(t('asset_audit.confirm_commit'));
+                try {
+                    if (!isConfirmed) return;
+                    let response = await fetch('/api/audit/commit', {
+                        method: 'POST'
+                    });
+                    let result = await response.json();
+                    if (result.status === 'success') {
+                        showToast(result.message, 'success');
+                        await window.initAuditPage();
+                    } else {
+                        showToast(result.message || '提交失败', 'error');
+                        await openAlertModal('提交失败');
+                    }
+                } catch (error) {
+                    showToast("Commit Error:", error);
+                    await openAlertModal('网络请求异常', 'error');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnHtml;
+                }
             }
         }
     }

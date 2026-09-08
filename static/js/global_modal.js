@@ -990,7 +990,7 @@
         if (isActive === true) {
             icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red);">do_not_disturb_on</i>';
             title.innerHTML = t('simcard.simcard_disable');
-            text.innerHTML = t('simcard.disabled_notice');
+            text.innerHTML = t('simcard.disable_notice');
             submitBtn.innerHTML = `<i class="material-icons">block</i> ${t('simcard.btn_disable')}`;
             submitBtn.style.backgroundColor = 'var(--danger-red)';
         } else {
@@ -1013,13 +1013,13 @@
     };
 
     // ==========================================
-    // 7. 新增Alert和Confirm替代Modal
+    // 7. 新增Alert和Confirm替代Modal 以及 infoModal
     // ==========================================
     window.openAlertModal = function(content) {
         const modal = document.getElementById('alertModal');
-        const title = document.getElementById('alertModalTitle');
+        const text = document.getElementById('alertModalText');
         const checkBtn = document.getElementById('alertCheckBtn');
-        title.innerText = content;
+        text.innerText = content;
         modal.style.display = 'flex';
 
         return new Promise((resolve) => {
@@ -1037,10 +1037,10 @@
 
     window.openConfirmModal = function(content) {
         const modal = document.getElementById('confirmModal');
-        const title = document.getElementById('confirmModalTitle');
+        const text = document.getElementById('confirmModalText');
         const confirmBtn = document.getElementById('confirmCheckBtn');
         const cancelBtn = document.getElementById('confirmCancelBtn');
-        title.innerText = content;
+        text.innerText = content;
         modal.style.display = 'flex';
 
         return new Promise((resolve) => {
@@ -1060,6 +1060,26 @@
         if (modal) modal.style.display = 'none'
     }
 
+    window.openInfoModal = function(content) {
+        const modal = document.getElementById('infoModal');
+        const text = document.getElementById('infoModalText');
+        const checkBtn = document.getElementById('infoCheckBtn');
+        text.innerHTML = content;
+        modal.style.display = 'flex';
+        
+        return new Promise((resolve) => {
+            checkBtn.onclick = function() {
+                modal.style.display = 'none';
+                resolve();
+            }
+        });
+    }
+
+    window.closeInfoModal = function() {
+        const modal = document.getElementById('infoModal');
+        if (modal) modal.style.display = 'none';
+    }
+    
     // ==========================================
     // 8. 全局 Escape 键关闭事件
     // ==========================================

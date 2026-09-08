@@ -165,7 +165,7 @@ window.renderI18n = function() {
         const key = el.getAttribute('data-i18n');
         const text = window.t(key);
         if (text !== key) {
-            el.innerText = text;
+            el.innerHTML = text;
         }
     });
 

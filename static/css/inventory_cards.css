@@ -147,8 +147,12 @@
 .item-card.is-flipped .card-front { pointer-events: none; }
 
 .item-card.is-active .card-front, .item-card.is-active .card-back {
-    border-color: var(--primary-blue);
-    box-shadow: 0 35px 80px rgba(52,152,219,0.25);
+    border-top: 0;
+    border-left: 0;
+    border-bottom: 3px solid;
+    border-right: 3px solid;
+    border-color: #aaa;
+    box-shadow: 10px 10px 5px 5px rgba(170,170,170,0.25);
     filter: blur(0) grayscale(0);
 }
 
