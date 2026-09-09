@@ -74,13 +74,13 @@ async def simcard_out(
         target_loc: str = Form(""),
         target_user: str = Form(""),
         target_project: str = Form(""),
-        current_user: dict = Depends(get_current_user)
+        current_user: dict = Depends(require_admin)
 ):
     lang = request.state.lang
     with Session(engine) as session:
         item = session.get(PhysicalSimCard, item_id)
         if not item:
-            return RedirectResponse(url="/simcard", status_code=303)
+            return {'status': 'error', 'message': t_lang("do.not_exist", lang)}
 
         was_in_stock = item.is_stock
         if was_in_stock:
@@ -108,15 +108,18 @@ async def simcard_out(
         session.add(log)
         session.commit()
         session.refresh(item)
-        return {
-            'status': 'success',
-            'data': {
-                'id': item.id,
-                'is_stock': item.is_stock,
-                'location': item.location,
-            },
-            'message': t_lang("do.success", lang)
-        }
+    return {
+        'status': 'success',
+        'data': {
+            'id': item.id,
+            'is_stock': item.is_stock,
+            'location': item.location,
+            'direct_user': item.direct_user,
+            'project': item.project,
+            'note': item.note
+        },
+        'message': t_lang("do.success", lang)
+    }
 
 @router.post("/simcard_edit/{item_id}")
 async def simcard_edit(
@@ -128,7 +131,8 @@ async def simcard_edit(
         location: str = Form(...),
         direct_user: str = Form(""),
         project: str = Form(""),
-        note: str = Form("")
+        note: str = Form(""),
+        current_user: dict = Depends(require_admin)
 ):
     lang = request.state.lang
     with Session(engine) as session:
@@ -174,7 +178,7 @@ async def simcard_edit(
 async def simcard_active_toggle(
         request: Request,
         item_id: int,
-        current_user: dict = Depends(get_current_user)
+        current_user: dict = Depends(require_admin)
 ):
     lang = request.state.lang
     with Session(engine) as session:
@@ -207,7 +211,11 @@ async def simcard_active_toggle(
             'data': {
                 'id': item.id,
                 'is_active': item.is_active,
-                'location': item.location
+                'is_stock': item.is_stock,
+                'location': item.location,
+                'direct_user': item.direct_user,
+                'project': item.project,
+                'note': item.note
             },
             'message': t_lang("do.success", lang)
         }
@@ -223,6 +231,7 @@ async def simcard_batch_submit(
     carrier: List[str] = Form(default=[]),
     phone_number: List[str] = Form(default=[]),
     note: List[str] = Form(default=[]),
+    current_user: dict = Depends(require_admin)
 ):
     lang = request.state.lang
     with Session(engine) as session:
@@ -255,7 +264,7 @@ async def simcard_batch_submit(
     return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 @router.get("/simcard/export")
-def simcard_export(request: Request, current_user: dict = Depends(get_current_user)):
+def simcard_export(request: Request, current_user: dict = Depends(require_admin)):
     with Session(engine) as session:
         contents = session.exec(select(PhysicalSimCard)).all()
         data = []
@@ -281,7 +290,7 @@ def simcard_export(request: Request, current_user: dict = Depends(get_current_us
         return StreamingResponse(output, headers=headers, media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 @router.post("/simcard_delete/{item_id}")
-async def simcard_delete(request: Request, item_id: int, current_user: dict = Depends(get_current_user)):
+async def simcard_delete(request: Request, item_id: int, current_user: dict = Depends(require_admin)):
     with Session(engine) as session:
         item = session.get(PhysicalSimCard, item_id)
         if item:
@@ -305,14 +314,14 @@ async def simcard_delete(request: Request, item_id: int, current_user: dict = De
 #     return templates.TemplateResponse(request, "simcard_history.html", {'user': current_user, 'active_page': 'simcard_history'})
 
 @router.get("/api/simcard_history")
-async def get_simcard_history(request: Request, current_user: dict = Depends(get_current_user)):
+async def get_simcard_history(request: Request, current_user: dict = Depends(require_admin)):
     with Session(engine) as session:
         statement = select(PhysicalSimCardLog).order_by(desc(PhysicalSimCardLog.id))
         logs = session.exec(statement).all()
     return {'status': 'success', 'data': logs}
 
 @router.get("/simcard_history/export")
-def simcard_history_export(current_user: dict = Depends(get_current_user)):
+def simcard_history_export(current_user: dict = Depends(require_admin)):
     with Session(engine) as session:
         contents = session.exec(select(PhysicalSimCardLog)).all()
         data = []
