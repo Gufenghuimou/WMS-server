@@ -198,7 +198,7 @@
                 }
 
                 if (!isValid) return;
-                let submitBtn = form.querySelector('button[type="submit"]');
+                let submitBtn = stockInForm.querySelector('button[type="submit"]');
                 let originalBtnText = submitBtn ? submitBtn.innerHTML : '';
                 if (submitBtn) {
                     submitBtn.disabled = true;
@@ -306,9 +306,6 @@
         try {
             let response = await fetch(`/api/item/${encodeURIComponent(pnVal)}`);
             let data = await response.json();
-
-            console.log(data);
-
             if (!data.error) {
                 if (data.match_type === "pn_2") {
                     inputElement.value = data.pn_1;

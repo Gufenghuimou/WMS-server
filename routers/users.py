@@ -114,16 +114,22 @@ async def process_login(request: Request, username: str = Form(...), password: s
 #     return templates.TemplateResponse(request, "admin.html", {"user": current_user, 'users': users, 'users_list': user_list, "active_page": "backend"})
 
 @router.get("/api/users_list")
-async def get_users_list(request: Request, current_user: dict = Depends(get_current_user)):
+async def get_users_list(request: Request, current_user: dict = Depends(require_superadmin)):
     with Session(engine) as session:
         users_list = []
         users = session.exec(select(User)).all()
         for user in users:
-            users_list.append(user)
+            safe_data = {
+                'id': user.id,
+                'username': user.username,
+                'full_name': user.full_name,
+                'role': user.role
+            }
+            users_list.append(safe_data)
     return {
         'status': 'success',
         'data': {
-            'users': users,
+            'users': users_list,
             'users_list': users_list
         }
     }
@@ -209,12 +215,14 @@ async def update_user_settings(
 
 
 @router.post("/delete_user/{user_id}")
-async def delete_user(request: Request, user_id: int, username: str = Form(...), current_user: dict = Depends(require_admin)):
+async def delete_user(request: Request, user_id: int, username: str = Form(...), current_user: dict = Depends(require_superadmin)):
     lang = request.state.lang
     with Session(engine) as session:
         user_to_delete = session.get(User, user_id)
+        if user_to_delete == current_user or user_to_delete.username == 'superadmin':
+            return {'status': 'error', 'message': 'Illegal operation!'}
         if user_to_delete:
-            image_path = f'static/avatars/{username}.jpg'
+            image_path = f'static/avatars/{user_to_delete.username}.jpg'
             try:
                 if os.path.exists(image_path):
                     os.remove(image_path)
@@ -248,17 +256,25 @@ async def add_user(
         new_username: str = Form(...),
         new_full_name: str = Form(...),
         new_role: str = Form(...),
-        current_user: dict = Depends(require_admin),
+        current_user: dict = Depends(require_superadmin),
 ):
     lang = request.state.lang
     with Session(engine) as session:
-        existing = session.exec(select(User).where(User.username == new_username)).first()
+        safe_username = new_username.strip()
+        if not safe_username:
+            return {"status": "error", "message": "Username cannot be null!"}
+        if not new_full_name:
+            return {"status": "error", "message": "Full name cannot be null!"}
+        existing = session.exec(select(User).where(User.username == safe_username)).first()
         if existing:
-            return {"status": "error", "message": t_lang("admin.add_user_fail", lang, new_username=new_username)}
+            return {"status": "error", "message": t_lang("admin.add_user_fail", lang, new_username=safe_username)}
 
         password_hash = hashlib.sha256('123456'.encode()).hexdigest()
+
+        if new_role not in ['user', 'admin']:
+            return {'status': 'error', 'message': 'Backend received illegal data!'}
         new_account = User(
-            username=new_username.strip(),
+            username=safe_username,
             password_hash=password_hash,
             full_name=new_full_name.strip(),
             role=new_role,
@@ -268,7 +284,7 @@ async def add_user(
     return {"status": "success", "message": t_lang("admin.add_user_success", lang, new_username=new_username)}
 
 @router.post("/backend/reset_password")
-async def reset_password(request: Request, target_username: str = Form(...), current_user:dict = Depends(require_admin)):
+async def reset_password(request: Request, target_username: str = Form(...), current_user:dict = Depends(require_superadmin)):
     lang = request.state.lang
     with Session(engine) as session:
         user = session.exec(select(User).where(User.username == target_username.strip())).first()

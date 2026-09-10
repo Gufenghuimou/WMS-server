@@ -14,7 +14,7 @@ from datetime import datetime
 
 from database import engine
 from models import AssetItem, AssetLog, AssetScrapRecord, AssetAuditRecord, User, AssetRequest
-from dependencies import get_current_user, require_admin
+from dependencies import get_current_user, require_admin, require_superadmin
 from core import templates, t_lang
 from routers import request
 from utils import zpl_print_task, generate_next_seq
@@ -115,7 +115,7 @@ async def asset_out(
         request: Request,
         item_id: int,
         target_loc: str = Form(""),
-        current_user: dict = Depends(get_current_user),
+        current_user: dict = Depends(require_admin),
 ):
     lang = request.state.lang
     with Session(engine) as session:
@@ -174,11 +174,15 @@ async def asset_edit_group(
         description_1: str = Form(""),
         description_2: str = Form(""),
         use_for: str = Form(""),
-        model: str = Form("")
+        model: str = Form(""),
+        current_user: dict = Depends(require_admin)
 ):
     lang = request.state.lang
     with Session(engine) as session:
         grouped_items = session.exec(select(AssetItem).where(AssetItem.pn_1 == pn_1.strip())).all()
+        if not grouped_items:
+            return {'status': 'error', 'message': t_lang("do.not_exist", lang)}
+
         for group in grouped_items:
             group.pn_2 = pn_2
             group.name = name
@@ -211,29 +215,31 @@ async def asset_edit_item(
         first_in_date: str = Form(""),
         po_type: str = Form(""),
         apply_po_to_all: Optional[str] = Form(None),
-        remarks: str = Form("")
+        remarks: str = Form(""),
+        current_user: dict = Depends(require_admin)
 ):
     lang = request.state.lang
     with Session(engine) as session:
         statement = select(AssetItem).where(AssetItem.id == item_id)
         item = session.exec(statement).first()
+        if not item:
+            return {'status': 'error', 'message': t_lang("do.not_exist", lang)}
         batch_po_type_returned = None
-        if item:
-            item.pn_1 = pn_1
-            item.ctrl_no = ctrl_no
-            item.location = location
-            item.first_in_date = first_in_date
-            item.po_type = po_type
-            if apply_po_to_all == "true":
-                batch_po_type_returned = po_type
-                siblings = session.exec(select(AssetItem).where(AssetItem.pn_1 == item.pn_1)).all()
-                for sib in siblings:
-                    sib.po_type = po_type
-                    session.add(sib)
-            item.remarks = remarks
-            session.add(item)
-            session.commit()
-            session.refresh(item)
+        item.pn_1 = pn_1
+        item.ctrl_no = ctrl_no
+        item.location = location
+        item.first_in_date = first_in_date
+        item.po_type = po_type
+        if apply_po_to_all == "true":
+            batch_po_type_returned = po_type
+            siblings = session.exec(select(AssetItem).where(AssetItem.pn_1 == item.pn_1)).all()
+            for sib in siblings:
+                sib.po_type = po_type
+                session.add(sib)
+        item.remarks = remarks
+        session.add(item)
+        session.commit()
+        session.refresh(item)
         return {'status': 'success',
                 'data': {
                     'id': item.id,
@@ -242,14 +248,13 @@ async def asset_edit_item(
                     'location': item.location,
                     'first_in_date': item.first_in_date,
                     'po_type': item.po_type,
-                    'pn_1': item.pn_1,
                     'batch_po_type': batch_po_type_returned,
                     'remarks': item.remarks
                 },
                 'message': t_lang("do.success", lang)}
 
 @router.post("/api/asset_upload_image/{item_pn_1}")
-async def asset_upload_image(item_pn_1: str, file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+async def asset_upload_image(item_pn_1: str, file: UploadFile = File(...), current_user: dict = Depends(require_admin)):
     file_path = f'static/asset_images/{item_pn_1}.jpg'
     with open(file_path, 'wb') as f:
         f.write(await file.read())
@@ -268,7 +273,7 @@ async def asset_stop(
         item_id: int,
         is_no_use: str = Form(None),
         target_loc: str = Form(""),
-        current_user: dict = Depends(get_current_user)
+        current_user: dict = Depends(require_admin)
 ):
     lang = request.state.lang
     with Session(engine) as session:
@@ -308,7 +313,7 @@ async def asset_stop(
             'message': t_lang("do.success", lang)}
 
 @router.post("/import_asset")
-async def import_asset(request: Request, file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+async def import_asset(request: Request, file: UploadFile = File(...), current_user: dict = Depends(require_superadmin)):
     lang = request.state.lang
     contents = await file.read()
     try:
@@ -353,7 +358,7 @@ async def import_asset(request: Request, file: UploadFile = File(...), current_u
         return {"error": t_lang("do.read_excel_error", lang, error=str(e))}
 
 @router.get("/api/asset/export")
-def asset_export(request: Request, current_user: dict = Depends(get_current_user)):
+def asset_export(request: Request, current_user: dict = Depends(require_admin)):
     lang = request.state.lang
     with Session(engine) as session:
         contents = session.exec(select(AssetItem)).all()
@@ -387,7 +392,7 @@ def asset_export(request: Request, current_user: dict = Depends(get_current_user
         return StreamingResponse(output, headers=headers, media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 @router.get("/api/asset/export_summary")
-def asset_export_summary(request: Request, current_user: dict = Depends(get_current_user)):
+def asset_export_summary(request: Request, current_user: dict = Depends(require_admin)):
     with Session(engine) as session:
         all_assets = session.exec(select(AssetItem)).all()
         grouped_assets = defaultdict(list)
@@ -479,8 +484,9 @@ async def asset_batch_submit(
     location:List[str] = Form(default=[]),
     first_in_date: List[str] = Form(default=[]),
     remarks: List[str] = Form(default=[]),
-    po_type: List[str] = Form(default=[]),
-    model: List[str] = Form(default=[])
+    # po_type: List[str] = Form(default=[]),
+    # model: List[str] = Form(default=[]),
+    current_user: dict = Depends(require_admin)
 ):
     lang = request.state.lang
     current_year = datetime.now().strftime("%y")
@@ -536,7 +542,7 @@ async def asset_batch_submit(
 #     return templates.TemplateResponse(request, "asset_scrap.html", {"request": request, "user": current_user, "active_page": "asset_scrap"})
 
 @router.get("/api/asset_scrap")
-async def get_asset_scrap(request: Request, current_user: dict = Depends(get_current_user)):
+async def get_asset_scrap(request: Request, current_user: dict = Depends(require_admin)):
     with Session(engine) as session:
             records = session.exec(select(AssetScrapRecord).order_by(desc(AssetScrapRecord.id))).all()
             draft_records = []
@@ -556,9 +562,7 @@ async def get_asset_scrap(request: Request, current_user: dict = Depends(get_cur
     return {"status": "success", "data": draft_records}
 
 @router.post("/asset_scrap")
-async def asset_batch_scrap(
-        current_user: dict = Depends(require_admin),
-):
+async def asset_batch_scrap(current_user: dict = Depends(require_admin)):
     with Session(engine) as session:
         draft_records = session.exec(select(AssetScrapRecord)).all()
         for draft in draft_records:
@@ -597,7 +601,7 @@ async def asset_batch_scrap(
     return RedirectResponse(url= "/asset_scrap", status_code=303)
 
 @router.get("/api/get_stopped")
-async def get_stopped(request: Request, current_user: dict = Depends(get_current_user)):
+async def get_stopped(request: Request, current_user: dict = Depends(require_admin)):
     lang = request.state.lang
     with Session(engine) as session:
         statement = select(AssetItem).where(AssetItem.is_stop == True)
@@ -634,7 +638,7 @@ async def get_stopped(request: Request, current_user: dict = Depends(get_current
         return {'status': 'success', 'data': stopped_items, 'message': t_lang("do.copy_stopped", lang, count=len(stopped_items))}
 
 @router.post("/api/asset_scrap/scan")
-async def scan_asset_scrap(request: Request, ctrl_no: str = Form(...), current_user: dict = Depends(get_current_user)):
+async def scan_asset_scrap(request: Request, ctrl_no: str = Form(...), current_user: dict = Depends(require_admin)):
     lang = request.state.lang
     with Session(engine) as session:
         existing_draft = session.exec(select(AssetScrapRecord).where(AssetScrapRecord.ctrl_no == ctrl_no)).first()
@@ -675,7 +679,7 @@ async def scan_asset_scrap(request: Request, ctrl_no: str = Form(...), current_u
         }
 
 @router.post("/api/asset_scrap/delete")
-async def delete_asset_scrap(request: Request, ctrl_no: str = Form(...), current_user: dict = Depends(get_current_user)):
+async def delete_asset_scrap(request: Request, ctrl_no: str = Form(...), current_user: dict = Depends(require_admin)):
     lang = request.state.lang
     with Session(engine) as session:
         statement = select(AssetScrapRecord).where(AssetScrapRecord.ctrl_no == ctrl_no)
@@ -687,7 +691,7 @@ async def delete_asset_scrap(request: Request, ctrl_no: str = Form(...), current
         return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 @router.get("/asset_scrap/export")
-def asset_scrap_export(request: Request, current_user: dict = Depends(get_current_user)):
+def asset_scrap_export(request: Request, current_user: dict = Depends(require_admin)):
     lang = request.state.lang
     with Session(engine) as session:
         contents_broken = session.exec(select(AssetScrapRecord).where(AssetScrapRecord.is_no_use == False)).all()
@@ -759,14 +763,14 @@ def asset_scrap_export(request: Request, current_user: dict = Depends(get_curren
 #     return templates.TemplateResponse(request, "asset_history.html", {"request": request, 'user': current_user, 'active_page': 'asset_history'})
 
 @router.get("/api/asset_history")
-async def get_asset_history(request: Request, current_user: dict = Depends(get_current_user)):
+async def get_asset_history(request: Request, current_user: dict = Depends(require_admin)):
     with Session(engine) as session:
         statement = select(AssetLog).order_by(desc(AssetLog.id))
         logs = session.exec(statement).all()
     return {'status': 'success', 'data': logs}
 
 @router.get("/asset_history/export")
-def asset_history_export(request: Request, current_user: dict = Depends(get_current_user)):
+def asset_history_export(request: Request, current_user: dict = Depends(require_admin)):
     lang = request.state.lang
     with Session(engine) as session:
         contents = session.exec(select(AssetLog)).all()
@@ -778,7 +782,7 @@ def asset_history_export(request: Request, current_user: dict = Depends(get_curr
                 "PN1": c.pn_1,
                 "PN2": c.pn_2,
                 t_lang("asset.name", lang): c.name,
-                t_lang("asset.status", lang): (t_lang("asset.is_stock", lang) if not c.status else t_lang("asset.not_stock", lang)),
+                t_lang("asset.status", lang): (t_lang("asset.is_stock", lang) if c.status else t_lang("asset.not_stock", lang)),
                 t_lang("asset.location", lang): c.target_loc,
                 t_lang("asset.remarks", lang): c.note
             })
@@ -794,7 +798,7 @@ def asset_history_export(request: Request, current_user: dict = Depends(get_curr
         return StreamingResponse(output, headers=headers, media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 @router.post("/asset_history/import")
-async def asset_history_import(request: Request, file: UploadFile = File(...), current_user: User = Depends(get_current_user)):
+async def asset_history_import(request: Request, file: UploadFile = File(...), current_user: User = Depends(require_superadmin)):
     lang = request.state.lang
     contents = await file.read()
     try:
@@ -884,7 +888,7 @@ async def asset_history_import(request: Request, file: UploadFile = File(...), c
 #         })
 
 @router.get("/api/get_asset_audit")
-async def get_asset_audit(request: Request, current_user: dict = Depends(get_current_user)):
+async def get_asset_audit(request: Request, current_user: dict = Depends(require_admin)):
     with Session(engine) as session:
         statement = select(AssetAuditRecord).order_by(AssetAuditRecord.expected_location)
         records = session.exec(statement).all()
@@ -937,7 +941,7 @@ async def get_asset_audit(request: Request, current_user: dict = Depends(get_cur
     }
 
 @router.post("/api/asset_audit/start")
-async def start_audit(request: Request, current_user: dict = Depends(get_current_user)):
+async def start_audit(request: Request, current_user: dict = Depends(require_admin)):
     lang = request.state.lang
     with Session(engine) as session:
         for old_record in session.exec(select(AssetAuditRecord)).all():
@@ -967,7 +971,7 @@ async def scan_asset_audit(
         request: Request,
         ctrl_no: str = Form(...),
         current_location: str = Form(...),
-        current_user: dict = Depends(get_current_user),
+        current_user: dict = Depends(require_admin),
 ):
     lang = request.state.lang
     with Session(engine) as session:
@@ -993,7 +997,7 @@ async def scan_asset_audit(
         }
 
 @router.post("/api/asset_audit/commit")
-async def commit_asset_audit(request: Request, current_user: dict = Depends(get_current_user)):
+async def commit_asset_audit(request: Request, current_user: dict = Depends(require_admin)):
     lang = request.state.lang
     in_stock_pattern = r'^[A-E]\d{2}-\d+$'
     with Session(engine) as session:
@@ -1029,7 +1033,7 @@ async def commit_asset_audit(request: Request, current_user: dict = Depends(get_
     return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 @router.get("/asset_audit/export")
-def export_audit(request: Request, current_user: dict = Depends(get_current_user)):
+def export_audit(request: Request, current_user: dict = Depends(require_admin)):
     lang = request.state.lang
     with Session(engine) as session:
         records = session.exec(select(AssetAuditRecord)).all()

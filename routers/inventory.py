@@ -13,7 +13,7 @@ from datetime import datetime
 
 from database import engine
 from models import InventoryItem, HistoryLog, AuditRecord, User, UserBookmark, OutboundRequest
-from dependencies import get_current_user, require_admin
+from dependencies import get_current_user, require_admin, require_superadmin
 from core import templates, t_lang
 from utils import update_single_usage, update_all_usage_stats, zpl_print_task
 
@@ -75,7 +75,7 @@ async def do_out(
         item_id: int,
         req_qty: int = Form(...),
         real_stock: int = Form(...),
-        current_user: dict = Depends(get_current_user),
+        current_user: dict = Depends(require_admin),
         dept: str = Form(...)
 ):
     lang = request.state.lang
@@ -83,6 +83,11 @@ async def do_out(
         item = session.get(InventoryItem, item_id)
         if not item:
             return {'status': 'error', 'message': t_lang("do.not_exist", lang)}
+        if real_stock < 0 or req_qty <= 0:
+            return {'status': 'error', 'message': '数量不合法'}
+        if real_stock < req_qty:
+            return {'status': 'error', 'message': '实际库存不足，无法批准'}
+        
         if item and item.stock != real_stock:
             diff = real_stock - item.stock
             item.stock = real_stock
@@ -154,13 +159,15 @@ async def update_edit(
         stock: int = Form(...),
         location: str = Form(...),
         remarks: str = Form(""),
-        current_user: dict = Depends(get_current_user)
+        current_user: dict = Depends(require_admin)
 ):
     lang = request.state.lang
     with Session(engine) as session:
         item = session.get(InventoryItem, item_id)
         if not item:
             return {'status': 'error', 'message': t_lang("do.not_exist", lang)}
+        if stock < 0:
+            return {'status': 'error', 'message': 'Backend received illegal data'}
 
         item.pn_1 = pn_1
         item.pn_2 = pn_2
@@ -198,7 +205,7 @@ async def update_edit(
         }
 
 @router.post("/api/upload_image/{item_id}")
-async def upload_image(request: Request, item_id: int, file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+async def upload_image(request: Request, item_id: int, file: UploadFile = File(...), current_user: dict = Depends(require_admin)):
     lang = request.state.lang
     with Session(engine) as session:
         item = session.get(InventoryItem, item_id)
@@ -244,7 +251,7 @@ async def delete_item(request: Request, item_id: int, current_user: dict = Depen
 
 
 @router.post("/import")
-async def import_excel(request: Request, file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+async def import_excel(request: Request, file: UploadFile = File(...), current_user: dict = Depends(require_superadmin)):
     lang = request.state.lang
     contents = await file.read()
     try:
@@ -293,7 +300,7 @@ async def import_excel(request: Request, file: UploadFile = File(...), current_u
 # -----------------------------库存管理--------------------------#
 
 @router.get("/api/inventory_table")
-async def get_inventory_table(request: Request, current_user: dict = Depends(get_current_user)):
+async def get_inventory_table(request: Request, current_user: dict = Depends(require_admin)):
     with Session(engine) as session:
         items =session.exec(select(InventoryItem).order_by(desc(InventoryItem.pn_1))).all()
         alarm_items = session.exec(select(InventoryItem).where(InventoryItem.warning_level > 0, InventoryItem.warning_level >= InventoryItem.stock)).all()
@@ -308,11 +315,12 @@ async def get_inventory_table(request: Request, current_user: dict = Depends(get
         }
 
 @router.post("/api/update_advanced/{item_id}")
-async def update_advanced(request: Request,
-                          item_id: int,
-                          warning_level: int = Form(0),
-                          is_mva: str = Form(False),
-                          current_user: dict = Depends(get_current_user)
+async def update_advanced(
+    request: Request,
+    item_id: int,
+    warning_level: int = Form(0),
+    is_mva: str = Form(False),
+    current_user: dict = Depends(require_admin)
 ):
     lang = request.state.lang
     with Session(engine) as session:
@@ -325,7 +333,7 @@ async def update_advanced(request: Request,
     return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 @router.get("/inventory/export")
-def export_all(request: Request, current_user: dict = Depends(get_current_user)):
+def export_all(request: Request, current_user: dict = Depends(require_admin)):
     lang = request.state.lang
     with Session(engine) as session:
         contents = session.exec(select(InventoryItem)).all()
@@ -362,7 +370,7 @@ def export_all(request: Request, current_user: dict = Depends(get_current_user))
         return StreamingResponse(output, headers=headers, media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 @router.get("/inventory/mva_export")
-def export_mva(request: Request, current_user: dict = Depends(get_current_user)):
+def export_mva(request: Request, current_user: dict = Depends(require_admin)):
     with Session(engine) as session:
         contents = session.exec(select(InventoryItem).where(InventoryItem.is_mva == True, InventoryItem.warning_level > 0, InventoryItem.warning_level > InventoryItem.stock)).all()
         data = []
@@ -404,7 +412,7 @@ async def batch_submit(
     location:List[str] = Form(default=[]),
     first_in_date: List[str] = Form(default=[]),
     remarks: List[str] = Form(default=[]),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_admin)
 ):
     lang = request.state.lang
     with Session(engine) as session:
@@ -473,14 +481,14 @@ async def batch_submit(
 #     return templates.TemplateResponse(request, "history.html", {'user': current_user, 'active_page': 'history'})
 
 @router.get("/api/history")
-async def get_history(request: Request, current_user: dict = Depends(get_current_user)):
+async def get_history(request: Request, current_user: dict = Depends(require_admin)):
     with Session(engine) as session:
         statement = select(HistoryLog).order_by(desc(HistoryLog.id))
         logs = session.exec(statement).all()
     return {'status': 'success', 'data': logs}
 
 @router.post("/undo/{log_id}")
-async def undo_history_log(request: Request, log_id: int, current_user: dict = Depends(get_current_user)):
+async def undo_history_log(request: Request, log_id: int, current_user: dict = Depends(require_admin)):
     lang = request.state.lang
     with Session(engine) as session:
         log = session.get(HistoryLog, log_id)
@@ -494,7 +502,8 @@ async def undo_history_log(request: Request, log_id: int, current_user: dict = D
         item = session.exec(statement).first()
         if not item:
             return {'status': 'error', 'message': t_lang("do.undo_fail", lang)}
-
+        if item.stock < 0:
+            return {'status': 'error', 'message': t_lang("do.undo_fail", lang)}
         revert_qty = -log.change_qty
         item.stock = (item.stock or 0) + revert_qty
 
@@ -526,7 +535,7 @@ async def undo_history_log(request: Request, log_id: int, current_user: dict = D
     return {'status': 'success', 'message': 'Log Undone'}
 
 @router.post("/import_history_excel")
-async def import_history_excel(request: Request, file: UploadFile = File(...), current_user: User = Depends(get_current_user)):
+async def import_history_excel(request: Request, file: UploadFile = File(...), current_user: User = Depends(require_superadmin)):
     lang = request.state.lang
     contents = await file.read()
     try:
@@ -557,7 +566,7 @@ async def import_history_excel(request: Request, file: UploadFile = File(...), c
         return {"error": t_lang("do.read_excel_error", lang ,error=str(e))}
 
 @router.get("/history/export")
-def export_history(request: Request, current_user: dict = Depends(get_current_user)):
+def export_history(request: Request, current_user: dict = Depends(require_admin)):
     lang = request.state.lang
     with Session(engine) as session:
         contents = session.exec(select(HistoryLog)).all()
@@ -591,7 +600,7 @@ def export_history(request: Request, current_user: dict = Depends(get_current_us
 #     return templates.TemplateResponse(request, "audit.html", {"user": current_user, "active_page": "audit"})
 
 @router.get("/api/audit")
-async def get_audit(request: Request, current_user: dict = Depends(get_current_user)):
+async def get_audit(request: Request, current_user: dict = Depends(require_admin)):
     with Session(engine) as session:
         statement = select(AuditRecord).order_by(AuditRecord.expected_location)
         records = session.exec(statement).all()
@@ -617,7 +626,7 @@ async def get_audit(request: Request, current_user: dict = Depends(get_current_u
     }
 
 @router.post("/api/audit/start")
-async def start_audit(request: Request, current_user: dict = Depends(get_current_user)):
+async def start_audit(request: Request, current_user: dict = Depends(require_admin)):
     lang = request.state.lang
     with Session(engine) as session:
         for old_record in session.exec(select(AuditRecord)).all():
@@ -649,13 +658,16 @@ async def submit_audit(
         audit_id: int,
         actual_stock: int = Form(...),
         actual_location: str = Form(""),
-        remarks: str = Form("")
+        remarks: str = Form(""),
+        current_user: dict = Depends(require_admin)
 ):
     lang = request.state.lang
     with Session(engine) as session:
         record = session.get(AuditRecord, audit_id)
         if not record:
             return {'status': 'error', 'message': t_lang("do.not_exist", lang)}
+        if actual_stock < 0:
+            return {'status': 'error', 'message': 'Backend received illegal data'}
         record.actual_stock = actual_stock
         record.actual_location = actual_location
         record.remarks = remarks
@@ -687,7 +699,8 @@ async def submit_audit_by_pn(
         pn_1: str = Form(...),
         actual_stock: int = Form(...),
         actual_location: str = Form(""),
-        remarks: str = Form("")
+        remarks: str = Form(""),
+        current_user: dict = Depends(require_admin)
 ):
     lang = request.state.lang
     with Session(engine) as session:
@@ -695,6 +708,8 @@ async def submit_audit_by_pn(
         record = session.exec(statement).first()
         if not record:
             return {'status': 'error', 'message': t_lang("do.not_exist", lang)}
+        if actual_stock < 0:
+            return {'status': 'error', 'message': 'Backend received illegal data'}
 
         record.actual_stock = actual_stock
         record.actual_location = actual_location
@@ -723,7 +738,7 @@ async def submit_audit_by_pn(
     }
 
 @router.post("/api/audit/commit")
-async def commit_audit(request: Request, current_user: dict = Depends(get_current_user)):
+async def commit_audit(request: Request, current_user: dict = Depends(require_admin)):
     lang = request.state.lang
     with Session(engine) as session:
         records = session.exec(select(AuditRecord).where(AuditRecord.status != 'Pending')).all()
@@ -755,7 +770,7 @@ async def commit_audit(request: Request, current_user: dict = Depends(get_curren
     return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 @router.get("/audit/export")
-def export_audit(request: Request, current_user: dict = Depends(get_current_user)):
+def export_audit(request: Request, current_user: dict = Depends(require_admin)):
     lang = request.state.lang
     with Session(engine) as session:
         records = session.exec(select(AuditRecord)).all()
