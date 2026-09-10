@@ -114,7 +114,7 @@
             let used_pct = total_qty > 0 ? (used_qty / total_qty) * 100 : 0;
 
             let btnHtml = `
-                    <button type="button" class="btn-primary" style="height: 26px; font-size: 0.75rem; padding: 0 10px; border-radius: 6px; background: transparent; color: ${isAdmin ? 'var(--text-muted)' : 'var(--primary-blue)'}; border: 1px solid ${isAdmin ? '#ccc' : 'var(--primary-blue)'}; box-shadow: none;" onclick="flipToEdit(event, 'card-${groupId}')">
+                    <button type="button" class="btn-primary btn-flip" data-card-id="card-${groupId}" style="height: 26px; font-size: 0.75rem; padding: 0 10px; border-radius: 6px; background: transparent; color: ${isAdmin ? 'var(--text-muted)' : 'var(--primary-blue)'}; border: 1px solid ${isAdmin ? '#ccc' : 'var(--primary-blue)'}; box-shadow: none;">
                         <i class="material-icons" style="font-size: 0.9rem;">${isAdmin ? 'edit' : 'add_shopping_cart'}</i> ${isAdmin ? t('asset_view.btn_edit') : t('asset_view.btn_require')}
                     </button>
                 `;
@@ -124,15 +124,15 @@
             let searchKeys = `${group.pn1} ${group.pn2 || ""} ${group.name || ''} ${group.description_1 || ''} ${itemKeys}`.toLowerCase();
 
             htmlString += `
-            <div class="asset-card" id="card-${groupId}" onclick="switchAssetType('${groupId}')" data-search-keys="${searchKeys}">
+            <div class="asset-card" id="card-${groupId}" data-search-keys="${searchKeys}" data-group-id="${groupId}">
                 <div class="card-front">
                     <!-- 左侧图片部分 -->
                     <div class="left-part" style="flex-shrink: 0;">
-                        <img class="card-img" 
+                        <img class="card-img has-image" 
                             src="${group.has_image ? `/static/asset_images/${group.pn1}.jpg?t=${window.SYS_VER}` : 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}" 
                             style="display: ${group.has_image ? 'block' : 'none'}; cursor: pointer;" 
                             loading="lazy" 
-                            onclick="openShowImgModal('${groupId}', '${group.pn1}', '${group.name}')"
+                            data-group-id="'${groupId}" data-pn1="${group.pn1}" data-name="${group.name}"
                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                         
                         <div class="card-img" style="display: ${group.has_image ? 'none' : 'flex'}; justify-content:center; align-items:center; background:#f8f9fa;">
@@ -185,7 +185,7 @@
                     </div>
                 </div>
 
-                <div class="card-back" onclick="event.stopPropagation();"></div>
+                <div class="card-back"></div>
             </div>
             `;
             // count++;
@@ -254,9 +254,9 @@
 
             // 按钮放进模态框，5个变一个，优化性能
             let btnGroupHtml = `
-                <button type="button" class="btn-primary" 
+                <button type="button" class="btn-primary action-btn" 
                     style="background-color: #f0f2f5; color: #555; box-shadow: none; border: 1px solid #ddd; height: 28px; padding: 0 5px; border-radius: 6px; font-size: 0.75rem;" 
-                    onclick="openActionModal('${groupId}', ${item.id})">
+                    data-group-id="${groupId}" data-item-id="${item.id}">
                 <i class="material-icons">more_horiz</i>
             </button>
             `;
@@ -273,8 +273,7 @@
                 <td style="display: flex; gap: 10px; justify-content: center; white-space: nowrap;">${btnGroupHtml}</td>
                 <td class="font-monospace" style="font-weight: 600; font-size: 1.15rem; white-space: nowrap;">${item.ctrl_no}</td>
                 <td>
-                    <span style="cursor:pointer; color:var(--primary); font-weight: 500; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;" 
-                        onclick="event.stopPropagation(); if(window.openFooterMap && '${rackName}') window.openFooterMap('${rackName}');">
+                    <span class="loc-anchor" data-loc="${rackName}" style="cursor:pointer; color:var(--primary); font-weight: 500; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
                         <i class="material-icons" style="font-size: 1rem;">place</i>
                         ${rawLoc || t('asset_view.loc_unassigned')}
                     </span>
@@ -304,6 +303,26 @@
             });
             if (firstMatchRow) {
                 setTimeout(() => firstMatchRow.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+            }
+        }
+
+        // 绑定右侧事件监听 openActionModal openFooterMap
+        if (tbody) {
+            tbody.onclick = null;
+            tbody.onclick = function(e) {
+                let actionBtn = e.target.closest('.action-btn');
+                if (actionBtn) {
+                    e.stopPropagation();
+                    window.openActionModal(actionBtn.getAttribute('data-group-id'), actionBtn.getAttribute('data-item-id'));
+                    return;
+                }
+
+                let locAnchor = e.target.closest('.loc-anchor');
+                if (locAnchor) {
+                    e.stopPropagation();
+                    window.openFooterMap(locAnchor.getAttribute('data-loc'));
+                    return;
+                }
             }
         }
     };
@@ -345,7 +364,7 @@
 
                             <div style="grid-column: span 1;"><label class="edit-label">Model</label><input type="text" name="model" class="edit-input" value="${group.model || ''}"></div>
                             <div style="display: flex; gap: 8px; grid-column: span 2; align-items: end; justify-content: flex-end;">
-                                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #333; box-shadow: none;" onclick="cancelEdit(event, 'card-${groupId}')">${t('asset_view.btn_cancel')}</button>
+                                <button type="button" class="btn-primary btn-cancel" data-card-id="card-${groupId}" style="background: #e0e0e0; color: #333; box-shadow: none;">${t('asset_view.btn_cancel')}</button>
                                 <button type="submit" class="btn-primary" style="background: #1db954;">${t('asset_view.btn_save')}</button>
                             </div>
                         </div>
@@ -367,7 +386,7 @@
                             <div style="grid-column: span 2;"><label class="edit-label"> ${t('asset_view.note')} </label><input type="text" name="note" class="edit-input"></div>
 
                             <div style="display: flex; gap: 8px; grid-column: span 2; align-items: end; justify-content: flex-end; margin-top: 15px;">
-                                <button type="button" class="btn-primary" style="background: #e0e0e0; color: #333; box-shadow: none;" onclick="cancelEdit(event, 'card-${groupId}')">${t('asset_view.btn_cancel')}</button>
+                                <button type="button" class="btn-primary btn-cancel" data-card-id="card-${groupId}" style="background: #e0e0e0; color: #333; box-shadow: none;">${t('asset_view.btn_cancel')}</button>
                                 <button type="submit" class="btn-primary" style="background: var(--primary-blue);">${t('asset_view.btn_save')}</button>
                             </div>
                         </div>
@@ -377,7 +396,7 @@
             let backHtml = `
                 <div style="width: 130px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 8px;">
                     ${imgChangeLabel}
-                    <div style="position:relative; cursor:pointer;" onclick="document.getElementById('edit-upload-${first.id}').click();">
+                    <div class="img-upload-trigger" data-upload-id="edit-upload-${first.id}" style="position:relative; cursor:pointer;">
 
                         <img id="edit-preview-${first.id}" class="card-img" style="display:${!group.has_image ? 'none' : 'flex'}; width:130px; height:130px; border-radius:8px; object-fit:cover; border: 1px solid #ddd;"
                                 src="${ group.has_image ? `/static/asset_images/${group.pn1}.jpg?t=${window.SYS_VER}` : 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}" loading="lazy"
@@ -432,6 +451,52 @@
             const form = document.getElementById(formId);
             if (form) form.onsubmit = handleFormSubmit;
         });
+
+        // 绑定asset-card监听 switchAssetType flipToEdit cancelEdit edit-upload- openShowImgModal
+        const assetCardList = document.getElementById('assetCardList');
+        if (assetCardList) {
+            assetCardList.onclick = null;
+            assetCardList.onclick = function(e) {
+                let flipBtn = e.target.closest('.btn-flip');
+                if (flipBtn) {
+                    e.stopPropagation();
+                    window.flipToEdit(e, flipBtn.getAttribute('data-card-id'));
+                    return
+                }
+
+                let cancelBtn = e.target.closest('.btn-cancel');
+                if (cancelBtn) {
+                    e.stopPropagation();
+                    window.cancelEdit(e, cancelBtn.getAttribute('data-card-id'));
+                    return;
+                }
+
+                let uploadTrigger = e.target.closest('.img-upload-trigger');
+                if (uploadTrigger) {
+                    e.stopPropagation();
+                    let fileInput = document.getElementById(uploadTrigger.getAttribute('data-upload-id'));
+                    if (fileInput) fileInput.click();
+                    return;
+                }
+
+                let showImg = e.target.closest('.has-image');
+                if (showImg) {
+                    e.stopPropagation();
+                    window.openShowImgModal(showImg.getAttribute('data-group-id'), showImg.getAttribute('data-pn1'), showImg.getAttribute('data-name'));
+                    return;
+                }
+
+                if (e.target.closest('.card-back')) {
+                    e.stopPropagation();
+                    return;
+                }
+
+                let card = e.target.closest('.asset-card');
+                if (card) {
+                    window.switchAssetType(card.getAttribute('data-group-id'));
+                }
+            }
+        }
     }
 
     async function handleFormSubmit(e) {

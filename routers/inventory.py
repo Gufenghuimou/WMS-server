@@ -122,8 +122,22 @@ async def do_out(
             'status': 'success',
             'data': {
                 'id': item.id,
+                'pn_1': item.pn_1,
+                'pn_2': item.pn_2,
+                'name': item.name,
+                'description_1': item.description_1,
+                'description_2': item.description_2,
+                'total_in': item.total_in,
+                'total_out': item.total_out,
                 'stock': item.stock,
-                'total_out': item.total_out
+                'warning_level': item.warning_level,
+                'location': item.location,
+                'first_in_date': item.first_in_date,
+                'usage_1y': item.usage_1y,
+                'usage_2y': item.usage_2y,
+                'usage_3y': item.usage_3y,
+                'has_image': item.has_image,
+                'is_mva': item.is_mva
             },
             'message': t_lang("do.success", lang)
         }
@@ -168,9 +182,17 @@ async def update_edit(
                 'name': item.name,
                 'description_1': item.description_1,
                 'description_2': item.description_2,
+                'total_in': item.total_in,
+                'total_out': item.total_out,
                 'stock': item.stock,
+                'warning_level': item.warning_level,
                 'location': item.location,
-                'remarks': item.remarks
+                'first_in_date': item.first_in_date,
+                'usage_1y': item.usage_1y,
+                'usage_2y': item.usage_2y,
+                'usage_3y': item.usage_3y,
+                'has_image': item.has_image,
+                'is_mva': item.is_mva
             },
             'message': t_lang("do.success", lang)
         }
@@ -465,7 +487,7 @@ async def undo_history_log(request: Request, log_id: int, current_user: dict = D
         if not log:
             return {'status': 'error', 'message': 'No Logs Found'}
 
-        if log.note and ('Undo Record' in log.note or 'Imported Log' in log.note or 'Scrapped' in log.note):
+        if log.note and ('Undo Record' in log.note or 'Imported Log' in log.note or 'Scrapped' in log.note or 'Undone' in log.note):
             return {'status': 'error', 'message': 'Cannot undo this log'}
 
         statement = select(InventoryItem).where(InventoryItem.pn_1 == log.pn_1)
@@ -497,6 +519,8 @@ async def undo_history_log(request: Request, log_id: int, current_user: dict = D
         session.add(undo_log)
 
         update_single_usage(session, log.pn_1)
+        # update_all_usage_stats(session)
+
         session.commit()
 
     return {'status': 'success', 'message': 'Log Undone'}

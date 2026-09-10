@@ -18,7 +18,13 @@ def update_single_usage(session: Session, pn_1: str):
     if not item:
         return
 
-    statement = select(HistoryLog).where(HistoryLog.pn_1 == item.pn_1, HistoryLog.change_qty < 0, not_(HistoryLog.note.like('%撤销%')))
+    statement = select(HistoryLog).where(
+        HistoryLog.pn_1 == item.pn_1,
+        HistoryLog.change_qty < 0,
+        ~HistoryLog.note.like('%撤销%'),
+        ~HistoryLog.note.like('%Undone%'),
+        ~HistoryLog.note.like('%Undo Record%')
+        )
     logs = session.exec(statement).all()
 
     u1, u2, u3 = 0, 0, 0

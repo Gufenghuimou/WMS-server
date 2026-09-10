@@ -2,9 +2,14 @@
 
     let grid;
     let coverFlowIndex = 0;
+    let currentSortMode = 'usage_desc';
     let favs = [];
     let autoPlayTimer = null;
     let filterTimeout;
+    // 排序参数
+    const maxSpins = 35;
+    let spinsDelay = 40;
+    let spins = 0;
 
     // 主程序入口
     window.initInventoryPage = async function() {
@@ -17,6 +22,8 @@
 
         // 重置状态
         coverFlowIndex = 0;
+        spins = 0;
+        spinsDelay = 10;
         grid = document.getElementById('inventoryGrid');
         stopAutoPlay();
 
@@ -30,7 +37,7 @@
                 favs = invData.userBookmarks || [];
                 
                 renderInventory(invData.items);
-
+                setTimeout(() => { sortCards(currentSortMode); }, spinsDelay);
                 // 修改左下指示灯
                 const indicator = document.getElementById('indicator');
                 if (indicator) {
@@ -74,9 +81,16 @@
             }
         }, { passive: false });
 
-        // 点击卡片居中
+        // 单击事件绑定
         grid.addEventListener('click', (e) => {
             const card = e.target.closest('.item-card');
+            const imgContainer = e.target.closest('.card-item-img');
+            const editBtn = e.target.closest('.btn-edit');
+            const outBtn = e.target.closest('.btn-out');
+            const reqBtn = e.target.closest('.btn-request');
+            const bookmark = e.target.closest('.bookmark-ribbon');
+            const locAnchor = e.target.closest('.loc-anchor');
+
             if (!card) return;
             if (!card.classList.contains('is-active')) {
                 e.preventDefault();
@@ -85,7 +99,50 @@
                 coverFlowIndex = activeCards.indexOf(card);
                 window.updateCoverFlow();
             }
-        }, true);
+
+            if (imgContainer) {
+                e.stopPropagation();
+                let itemId = imgContainer.getAttribute('data-itemid');
+                let itemPn = imgContainer.getAttribute('data-item-pn1');
+                let itemName = imgContainer.getAttribute('data-item-name');
+                window.openShowImgModal(itemId, itemPn, itemName);
+                return;
+            }
+            if (editBtn) {
+                e.stopPropagation();
+                window.openEditModal(editBtn);
+                return;
+            }
+            if (reqBtn) {
+                e.stopPropagation();
+                let itemId = reqBtn.getAttribute('data-item-id');
+                let itemPn = reqBtn.getAttribute('data-item-pn1');
+                let itemName = reqBtn.getAttribute('data-item-name');
+                let itemStock = reqBtn.getAttribute('data-item-stock');
+                window.openRequestModal(itemId, itemPn, itemName, itemStock);
+                return;
+            }
+            if (outBtn) {
+                e.stopPropagation();
+                let itemId = outBtn.getAttribute('data-item-id');
+                let itemPn = outBtn.getAttribute('data-item-pn1');
+                let itemName = outBtn.getAttribute('data-item-name');
+                let itemStock = outBtn.getAttribute('data-item-stock');
+                let itemLoc = outBtn.getAttribute('data-item-loc');
+                window.openOutModal(itemId, itemPn, itemName, itemStock, itemLoc);
+                return;
+            }
+            if (bookmark) {
+                e.stopPropagation();
+                let itemId = bookmark.getAttribute('data-bookmark-id');
+                window.toggleBookmark(e, itemId);
+                return;
+            }
+            if (locAnchor) {
+                e.stopPropagation();
+                window.openFooterMap(locAnchor.getAttribute('data-loc'));
+            }
+        }, { capture: true });
 
         grid.addEventListener('mouseenter', window.stopAutoPlay);
         grid.addEventListener('mouseleave', () => setTimeout(window.startAutoPlay, 10000));
@@ -96,7 +153,7 @@
         if (sortSelect) sortSelect.onchange = handleSort;
 
         const searchInput = document.getElementById('globalSearch');
-        if (searchInput) searchInput.oninput = window.applyFilters;
+        if (searchInput) searchInput.oninput = () => window.applyFilters();
 
         const realStockInput = document.getElementById('realStock');
         const outQtyInput = document.getElementById('outQty');
@@ -111,7 +168,7 @@
     }
 
     // 渲染逻辑
-    function renderInventory(data) {
+    function renderInventory(data, focusItemId = null) {
         if (!grid) return;
 
         // 🌟 核心保护：重绘前，必须把借住在卡片上的模板收回保险库！
@@ -133,24 +190,24 @@
         }
 
         const cardsHtml = data.map(item => {
-            const hasImage = item.has_image ? `<img class="card-item-img" data-itemid="${item.id}" src="/static/item_images/${item.id}.jpg?t=${window.SYS_VER}" loading="lazy" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" onclick="window.openShowImgModal('${item.id}', '${item.pn_1 }', '${item.name}')">` : '';
+            const hasImage = item.has_image ? `<img class="card-item-img" data-itemid="${item.id}" data-item-pn1="${item.pn_1}" data-item-name="${item.name}" src="/static/item_images/${item.id}.jpg?t=${window.SYS_VER}" loading="lazy" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : '';
             let safeLoc = item.location && item.location.includes('-') ? item.location.split('-')[0].toUpperCase() : (item.location || '').toUpperCase();
 
             let actionBtn = '';
             if (window.CURRENT_USER && window.CURRENT_USER.role.includes('admin')) {
                 actionBtn= `
-                    <button class="btn-action btn-edit" onclick="window.openEditModal(this)"
+                    <button class="btn-action btn-edit"
                         data-id="${item.id}" data-pn1="${item.pn_1}" data-name="${item.name}"
                         data-stock="${item.stock}" data-pn2="${item.pn_2 || ''}"
                         data-desc1="${item.description_1 || ''}" data-desc2="${item.description_2 || ''}"
                         data-loc="${item.location || ''}" data-remarks="${item.remarks || ''}">
                         ${t('card.edit')}
                     </button>
-                    <button class="btn-action btn-out" onclick="window.openOutModal('${item.id}', '${item.pn_1}', '${item.name}', ${item.stock}, '${item.location || ""}')">${t('card.outbound')}</button>
+                    <button class="btn-action btn-out" data-item-id="${item.id}" data-item-pn1="${item.pn_1}" data-item-name="${item.name}" data-item-stock="${item.stock}" data-item-loc="${item.location || ''}">${t('card.outbound')}</button>
                 `;
             } else {
                 actionBtn= `
-                    <button class="btn-action btn-request" style="background: var(--primary-blue); color: white;" onclick="window.openRequestModal('${item.id}', '${item.pn_1}', '${item.name}', ${item.stock})">
+                    <button class="btn-action btn-request" data-item-id="${item.id}" data-item-pn1="${item.pn_1}" data-item-name="${item.name}" data-item-stock="${item.stock}" style="background: var(--primary-blue); color: white;">
                         <i class="material-icons" style="font-size: 1.1rem; margin-right: 4px;">pan_tool</i> ${t('card.request')}
                     </button>
                 `;
@@ -162,10 +219,13 @@
             return `
                 <div class="item-card" data-id="${item.id}" data-sort-usage="${item.usage_1y || 0}" data-sort-id="${item.id}" data-search="${searchKey}">
                     <div class="card-front">
-                        <i class="material-icons bookmark-ribbon ${isFav}" data-bookmark-id="${item.id}" onclick="window.toggleBookmark(event, '${item.id}')">bookmark</i>
+                        <i class="material-icons bookmark-ribbon ${isFav}" data-bookmark-id="${item.id}">bookmark</i>
                         <div class="card-header">
                             <div>
-                                <span class="card-title font-monospace" title="${item.pn_1}" style="font-size: 1.3rem">${item.pn_1}</span>&emsp;<span class="card-title-sec font-monospace" title="${item.pn_2 || ''}">${item.pn_2 || ''}</span>
+                                <div style="white-space: nowrap;">
+                                    <span class="card-title font-monospace" title="${item.pn_1}" style="font-size: 1.3rem">${item.pn_1}</span>
+                                    <span class="card-title-sec font-monospace" title="${item.pn_2 || ''}">${item.pn_2 || ''}</span>
+                                </div>
                                 <span class="card-subtitle" title="${item.name || t('card.unnamed_item')}">${item.name || t('card.unnamed_item')}</span>
                             </div>
                             <div class="stock-badge ${(item.stock < (item.warning_level || 0)) ? 'warning' : ''}">${item.stock}</div>
@@ -178,7 +238,7 @@
                         </div>
                         <div class="detail-row"><span>${t('card.category')}</span><span>${item.description_1 || '-'}</span></div>
                         <div class="detail-row"><span>${t('card.desc')}</span><span>${item.description_2 || '-'}</span></div>
-                        <div class="detail-row"><span>${t('card.location')}</span><span style="color: var(--primary); cursor: pointer;" onclick="window.openFooterMap('${safeLoc}')"><i class="material-icons" style="font-size: 0.85rem; vertical-align: bottom;">place</i>${item.location || '-'}</span></div>
+                        <div class="detail-row"><span>${t('card.location')}</span><span class="loc-anchor" data-loc="${safeLoc}" style="color: var(--primary); cursor: pointer;"><i class="material-icons" style="font-size: 0.85rem; vertical-align: bottom;">place</i>${item.location || '-'}</span></div>
                         <div class="detail-row"><span>${t('card.usage_1y')}</span><span>${item.usage_1y || 0}</span></div>
                         <div class="detail-row"><span>${t('card.warning_level')}</span><span>${item.warning_level || 0}</span></div>
                         <div class="detail-row" style="border-bottom: none;"><span>${t('card.remarks')}</span><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.remarks || ''}">${item.remarks || '-'}</span></div>
@@ -191,11 +251,12 @@
         
         grid.innerHTML = scrollWidgetsHtml + cardsHtml;
         scrollWidgetsControl();
-        coverFlowIndex = 0;
-        window.updateCoverFlow();
+        // coverFlowIndex = 0;
+        sortStatically(currentSortMode);
+        // window.updateCoverFlow();
         setTimeout(window.startAutoPlay, 10000);
         setTimeout(() => grid && grid.dispatchEvent(new Event('scroll')), 500);
-        window.applyFilters();
+        window.applyFilters(focusItemId, true);
     }
 
     function scrollWidgetsControl() {
@@ -234,38 +295,53 @@
     }
 
     function handleSort(e) {
+        const sortTimeout = null;
         const sortMode = e.target.value;
+        currentSortMode = sortMode;
+        coverFlowIndex = 0;
+        spins = 0;
+        spinsDelay = 40;
+        clearTimeout(sortTimeout);
+        sortTimeout = setTimeout(() => { sortCards(currentSortMode); }, spinsDelay);
+    }
+
+    function sortCards(sortMode) {
         const cards = document.querySelectorAll('.item-card');
         cards.forEach(c => c.style.transition = 'transform 0.1s linear, opacity 0.1s, filter 0.1s');
 
-        let spins = 0;
-        const maxSpins = 35;
-        let currentDelay = 40;
+        coverFlowIndex += 1;
+        window.updateCoverFlow();
+        spins++;
+        if (spins < maxSpins) {
+            spinsDelay *= 1.05;
+            setTimeout(() => { sortCards(sortMode); }, spinsDelay);
+        } else {
+            const cardArray = Array.from(cards);
+            cardArray.sort((a, b) => {
+                let valA = parseInt(a.dataset[sortMode === 'usage_desc' ? 'sortUsage' : 'sortId']) || 0;
+                let valB = parseInt(b.dataset[sortMode === 'usage_desc' ? 'sortUsage' : 'sortId']) || 0;
+                return valB - valA;
+            });
+            cardArray.forEach(c => grid.appendChild(c));
 
-        function spinLoop() {
-            coverFlowIndex += 1;
-            window.updateCoverFlow();
-            spins++;
-            if (spins < maxSpins) {
-                currentDelay *= 1.05;
-                setTimeout(spinLoop, currentDelay);
-            } else {
-                const cardArray = Array.from(cards);
-                cardArray.sort((a, b) => {
-                    let valA = parseInt(a.dataset[sortMode === 'usage_desc' ? 'sortUsage' : 'sortId']) || 0;
-                    let valB = parseInt(b.dataset[sortMode === 'usage_desc' ? 'sortUsage' : 'sortId']) || 0;
-                    return valB - valA;
-                });
-                cardArray.forEach(c => grid.appendChild(c));
-
-                setTimeout(() => {
-                    cards.forEach(c => c.style.transition = 'transform 0.7s cubic-bezier(0.2, 1, 0.3, 1), opacity 0.7s, filter 0.7s, box-shadow 0.7s');
-                    coverFlowIndex = 0;
-                    window.updateCoverFlow();
-                }, 50);
-            }
+            setTimeout(() => {
+                cards.forEach(c => c.style.transition = 'transform 0.7s cubic-bezier(0.2, 1, 0.3, 1), opacity 0.7s, filter 0.7s, box-shadow 0.7s');
+                coverFlowIndex = 0;
+                window.updateCoverFlow();
+            }, 50);
         }
-        setTimeout(spinLoop, currentDelay);
+    }
+
+    function sortStatically(sortMode) {
+        const cards = document.querySelectorAll('.item-card');
+        const cardArray = Array.from(cards);
+        cardArray.sort((a, b) => {
+            let valA = parseInt(a.dataset[sortMode === 'usage_desc' ? 'sortUsage' : 'sortId']) || 0;
+            let valB = parseInt(b.dataset[sortMode === 'usage_desc' ? 'sortUsage' : 'sortId']) || 0;
+            return valB - valA;
+        });
+        cardArray.forEach(c => grid.appendChild(c));
+        // window.updateCoverFlow();
     }
 
     function hideOutError() {
@@ -292,89 +368,15 @@
             let result = await response.json();
 
             if (result.status === 'success') {
-                const data = result.data;
-                const itemId = data.id;
-
+                const updatedItem = result.data;
+                let index = window.INVENTORY_DATA.findIndex(i => i.id === updatedItem.id);
+                if (index !== -1) {
+                    window.INVENTORY_DATA[index] = { ...window.INVENTORY_DATA[index], ...updatedItem}
+                }
                 showToast(result.message, 'success');
                 window.unflipCard();
+                setTimeout(() => { renderInventory(window.INVENTORY_DATA, updatedItem.id); }, 300)
 
-                let targetCard = document.querySelector(`.item-card[data-id="${itemId}"]`);
-                if (targetCard) {
-                    const isOutForm = form.id === 'outForm';
-                    const isEditForm = form.id === 'editForm';
-
-                    let stockBadge = targetCard.querySelector('.stock-badge');
-                    if (stockBadge && data.stock !== undefined) {
-                        stockBadge.innerText = data.stock;
-                    }
-
-                    if (isEditForm) {
-                        let titleElem = targetCard.querySelector('.card-title');
-                        let titleElemSec = targetCard.querySelector('.card-title-sec');
-                        if (titleElem && titleElemSec) {
-                            titleElem.innerText = `${data.pn_1}`; titleElem.title = `${data.pn_1}`;
-                            titleElemSec.innerText = `${data.pn_2 || ''}`; titleElem.title = `${data.pn_2 || ''}`;
-                        }
-
-                        let subtitleElem = targetCard.querySelector('.card-subtitle');
-                        if (subtitleElem && data.name !== undefined) {
-                            subtitleElem.innerText = data.name || `${t('card.unnamed_item')}`;
-                            subtitleElem.title = data.name || `${t('card.unnamed_item')}`;
-                        }
-
-                        let detailRows = targetCard.querySelectorAll('.detail-row span:nth-child(2)');
-                        if (detailRows.length >= 6) {
-                            if (data.description_1 !== undefined) detailRows[0].innerText = data.description_1 || '-';
-                            if (data.description_2 !== undefined) detailRows[1].innerText = data.description_2 || '-';
-                            if (data.location !== undefined) detailRows[2].innerText = data.location || '-';
-                            if (data.remarks !== undefined) {
-                                detailRows[5].innerText = data.remarks || '-';
-                                detailRows[5].title = data.remarks || '';
-                            }
-                        }
-                    }
-
-                    let editBtn = targetCard.querySelector('.btn-edit');
-                    if (editBtn && isEditForm) {
-                        editBtn.setAttribute('data-pn1', data.pn_1 || '');
-                        editBtn.setAttribute('data-pn2', data.pn_2 || '');
-                        editBtn.setAttribute('data-name', data.name || '');
-                        editBtn.setAttribute('data-stock', data.stock || 0);
-                        editBtn.setAttribute('data-desc1', data.description_1 || '');
-                        editBtn.setAttribute('data-desc2', data.description_2 || '');
-                        editBtn.setAttribute('data-loc', data.location || '');
-                        editBtn.setAttribute('data-remarks', data.remarks || '');
-                    } else if (editBtn && isOutForm && data.stock !== undefined) {
-                        editBtn.setAttribute('data-stock', data.stock);
-                    }
-
-                    let outBtn = targetCard.querySelector('.btn-out');
-                    if (outBtn) {
-                        let safePn1 = editBtn ? editBtn.getAttribute('data-pn1') : '';
-                        let safeName = editBtn ? editBtn.getAttribute('data-name') : '';
-                        let safeLoc = editBtn ? editBtn.getAttribute('data-loc') : '';
-                        let currentStock = data.stock !== undefined ? data.stock : (editBtn ? editBtn.getAttribute('data-stock') : 0);
-                        outBtn.setAttribute('onclick', `window.openOutModal('${itemId}', '${safePn1}', '${safeName}', ${currentStock}, '${safeLoc}')`);
-                    }
-
-                    let reqBtn = targetCard.querySelector('.btn-request');
-                    if (reqBtn && data.stock !== undefined) {
-                        let safePn1 = data.pn_1 || '';
-                        let safeName = data.name || '';
-                        reqBtn.setAttribute('onclick', `window.openRequestModal('${itemId}', '${safePn1}', '${safeName}', ${data.stock})`);
-                    }
-
-                    let cardFront = targetCard.querySelector('.card-front');
-                    if (cardFront) {
-                        cardFront.style.transition = 'background-color 0.4s ease';
-                        cardFront.style.backgroundColor = '#e6f4ea';
-                        cardFront.style.boxShadow = '0 0 20px rgba(46, 204, 113, 0.4)';
-                        setTimeout(() => {
-                            cardFront.style.backgroundColor = '';
-                            cardFront.style.boxShadow = '';
-                        }, 800);
-                    }
-                }
             } else {
                 await openAlertModal(result.message || t('card.backend_fail'));
                 // alert(result.message || `${t('card.backend_fail')}`);
@@ -471,13 +473,13 @@
         });
     };
 
-    window.applyFilters = function() {
+    window.applyFilters = function(focusItemId = null, immediate = false) {
         if (!grid) return;
         grid.style.transition = 'filter 0.3s ease';
         grid.style.filter = 'grayscale(0.5) blur(1px)';
 
         clearTimeout(filterTimeout);
-        filterTimeout = setTimeout(() => {
+        const runFliter = () => {
             const term = document.getElementById('globalSearch') ? document.getElementById('globalSearch').value.toLowerCase() : '';
             const showFavsOnly = document.getElementById('favToggleBtn') && document.getElementById('favToggleBtn').classList.contains('active');
 
@@ -496,19 +498,30 @@
                     card.style.opacity = '0'; card.style.transform = 'scale(0.5)';
                     setTimeout(() => { if(card.style.opacity === '0') card.style.display = 'none'; }, 300);
                 }
+
+                if (focusItemId != null) {
+                    const visibleCards = Array.from(grid.querySelectorAll('.item-card:not([data-search-hidden="true"])'));
+                    const index = visibleCards.findIndex(card => card.getAttribute('data-id') === String(focusItemId));
+                    coverFlowIndex = index >= 0 ? index : 0;
+                }
             });
 
-            coverFlowIndex = 0;
+            // coverFlowIndex = 0;
             window.updateCoverFlow();
             grid.style.filter = 'none';
-        }, 300);
+        }
+        if (immediate) {
+            runFliter();
+        } else {
+            filterTimeout = setTimeout(runFliter, 300);
+        }
     };
 
     window.unflipCard = function() {
         document.querySelectorAll('.item-card.is-flipped').forEach(c => c.classList.remove('is-flipped'));
     };
 
-    window.openOutModal = function(id, pn1, name, stock, location) {
+    window.openOutModal = function(id, pn1, name, stock, location = '') {
         window.unflipCard();
         clearBackFace();
 
@@ -728,7 +741,7 @@
             btn.querySelector('span').innerText = `${t('card.cancel_fav_filter')}`;
         } else {
             icon.innerText = 'bookmark_border';
-            btn.querySelector('span').innerText = `${t('card.my_fav')}`;
+            btn.querySelector('span').innerText = `${t('card.fav_filter')}`;
         }
         window.applyFilters();
     };

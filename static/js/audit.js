@@ -93,10 +93,10 @@
 
             return `
                 <div class="location-block ${collapsedClass}" data-loc="${loc.toLowerCase()}">
-                    <div class="location-header" onclick="this.parentElement.classList.toggle('collapsed')">
+                    <div class="location-header">
                         <h3>
                             <i class="material-icons collapse-icon">expand_more</i>
-                            <i class="material-icons" style="font-size: 1.2rem;">place</i> ${loc}
+                            <span class="loc-anchor"><i class="material-icons" style="font-size: 1.2rem;">place</i> ${loc}</span>
                         </h3>
                         <span class="status-badge ${allDoneClass}">${(t('audit.total_items')).replace('{count}', items.length)}</span>
                     </div>
@@ -142,6 +142,7 @@
         const resultBox = document.getElementById('scanResultBox');
         const auditStartForm = document.querySelector('form[action*="/api/audit/start"]');
         const auditCommitForm = document.querySelector('form[action*="/api/audit/commit"]');
+        const auditContainer = document.getElementById('auditContainer');
 
         if (scanInput) {
             scanInput.onkeydown = function(e) {
@@ -279,6 +280,35 @@
                         void firstMatch.offsetWidth;
                     }
                 }, 400);
+            }
+        }
+
+        if (auditContainer) {
+            auditContainer.onclick = function(e) {
+                let locAnchor = e.target.closest('.loc-anchor');
+                if (locAnchor) {
+                    e.stopPropagation();
+                    let block = locAnchor.closest('.location-block');
+                    let rawLoc = block ? block.getAttribute('data-loc') : '';
+                    let safeLoc = rawLoc.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                    let rackName = "";
+                    if (safeLoc && safeLoc !== '-' && safeLoc.toLowerCase() !== 'none' && safeLoc !== 'unallocated') {
+                        if (safeLoc.includes('-')) {
+                            rackName = safeLoc.split('-')[0].toUpperCase();
+                        } else {
+                            rackName = safeLoc.toUpperCase();
+                        }
+                        rackName = rackName.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                        if (window.openFooterMap) window.openFooterMap(rackName);
+                    }
+                    return;
+                }
+
+                let header = e.target.closest('.location-header');
+                if (header) {
+                    header.closest('.location-block').classList.toggle('collapsed');
+                    return;
+                }
             }
         }
 

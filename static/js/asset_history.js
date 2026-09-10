@@ -134,7 +134,7 @@
                     <td class="font-monospace" style="text-align: center; font-weight: 500; font-size: 1.1rem">${log.pn_1}</td>
                     <td style="text-align: left; font-size: 0.9rem;" title="${log.name}">${log.name || '-'}</td>
                     <td style="text-align: center;">${actionStatus}</td>
-                    <td style="text-align: center; font-weight: 500; color: var(--primary); cursor: pointer;" onclick="openFooterMap('${safeLoc}')">
+                    <td class="loc-anchor" style="text-align: center; font-weight: 500; color: var(--primary); cursor: pointer;" data-loc="${safeLoc}">
                         ${log.target_loc ? `<i class="material-icons" style="font-size: 1.05rem; vertical-align: middle; color: var(--primary);">place</i> ${log.target_loc}`: `-`}
                     </td>
 
@@ -143,5 +143,12 @@
             `;
         }).join('');
         tBody.innerHTML = rowsHtml;
+        tBody.onclick = null;
+        tBody.onclick = function(e) {
+            let anchor = e.target.closest('.loc-anchor');
+            if (!anchor) return;
+            let anchorLoc = anchor.dataset.loc;
+            window.openFooterMap(anchorLoc);
+        }
     }
 })();

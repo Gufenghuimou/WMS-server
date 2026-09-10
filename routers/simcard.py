@@ -114,6 +114,9 @@ async def simcard_out(
                 'id': item.id,
                 'is_stock': item.is_stock,
                 'location': item.location,
+                'direct_user': item.direct_user,
+                'project': item.project,
+                'note': item.note
             },
             'message': t_lang("do.success", lang)
         }
@@ -282,6 +285,7 @@ def simcard_export(request: Request, current_user: dict = Depends(get_current_us
 
 @router.post("/simcard_delete/{item_id}")
 async def simcard_delete(request: Request, item_id: int, current_user: dict = Depends(get_current_user)):
+    lang = request.state.lang
     with Session(engine) as session:
         item = session.get(PhysicalSimCard, item_id)
         if item:
@@ -299,6 +303,7 @@ async def simcard_delete(request: Request, item_id: int, current_user: dict = De
             referer = request.headers.get('referer')
             redirect_url = referer if referer else "/simcard"
     return RedirectResponse(url=redirect_url, status_code=303)
+    # return {'status': 'success', 'message':  t_lang("do.success", lang)}
 
 # @router.get("/simcard_history", response_class=HTMLResponse)
 # async def simcard_history(request: Request, current_user: dict = Depends(get_current_user)):

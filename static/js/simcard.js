@@ -213,8 +213,8 @@
                 if (form.id === 'simcardEditForm' && window.closeSimcardEditModal) window.closeSimcardEditModal();
                 if (form.id === 'activeToggleForm' && window.closeActiveToggleModal) window.closeActiveToggleModal();
                 if (window.closeActionModal) window.closeActionModal();
-
-                updateTableRow(result.data)
+                updateTableRow(result.data);
+                renderSimcard(window.SIMCARD_DATA);
             }
         } catch (err) {
             showToast(err.message, 'error');

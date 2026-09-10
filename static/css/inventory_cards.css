@@ -174,7 +174,7 @@
 
 /* 🌟 书签与按钮样式 */
 .bookmark-ribbon {
-    position: absolute; top: -4px; right: 12px; font-size: 2.2rem; color: #e0e0e0;
+    position: absolute; top: -4px; right: 48px; font-size: 2.2rem; color: #e0e0e0;
     cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 10;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
 }

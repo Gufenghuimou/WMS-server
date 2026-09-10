@@ -11,6 +11,8 @@
     let maxDrag = 0;
     const ZOOM_LEVEL = 0.67; // 如果有缩放布局的修正
 
+    let activeScrapForm = null; // 报废Modal的类型控制
+
     // ==========================================
     // 1. 初始化入口
     // ==========================================
@@ -428,15 +430,21 @@
     // ==========================================
     window.openScrapModal = function(itemId) {
         const modal = document.getElementById('scrapModal');
-        const form = document.getElementById('scrapForm');
-
-        let currentPage = document.querySelector('.nav-item.active');
-        if (currentPage.getAttribute('href') === '/inventory_cards') {
-            form.action = `/delete/${itemId}`;
-        } else if (currentPage.getAttribute('href') === '/simcard') {
-            form.action = `/simcard_delete/${itemId}`;
+        // const form = document.getElementById('scrapForm');
+        
+        let currentPage = document.querySelector('.nav-item.active').getAttribute('href');
+        if (currentPage === '/inventory_cards' || currentPage === '/inventory_table') {
+            activeScrapForm = document.getElementById('scrapForm');
+            activeScrapForm.action = `/delete/${itemId}`;
+        } else if (currentPage === '/simcard') {
+            activeScrapForm = document.getElementById('scrapForm');
+            activeScrapForm.action = `/simcard_delete/${itemId}`;
+        } else if (currentPage === '/asset_scrap') {
+            activeScrapForm =document.getElementById('assetScrapForm');
+            activeScrapForm.action = '/asset_scrap';
         }
 
+        if (!activeScrapForm) return;
         resetSlider();
         modal.style.display = 'flex';
 
@@ -486,11 +494,11 @@
 
         setTimeout(() => {
             // 🌟 核心修复：使用 requestSubmit() 触发完整的 JS 拦截闭环，防止原生的暴力刷新页面
-            const scrapForm = document.getElementById('scrapForm');
-            if (scrapForm && scrapForm.requestSubmit) {
-                scrapForm.requestSubmit();
-            } else if (scrapForm) {
-                scrapForm.submit(); // 老浏览器兜底
+            // const scrapForm = document.getElementById('scrapForm');
+            if (activeScrapForm && activeScrapForm.requestSubmit) {
+                activeScrapForm.requestSubmit();
+            } else if (activeScrapForm) {
+                activeScrapForm.submit(); // 老浏览器兜底
             }
         }, 200);
     }
@@ -568,16 +576,17 @@
 
     // Asset 操作按钮模态框
     window.openActionModal = async function(groupId, itemId) {
+        itemId = Number(itemId);
         try {
             const response = await fetch(`/api/status_check/${itemId}`, {method: 'POST'});
             const result = await response.json();
-
             if (result.status !== 'success') {
                 if(typeof window.showToast === 'function') window.showToast(result.message, 'error');
 
                 let groupData = window.ASSET_DATA[groupId];
                 if (groupData && groupData.items) {
                     let item = groupData.items.find(i => i.id === itemId);
+                    console.log(item);
                     if (item) {
                         item.is_request = true;
                     }
@@ -614,32 +623,30 @@
         document.getElementById('actionModalCtrlNo').innerHTML = `<i class="material-icons" style="vertical-align: middle; color: var(--primary-blue);">tune</i> ${item.ctrl_no}`;
         document.getElementById('actionModalPn').innerText = `${safePn}`;
         document.getElementById('actionModalName').innerText = `${groupData.name}`;
-
         const isAdmin = (window.CURRENT_USER && ['superadmin', 'admin'].includes(window.CURRENT_USER.role));
         let btnGroupHtml = '';
-
         if (isAdmin) {
             let btn1Bg = !item.is_stock ? '#1db954' : '#f39c12';
             let btn1Icon = item.is_stock ? 'output' : 'login';
             let btn1Text = item.is_stock ? t('asset_view.btn_take_out') : t('asset_view.btn_return_in');
-            let btn1 = `<button class="btn-primary" style="background-color: ${btn1Bg}; ${disabledStyle}; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="window.openAssetToggleModal(${item.id}, '${isStockStr}', '${safeCtrl}', false, '', '${siblingLoc}')"><i class="material-icons">${btn1Icon}</i> ${btn1Text}</button>`;
+            let btn1 = `<button class="btn-primary toggle-btn" style="background-color: ${btn1Bg}; ${disabledStyle}; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;"><i class="material-icons">${btn1Icon}</i> ${btn1Text}</button>`;
 
-            let btn2 = `<button class="btn-primary" style="background-color: #3498db; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="window.openAssetItemEditModal(${item.id}, '${safePn}', '${safeCtrl}', '${safeLoc}', '${safeDate}', '${safePoType}', '${remarks}')"><i class="material-icons">edit_note</i> ${t('asset_view.btn_edit')}</button>`;
+            let btn2 = `<button class="btn-primary edit-btn" style="background-color: #3498db; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;"><i class="material-icons">edit_note</i> ${t('asset_view.btn_edit')}</button>`;
             
             let btn3 = '';
             if (!item.is_stop && !item.is_stock) {
-                btn3 = `<button class="btn-primary" style="background-color: #bdc3c7; color: #fff; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="window.openAlertModal(window.t('asset_view.btn_stop_deny'))"><i class="material-icons">do_not_disturb</i> ${t('asset_view.btn_stop')}</button>`;
+                btn3 = `<button class="btn-primary stop-btn-forbid" style="background-color: #bdc3c7; color: #fff; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;"><i class="material-icons">do_not_disturb</i> ${t('asset_view.btn_stop')}</button>`;
             } else {
                 let btn3Bg = item.is_stop ? '#95a5a6' : 'var(--danger-red)';
                 let btn3Icon = item.is_stop ? 'settings_backup_restore' : 'do_not_disturb';
                 let btn3Text = item.is_stop ? t('asset_view.btn_reuse') : t('asset_view.btn_stop');
-                btn3 = `<button class="btn-primary" style="background-color: ${btn3Bg}; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="window.openStopConfirmModal(${item.id}, '${safeCtrl}', '${isStopStr}', false, '${siblingLoc}')"><i class="material-icons">${btn3Icon}</i> ${btn3Text}</button>`;
+                btn3 = `<button class="btn-primary stop-btn" style="background-color: ${btn3Bg}; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;"><i class="material-icons">${btn3Icon}</i> ${btn3Text}</button>`;
             }
             btnGroupHtml = btn1 + btn2 + btn3;
         } else {
             if (!item.is_stock && !item.is_stop) {
-                let btn4 = `<button class="btn-primary" style="background-color: #1db954; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="window.openAssetToggleModal(${item.id}, 'False', '${safeCtrl}', true, '${rackName}', '')"><i class="material-icons">assignment_return</i> ${t('asset_view.request_return_title')}</button>`;
-                let btn5 = `<button class="btn-primary" style="background-color: var(--danger-red); width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="window.openStopConfirmModal(${item.id}, '${safeCtrl}', 'False', true, '${rackName}')"><i class="material-icons">build</i> ${t('asset_view.report_broken_title')}</button>`;
+                let btn4 = `<button class="btn-primary toggle-btn-req" style="background-color: #1db954; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;"><i class="material-icons">assignment_return</i> ${t('asset_view.request_return_title')}</button>`;
+                let btn5 = `<button class="btn-primary stop-btn-req" style="background-color: var(--danger-red); width:100%; display:flex; justify-content:center; align-items:center; gap:8px;"><i class="material-icons">build</i> ${t('asset_view.report_broken_title')}</button>`;
                 btnGroupHtml = btn4 + btn5;
             } else {
                 btnGroupHtml = `<span style="font-size:0.9rem; color:#aaa; padding: 20px 0;">${t('asset_view.no_actions') || 'No Actions'}</span>`;
@@ -647,7 +654,53 @@
         }
 
         document.getElementById('actionModalButtons').innerHTML = btnGroupHtml;
-        document.getElementById('actionModal').style.display = 'flex';
+        const actionModal = document.getElementById('actionModal');
+        if (actionModal) {
+            actionModal.style.display = 'flex';
+            const toggleBtn = actionModal.querySelector('.toggle-btn');
+            const editBtn = actionModal.querySelector('.edit-btn');
+            const stopBtn = actionModal.querySelector('.stop-btn');
+            const stopBtnForbid = actionModal.querySelector('.stop-btn-forbid');
+            const toggleBtnReq = actionModal.querySelector('.toggle-btn-req');
+            const stopBtnReq = actionModal.querySelector('.stop-btn-req');
+
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', () => {
+                    window.openAssetToggleModal(item.id, isStockStr, safeCtrl, false, '', siblingLoc);
+                    return;
+                });
+            }
+            if (editBtn) {
+                editBtn.addEventListener('click', () => {
+                    window.openAssetItemEditModal(item.id, safePn, safeCtrl, safeLoc, safeDate, safePoType, remarks);
+                    return;
+                });
+            }
+            if (stopBtn) {
+                stopBtn.addEventListener('click', () => {
+                    window.openStopConfirmModal(item.id, safeCtrl, isStopStr, false, siblingLoc);
+                    return;
+                });
+            }
+            if (stopBtnForbid) {
+                stopBtnForbid.addEventListener('click', () => {
+                    window.openAlertModal(t('asset_view.btn_stop_deny'));
+                    return;
+                });
+            }
+            if (toggleBtnReq) {
+                toggleBtnReq.addEventListener('click', () => {
+                    window.openAssetToggleModal(item.id, 'False', safeCtrl, true, rackName, '');
+                    return;
+                });
+            }
+            if (stopBtnReq) {
+                stopBtnReq.addEventListener('click', () => {
+                    window.openStopConfirmModal(item.id, safeCtrl, 'False', true, rackName);
+                });
+            }
+        } 
+
     };
 
     window.closeActionModal = function() {
@@ -714,10 +767,12 @@
         const radio = document.getElementById('raisonRadio')
         const userFieldsBox = document.getElementById('stopUserFields');
         const stopDeptInput = document.getElementById('stopDept');
+        const modalContent = modal.querySelector('.custom-modal-content');
 
         if (isUserRequest) {
             form.action = `/api/request_asset/${ctrlNo}`;
             icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red);">build</i>';
+            modalContent.style.borderTop = '6px solid var(--danger-red)';
             title.innerText = `${t('asset_view.report_broken_title')}`;
             text.innerHTML = `${t('asset_view.report_broken')} <strong>${ctrlNo}</strong>`;
             radio.style.display = 'none';
@@ -734,7 +789,8 @@
             stopDeptInput.required = false;
             stopDeptInput.value = '';
             if (isStopStr === 'True') {
-                icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: #1db954;">settings_backup_restore</i>';
+                icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: var(--primary-green);">settings_backup_restore</i>';
+                modalContent.style.borderTop = '6px solid var(--primary-green)';
                 title.innerText = t('asset_view.stop_reuse_title');
                 text.innerHTML = t('asset_view.stop_reuse_text').replace('{ctrlNo}', ctrlNo);
                 locReuseContainer.style.display = 'block';
@@ -743,10 +799,11 @@
                 locReuse.value = defaultRack;
                 radio.style.display = 'none';
                 radio.querySelectorAll('input').forEach(i => i.required = false);
-                submitBtn.style.backgroundColor = '#1db954';
+                submitBtn.style.backgroundColor = 'var(--primary-green)';
                 submitBtn.innerHTML = `<i class="material-icons">check_circle</i> ${t('asset_view.btn_reuse')}`;
             } else {
                 icon.innerHTML = '<i class="material-icons" style="font-size: 3.5rem; color: var(--danger-red);">do_not_disturb_on</i>';
+                modalContent.style.borderTop = '6px solid var(--danger-red)';
                 title.innerText = t('asset_view.stop_freeze_title');
                 text.innerHTML = t('asset_view.stop_freeze_text').replace('{ctrlNo}', ctrlNo);
                 locReuseContainer.style.display = 'none';
@@ -906,22 +963,55 @@
         if (isAdmin) {
             let btn1Bg = item.is_active ? (!item.is_stock ? '#1db954' : '#f39c12') : 'var(--danger-red)';
             let btn1Icon = item.is_active ? (item.is_stock ? 'output' : 'login') : 'delete';
-            let btn1Text = item.is_active ? (item.is_stock ? t('asset_view.btn_take_out') : t('asset_view.btn_return_in')) : t('card.btn_scrap');
-            let btn1func = item.is_active ? `window.openSimcardToggleModal(${item.id}, ${item.is_stock})` : `window.openScrapModal(${item.id})`;
-            let btn1 = `<button class="btn-primary" style="background-color: ${btn1Bg}; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="${btn1func}"><i class="material-icons">${btn1Icon}</i> ${btn1Text}</button>`;
+            let btn1Text = item.is_active ? (item.is_stock ? t('asset_view.btn_take_out') : t('asset_view.btn_return_in')) : t('card.scrap');
+            // let btn1func = item.is_active ? `window.openSimcardToggleModal(${item.id}, ${item.is_stock})` : `window.openScrapModal(${item.id})`;
+            let btn1ClassName = item.is_active ? 'toggle-btn' : 'scrap-btn';
+            let btn1 = `<button class="btn-primary ${btn1ClassName}" style="background-color: ${btn1Bg}; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;"><i class="material-icons">${btn1Icon}</i> ${btn1Text}</button>`;
 
-            let btn2 = `<button class="btn-primary" style="background-color: #3498db; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="window.openSimcardItemEditModal(${item.id}, '${item.icc_id}', '${item.carrier}', '${item.phone_number}', '${item.location || ""}', '${item.direct_user || ""}', '${item.project || ""}', '${item.note || ""}')"><i class="material-icons">edit_note</i> ${t('asset_view.btn_edit')}</button>`;
+            let btn2 = `<button class="btn-primary edit-btn" style="background-color: #3498db; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;"><i class="material-icons">edit_note</i> ${t('asset_view.btn_edit')}</button>`;
 
             let btn3Bg = item.is_active ? '#e74c3c' : '#95a5a6';
             let btn3Icon = item.is_active ? 'do_not_disturb' : 'settings_backup_restore';
             let btn3Text = item.is_active ? t('asset_view.btn_stop') : t('asset_view.btn_reuse');
-            let btn3 = `<button type="button" class="btn-primary" title="Active" style="background-color: ${btn3Bg}; color: #fff; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="window.openActiveToggleModal(${item.id}, ${item.is_active})"><i class="material-icons" style="margin-top: 2px;">${btn3Icon}</i>${btn3Text}</button>`;
+            let btn3 = `<button type="button" class="btn-primary stop-btn" title="Active" style="background-color: ${btn3Bg}; color: #fff; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;"><i class="material-icons" style="margin-top: 2px;">${btn3Icon}</i>${btn3Text}</button>`;
             
             btnGroupHtml = btn1 + btn2 + btn3;
         }
 
         document.getElementById('actionModalButtons').innerHTML = btnGroupHtml;
-        document.getElementById('actionModal').style.display = 'flex';
+        const actionModal = document.getElementById('actionModal');
+        if (actionModal) {
+            actionModal.style.display = 'flex';
+            const toggleBtn = actionModal.querySelector('.toggle-btn');
+            const scrapBtn = actionModal.querySelector('.scrap-btn');
+            const editBtn = actionModal.querySelector('.edit-btn');
+            const stopBtn = actionModal.querySelector('.stop-btn');
+
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', () => {
+                    window.openSimcardToggleModal(item.id, item.is_stock);
+                    return;
+                });
+            }
+            if (scrapBtn) {
+                scrapBtn.addEventListener('click', () => {
+                    window.openScrapModal(item.id);
+                    return;
+                });
+            }
+            if (editBtn) {
+                editBtn.addEventListener('click', () => {
+                    window.openSimcardItemEditModal(item.id, item.icc_id, item.carrier, item.phone_number, item.location, item.direct_user, item.project, item.note);
+                    return;
+                });
+            }
+            if (stopBtn) {
+                stopBtn.addEventListener('click', () => {
+                    window.openActiveToggleModal(item.id, item.is_active);
+                    return;
+                });
+            }
+        } 
     };
 
     window.openSimcardToggleModal = function(itemId, isStock) {
@@ -966,7 +1056,7 @@
         document.getElementById('editIccid').value = icc;
         document.getElementById('editCarrier').value = carrier;
         document.getElementById('editPhone').value = phone;
-        document.getElementById('editLoc').value = loc;
+        document.getElementById('simcardEditLoc').value = loc;
         document.getElementById('editUser').value = user || '';
         document.getElementById('editProject').value = proj || '';
         document.getElementById('editNote').value = note || '';

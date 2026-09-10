@@ -54,6 +54,18 @@
                         }
                     }
                 }
+
+                // 2. 绑定单行删除按钮
+                if (scrapList) {
+                    scrapList.onclick = function(e) {
+                        let removeBtn = e.target.closest('.btn-remove');
+                        if (!removeBtn) return;
+                        if (removeBtn.disabled) return;
+                        let ctrlNo = removeBtn.dataset.ctrl;
+                        console.log(ctrlNo);
+                        if (ctrlNo) removeAsset(ctrlNo, removeBtn);
+                    }
+                }
             }
         } catch (error) {
             console.error("Data Loaded Fail", error);
@@ -98,7 +110,7 @@
                     <td>${draft.is_no_use ? "NO USE" : "NG Scrap"}</td>
                     <td>${draft.location || '-'}</td>
                     <td style="text-align: center;">
-                        <button type="button" class="btn-remove" ${btnDisabled} onclick="removeAsset('${draft.ctrl_no}', this)" title="${draft.is_stop ? "Must unstop asset firstly" : t('asset_scrap.title_remove')}">
+                        <button type="button" class="btn-remove" ${btnDisabled} data-ctrl="${draft.ctrl_no}" title="${draft.is_stop ? "Must unstop asset firstly" : t('asset_scrap.title_remove')}">
                             <i class="material-icons">close</i>
                         </button>
                     </td>
@@ -137,7 +149,7 @@
             <td>${raisonHtml}</td>
             <td>${item.location || '-'}</td>
             <td style="text-align: center;">
-                <button type="button" class="btn-remove" ${deleteDisabled} style="${deleteOpacity}" onclick="removeAsset('${val}', this)" title="${deleteTitle}">
+                <button type="button" class="btn-remove" ${deleteDisabled} style="${deleteOpacity}" data-ctrl="${val}" title="${deleteTitle}">
                     <i class="material-icons">close</i>
                 </button>
             </td>
@@ -183,11 +195,11 @@
                     window.addAssetToTable(result.data);
                 }
             } else {
-                await window.closeAlertModal(result.message);
+                await window.openAlertModal(result.message);
                 // alert(result.message);
             }
         } catch (e) {
-            await window.closeAlertModal(t('asset_scrap.scan_net_error'));
+            await window.openAlertModal(t('asset_scrap.scan_net_error'));
             // alert(t('asset_scrap.scan_net_error'));
         }
 
@@ -254,6 +266,7 @@
         try {
             let res = await fetch('/api/asset_scrap/delete', {method: 'POST', body: formData});
             let result = await res.json();
+            console.log(result);
 
             if (result.status === 'success') {
                 showToast(result.message, 'success');

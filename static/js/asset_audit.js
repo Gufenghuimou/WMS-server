@@ -110,34 +110,33 @@
 
             return `
                 <div class="location-block ${collapsedClass}" data-loc="${loc.toLocaleLowerCase() || 'Unallocated'}">
-                <div class="location-header" onclick="this.parentElement.classList.toggle('collapsed')">
-                    <h3>
-                        <i class="material-icons collapse-icon">expand_more</i>
-                        <i class="material-icons loc-label" style="font-size: 1.2rem;">place</i> ${loc || t('asset_audit.unassigned')}
-                    </h3>
-                    <span class="status-badge ${allDoneClass}">${(t('asset_audit.total_devices')).replace('{count}', items.length)}</span>
-                </div>
+                    <div class="location-header">
+                        <h3>
+                            <i class="material-icons collapse-icon">expand_more</i>
+                            <span class="loc-anchor"><i class="material-icons loc-label" style="font-size: 1.2rem;">place</i> ${loc || t('asset_audit.unassigned')}</span>
+                        </h3>
+                        <span class="status-badge ${allDoneClass}">${(t('asset_audit.total_devices')).replace('{count}', items.length)}</span>
+                    </div>
 
-                <table class="audit-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 12%;">${t('asset_audit.th_ctrl_no')}</th>
-                            <th style="width: 12%;">${t('asset_audit.th_pn1')}</th>
-                            <th style="width: 36%;">${t('asset_audit.th_name')}</th>
-                            <th style="width: 10%;">${t('asset_audit.th_expected_loc')}</th>
-                            <th style="width: 10%;">${t('asset_audit.th_actual_loc')}</th>
-                            <th style="width: 10%; text-align: center;">${t('asset_audit.th_status')}</th>
-                            <th style="width: 10%; text-align: center;">${t('asset_audit.th_time')}</th>
-                        </tr>
-                    </thead>
-                    <tbody>${rowsHtml}</tbody>
-                </table>
-            </div>
+                    <table class="audit-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 12%;">${t('asset_audit.th_ctrl_no')}</th>
+                                <th style="width: 12%;">${t('asset_audit.th_pn1')}</th>
+                                <th style="width: 36%;">${t('asset_audit.th_name')}</th>
+                                <th style="width: 10%;">${t('asset_audit.th_expected_loc')}</th>
+                                <th style="width: 10%;">${t('asset_audit.th_actual_loc')}</th>
+                                <th style="width: 10%; text-align: center;">${t('asset_audit.th_status')}</th>
+                                <th style="width: 10%; text-align: center;">${t('asset_audit.th_time')}</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rowsHtml}</tbody>
+                    </table>
+                </div>
             `;
         }).join('');
 
         auditList.innerHTML = blockHtml;
-
         // 遍历缓存页面
         document.querySelectorAll('.location-block tbody tr').forEach(row => {
             row._cachedSearchText = row.innerText.toLowerCase();
@@ -261,23 +260,29 @@
 
         if (auditContainer) {
             auditContainer.onclick = function(e) {
-                let h3 = e.target.closest('.location-header h3');
-                if (!h3) return;
-                if (e.target.classList.contains('collapse-icon')) return;
-                e.stopPropagation();
-                
-                let block = h3.closest('.location-block');
-                let rawLoc = block ? block.getAttribute('data-loc') : '';
-                let safeLoc = rawLoc.replace(/'/g, "\\'").replace(/"/g, "&quot;");
-                let rackName = "";
-                if (safeLoc && safeLoc !== '-' && safeLoc.toLowerCase() !== 'none' && safeLoc !== 'unallocated') {
-                    if (safeLoc.includes('-')) {
-                        rackName = safeLoc.split('-')[0].toUpperCase();
-                    } else {
-                        rackName = safeLoc.toUpperCase();
+                let locAnchor = e.target.closest('.loc-anchor');
+                if (locAnchor) {
+                    e.stopPropagation();
+                    let block = locAnchor.closest('.location-block');
+                    let rawLoc = block ? block.getAttribute('data-loc') : '';
+                    let safeLoc = rawLoc.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                    let rackName = "";
+                    if (safeLoc && safeLoc !== '-' && safeLoc.toLowerCase() !== 'none' && safeLoc !== 'unallocated') {
+                        if (safeLoc.includes('-')) {
+                            rackName = safeLoc.split('-')[0].toUpperCase();
+                        } else {
+                            rackName = safeLoc.toUpperCase();
+                        }
+                        rackName = rackName.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                        if (window.openFooterMap) window.openFooterMap(rackName);
                     }
-                    rackName = rackName.replace(/'/g, "\\'").replace(/"/g, "&quot;");
-                    if (window.openFooterMap) window.openFooterMap(rackName);
+                    return;
+                }
+
+                let header = e.target.closest('.location-header');
+                if (header) {
+                    header.closest('.location-block').classList.toggle('collapsed');
+                    return;
                 }
             };
         }
@@ -382,10 +387,11 @@
 
                 if (data.is_location_changed) {
                     let warnText = t('asset_audit.scan_warn').replace('{expected_location}', data.expected_location);
-                    resultBox.innerHTML = `<span style="color:#f29900;"><i class="material-icons" style="vertical-align:bottom;">warning</i> **${ctrlNo}** ${data.message}  ${warnText}</span> <button type="button" class="btn-primary" onclick="doPrintAudit('${ctrlNo}');"><i class="material-icons">print</i> ${t('title.reprint')}</button>`;
+                    resultBox.innerHTML = `<span style="color:#f29900;"><i class="material-icons" style="vertical-align:bottom;">warning</i> **${ctrlNo}** ${data.message}  ${warnText}</span> <button type="button" class="btn-primary"><i class="material-icons">print</i> ${t('title.reprint')}</button>`;
                 } else {
-                    resultBox.innerHTML = `<span style="color:#1e8e3e;"><i class="material-icons" style="vertical-align:bottom;">check_circle</i> **${ctrlNo}** ${data.message}</span> <button type="button" class="btn-primary" onclick="doPrintAudit('${ctrlNo}');"><i class="material-icons">print</i> ${t('title.reprint')}</button>`;
+                    resultBox.innerHTML = `<span style="color:#1e8e3e;"><i class="material-icons" style="vertical-align:bottom;">check_circle</i> **${ctrlNo}** ${data.message}</span> <button type="button" class="btn-primary"><i class="material-icons">print</i> ${t('title.reprint')}</button>`;
                 }
+                resultBox.querySelector('button[type=button]').addEventListener('click', () => {doPrintAudit(ctrlNo);});
 
                 doneAudio.currentTime = 0;
                 doneAudio.play().catch(() => console.log("Loading sound fail"));
@@ -415,10 +421,12 @@
         let safePrev = previousLoc ? previousLoc.split('-')[0].toUpperCase().replace(/'/g, "\\'").replace(/"/g, "&quot;") : '';
         let safeCurr = currentLoc ? currentLoc.split('-')[0].toUpperCase().replace(/'/g, "\\'").replace(/"/g, "&quot;") : '';
 
-        let prevHtml = `<span style="cursor:pointer; color:var(--primary); font-weight:500; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;" onclick="window.openFooterMap('${safePrev}')"><i class="material-icons" style="font-size:1.1rem">place</i>${previousLoc}</span>`;
-        let currHtml = `<span style="cursor:pointer; color:var(--primary); font-weight:500; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;" onclick="window.openFooterMap('${safeCurr}')"><i class="material-icons" style="font-size:1.1rem">place</i>${currentLoc}</span>`;
+        let prevHtml = `<span class="prev-loc-text" style="cursor:pointer; color:var(--primary); font-weight:500; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;"><i class="material-icons" style="font-size:1.1rem">place</i>${previousLoc}</span>`;
+        let currHtml = `<span class="curr-loc-text" style="cursor:pointer; color:var(--primary); font-weight:500; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;"><i class="material-icons" style="font-size:1.1rem">place</i>${currentLoc}</span>`;
 
         text.innerHTML = t('asset_audit.repeated_text').replace('{previousLoc}', prevHtml).replace('{currentLoc}', currHtml);
+        text.querySelector('.prev-loc-text').addEventListener('click', () => {window.openFooterMap(safePrev);});
+        text.querySelector('.curr-loc-text').addEventListener('click', () => {window.openFooterMap(safeCurr);});
         modal.style.display = 'flex';
         cancelBtn.focus();
         
@@ -448,15 +456,16 @@
         try {
             let res = await fetch('/api/trigger_print', { method: 'POST', body: formData });
             let data = await res.json();
+            console.log(data);
             if (data.status === 'success') {
                 showToast(data.message, 'success');
             } else {
-                await window.closeAlertModal(t('asset_audit.alert_print_fail'));
-                // alert(t('asset_audit.alert_print_fail'));
+                await window.openAlertModal(t('reprint.alert_print_fail'));
+                // alert(t('reprint.alert_print_fail'));
             }
         } catch (e) {
-            await window.closeAlertModal(t('asset_audit.alert_print_fail'));
-            // alert(t('asset_audit.alert_print_fail'));
+            await window.openAlertModal(t('reprint.alert_print_fail'));
+            // alert(t('reprint.alert_print_fail'));
         }
         if (barcodeInput) barcodeInput.focus();
     }

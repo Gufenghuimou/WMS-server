@@ -55,7 +55,7 @@
                     if (window.HISTORY_DATA) {
                         renderHistory(window.HISTORY_DATA);
                     }
-                } 
+                }
             }
         } catch (error) {
             console.error("Data Loaded Fail", error);
@@ -64,7 +64,7 @@
     };
 
     function renderHistory(data) {
-        const tBody = document.querySelector('tbody');
+        const tBody = document.getElementById('historyTbody');
         if (!tBody) return;
         if (!data || data.length === 0) {
             tBody.innerHTML = `
@@ -111,7 +111,7 @@
 
             let undoBtn = ``;
             if (window.CURRENT_USER && window.CURRENT_USER.role.includes('admin') && logStatus === 'normalLog') {
-                undoBtn = `<button type="button" class="btn-undo" onclick="window.undoHistoryLog(${log.id}, this)">${t('history.undo')}</button>`;
+                undoBtn = `<button type="button" class="btn-undo" data-log-id="${log.id}">${t('history.undo')}</button>`;
             } else {
                 undoBtn = `<i class="material-icons" style="color: #eee; font-size: 1.2rem;">block</i>`;
             }
@@ -131,6 +131,14 @@
             `;
         }).join('');
         tBody.innerHTML = rowsHtml;
+        tBody.onclick = function(e) {
+            e.stopPropagation();
+            let undoBtn = e.target.closest('.btn-undo');
+            if (undoBtn) {
+                window.undoHistoryLog(undoBtn.getAttribute('data-log-id'), undoBtn);
+                return;
+            }
+        }
     }
 
     // Ajax

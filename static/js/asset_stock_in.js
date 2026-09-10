@@ -20,11 +20,14 @@
             <td><input type="text" name="location" class="cell-input loc-input" data-row="${i}"></td>
             <td><input type="text" name="remarks" class="cell-input rem-input" data-row="${i}"></td>
             <td style="text-align: center; vertical-align: middle;">
-                <button type="button" class="btn-undo" onclick="clearSingleRow(${i})" data-i18n-title="asset_stockin.title_clear_row" title="${t('asset_stockin.title_clear_row')}">
+                <button type="button" class="btn-undo" data-i18n-title="asset_stockin.title_clear_row" title="${t('asset_stockin.title_clear_row')}">
                     <i class="material-icons" style="font-size: 1.1rem">delete_outline</i>
                 </button>
             </td>
         `;
+        tr.querySelector('.btn-undo').addEventListener('click', () => {
+            clearSingleRow(i);
+        });
         document.getElementById('gridBody').appendChild(tr);
 
         // 绑定该行 PN1 的失焦查询和输入增行逻辑
@@ -55,7 +58,7 @@
         currentRowCount++;
     }
 
-    window.clearSingleRow = function(rowIndex) {
+    function clearSingleRow (rowIndex) {
         let inputs = document.querySelectorAll(`input[data-row="${rowIndex}"]`);
         inputs.forEach(input => {
             if (input.type === 'date') {

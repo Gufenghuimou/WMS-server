@@ -27,7 +27,7 @@
         </div>
     </div>
 
-    <form id="scrapForm" action="/asset_scrap" method="POST" onsubmit="return confirmScrap()">
+    <form id="assetScrapForm" action="/asset_scrap" method="POST">
         <div class="location-block" style="margin-bottom: 20px;">
             <div class="location-header" style="cursor: default; background: #fafafa; justify-content: space-between;">
                 <div style="display: flex; flex-direction: row; gap: 10px;">
@@ -53,7 +53,7 @@
                             <th style="width: 30%;" data-i18n="asset_scrap.th_name">Name</th>
                             <th style="width: 10%;" data-i18n="asset_scrap.th_raison">Raison</th>
                             <th style="width: 15%;" data-i18n="asset_scrap.th_loc">Location</th>
-                            <th style="width: 10%; text-align: center;" data-i18n="'asset_scrap.th_remove">Remove</th>
+                            <th style="width: 10%; text-align: center;" data-i18n="asset_scrap.th_remove">Remove</th>
                         </tr>
                     </thead>
                     <tbody id="scrapList"> </tbody>

@@ -55,13 +55,13 @@
     padding: 15px 20px;
 }
 
-#scrapForm {
+#assetScrapForm {
     display: flex;
     flex-direction: column;
     flex: 1;
     min-height: 0;
 }
-#scrapForm > div:last-child {
+#assetScrapForm > div:last-child {
     flex-shrink: 0; /* 绝对禁止按钮区域被压缩 */
 }
 

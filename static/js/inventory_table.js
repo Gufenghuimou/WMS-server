@@ -290,57 +290,13 @@
                     } finally {
                         saveBtn.disabled = false;
                     }
-
-                    // fetch(`/edit/${itemId}`, {
-                    //     method: 'POST',
-                    //     body: formData
-                    // })
-                    //     .then(response => response.json())
-                    //     .then(data => {
-                    //         if (data.status === 'success') {
-                    //             showToast(data.message, "success")
-
-                    //             if (window.INV_TAB_DATA) {
-                    //                 const dataItem = window.INV_TAB_DATA.find(i => i.id == itemId);
-                    //                 if (dataItem) {
-                    //                     dataItem.name = nameInput ? nameInput.value.trim() : dataItem.name;
-                    //                     detailInner.querySelectorAll('input[name]').forEach(input => {
-                    //                         dataItem[input.name] = input.value.trim();
-                    //                     });
-                    //                 }
-                    //             }
-
-                    //             detailInner.querySelectorAll('.detail-input').forEach(input => {
-                    //                 input.dataset.originalValue = input.value;
-                    //             });
-                    //             if (nameInput) {
-                    //                 nameInput.dataset.originalValue = nameInput.value;
-                    //             }
-                    //             detailInner.querySelector('.cancel-btn').click();
-                    //             detailRow.classList.remove('row-saved');
-                    //             mainRow.classList.remove('row-saved');
-                    //             void detailRow.offsetWidth;
-                    //             void mainRow.offsetWidth;
-                    //             detailRow.classList.add('row-saved');
-                    //             mainRow.classList.add('row-saved');
-                    //         } else {
-                    //             alert('Save Failed: ' + data.message);
-                    //         }
-                    //     })
-                    //     .catch(error => {
-                    //         console.error('Save Alert: ', error);
-                    //         alert('Cannot attach the server');
-                    //     })
-                    //     .finally(() => {
-                    //         saveBtn.disabled = false;
-                    //     });
                     return;
                 }
 
                 if (scrapBtn) {
                     const detailRow = scrapBtn.closest('.detail-row');
                     const itemId = detailRow.getAttribute('data-id');
-                    openScrapModal(itemId);
+                    window.openScrapModal(itemId);
                     return;
                 }
 
