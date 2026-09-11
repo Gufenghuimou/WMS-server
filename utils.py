@@ -1,5 +1,6 @@
 # utils.py
 from sqlmodel import Session, select, not_
+from sqlalchemy import func
 import socket
 from datetime import datetime
 import os
@@ -18,12 +19,13 @@ def update_single_usage(session: Session, pn_1: str):
     if not item:
         return
 
+    note = func.coalesce(HistoryLog.note, '')
     statement = select(HistoryLog).where(
         HistoryLog.pn_1 == item.pn_1,
         HistoryLog.change_qty < 0,
-        ~HistoryLog.note.like('%撤销%'),
-        ~HistoryLog.note.like('%Undone%'),
-        ~HistoryLog.note.like('%Undo Record%')
+        ~note.like('%撤销%'),
+        ~note.like('%Undone%'),
+        ~note.like('%Undo Record%')
         )
     logs = session.exec(statement).all()
 

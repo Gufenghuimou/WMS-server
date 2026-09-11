@@ -21,11 +21,11 @@
                 // 初始化页面标签
                 const tabsContainer = document.querySelector('.log-tabs-container');
                 tabsContainer.innerHTML = `
-                    <div class="log-tab active" id="switchTabConsumable" onclick="switchLogTab('consumable', this)">
+                    <div class="log-tab active" id="switchTabConsumable">
                         <h3><i class="material-icons">inventory_2</i> <span data-i18n="queue.consumables">${t('queue.consumables')}</span></h3>
                         <span class="count-badge">${logData.inv_req_log.length}</span>
                     </div>
-                    <div class="log-tab inactive" id="switchTabAsset" onclick="switchLogTab('asset', this)">
+                    <div class="log-tab inactive" id="switchTabAsset">
                         <h3><i class="material-icons">devices</i> <span data-i18n="queue.assets">${t('queue.assets')}</span></h3>
                         <span class="count-badge">${logData.asset_req_log.length}</span>
                     </div>
@@ -42,8 +42,19 @@
                     </span>
                 `;
 
+                const tabA = document.getElementById('switchTabAsset');
                 const globalSearch = document.getElementById('globalSearch');
                 let searchTimeout;
+
+                tabsContainer.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    let targetTab = 'consumable';
+                    if (e.target === tabA) {
+                        targetTab = 'asset';
+                    }
+                    switchLogTab(targetTab, e.target);
+                    return;
+                });
 
                 if (globalSearch) {
                     globalSearch.oninput = function(e) {

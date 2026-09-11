@@ -11,15 +11,21 @@
             <td><input type="text" name="phone_number" class="cell-input number-input" data-row="${i}" autocomplete="off"></td>
             <td><input type="text" name="note" class="cell-input note-input" data-row="${i}" autocomplete="off"></td>
             <td style="text-align: center; vertical-align: middle;">
-            <button type="button" class="btn-undo" onclick="clearSingleRow(${i})" data-i18n-title="stockin.clear_row_title" title="${t('stockin.clear_row_title')}">
+            <button type="button" class="btn-undo" data-i18n-title="stockin.clear_row_title" title="${t('stockin.clear_row_title')}">
                 <i class="material-icons" style="font-size: 1.2rem">delete_outline</i>
             </button>
             </td>
         `;
         document.getElementById("gridBody").appendChild(tr);
 
-        let iccInput = tr.querySelector('.iccid-input');
+        let clearBtn = tr.querySelector('.btn-undo');
+        clearBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            clearSimcardSingleRow(i);
+            return;
+        });
 
+        let iccInput = tr.querySelector('.iccid-input');
         iccInput.addEventListener('blur', function () {
             triggerAutoComplete(this);
         });
@@ -32,7 +38,7 @@
     }
 
     // 删除行
-    window.clearSingleRow = function(rowIndex) {
+    window.clearSimcardSingleRow = function(rowIndex) {
         let inputs = document.querySelectorAll(`input[data-row="${rowIndex}"]`);
         inputs.forEach(input => {
             input.value = '';
@@ -41,15 +47,17 @@
         checkAllDuplicates();
     }
 
-    window.clearSimcardGrid = async function() {
-        if (!(await openConfirmModal(t('stockin.confirm_clear_all')))) {
-            document.getElementById("gridBody").innerHTML = '';
-            currentRowCount = 0;
-            addSimcardRow();
-        }
+    function resetGrid() {
+        const body = document.getElementById('gridBody');
+        if (!body) return;
+        body.innerHTML = '';
+        currentRowCount = 0;
+        addSimcardRow();
     }
+    window.clearSimcardGrid = async function() {
+        if (await openConfirmModal(t('stockin.confirm_clear_all'))) resetGrid();
+    };
 
-    // 全局事件
     window.initSimcardStockPage = function() {
         const topActionsContainer = document.querySelector('.top-actions');
         const pageActions = document.getElementById('page-top-actions');
@@ -135,6 +143,14 @@
 
             stockInForm.onsubmit = async function (e) {
                 e.preventDefault();
+                if (this.dataset.submitting === 'true') return;
+                this.dataset.submitting = 'true';
+                try {
+                    await Promise.all([...pendingQueries]);
+                    if (!this.isConnected) return;
+                    this.querySelectorAll('.iccid-input').forEach(input => { input.value = input.value.replace(/\s+/g, ''); });
+
+                e.preventDefault();
                 let hasTableDuplicates = checkAllDuplicates();
                 let hasDbDuplicates = document.querySelector('.db-exist-warn') !== null;
                 if (hasTableDuplicates || hasDbDuplicates) {
@@ -189,7 +205,7 @@
 
                 if (!isValid) return;
 
-                let submitBtn = form.querySelector('button[type="submit"]');
+                let submitBtn = e.submitter;
                 let originalBtnText = submitBtn ? submitBtn.innerHTML : '';
                 if (submitBtn) {
                     submitBtn.disabled = true;
@@ -202,12 +218,13 @@
                         body: new FormData(stockInForm)
                     });
                     let result = await response.json();
+                    if (!this.isConnected) return;
                     if (result.status === 'success') {
                         showToast(result.message, 'success');
-                        window.clearSimcardGrid();
+                        resetGrid();
                     } else {
                         // alert('Upload Error');
-                        await openAlertModal('Upload Error');
+                        await openAlertModal(result.message || 'Upload Error');
                     }
                 } catch (error) {
                         // console.error('提交异常',error);
@@ -218,6 +235,9 @@
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = originalBtnText;
                     }
+                }
+                } finally {
+                    delete this.dataset.submitting;
                 }
             }
         }
@@ -231,7 +251,7 @@
 
         document.querySelectorAll('.iccid-input').forEach((el) => {
             el.classList.remove('duplicate-warn');
-            let val = el.value.trim();
+            let val = el.value.replace(/\s+/g, '');
             if (val) {
                 if (!iccMap[val]) iccMap[val] = [];
                 iccMap[val].push(el);
@@ -240,7 +260,7 @@
 
         document.querySelectorAll('.number-input').forEach((el) => {
             el.classList.remove('duplicate-warn');
-            let val = el.value.trim();
+            let val = el.value.replace(/\s+/g, '');
             if (val) {
                 if (!numMap[val]) numMap[val] = [];
                 numMap[val].push(el);
@@ -264,7 +284,18 @@
 
     // 库内查重
 
-    async function triggerAutoComplete(inputElement) {
+    const pendingQueries = new Set();
+    const queryVersions = new WeakMap();
+    function triggerAutoComplete(inputElement) {
+        const task = completeInput(inputElement);
+        pendingQueries.add(task);
+        task.then(() => pendingQueries.delete(task), () => pendingQueries.delete(task));
+        return task;
+    }
+    async function completeInput(inputElement) {
+        const originalValue = inputElement.value;
+        const version = (queryVersions.get(inputElement) || 0) + 1;
+        queryVersions.set(inputElement, version);
         let inputVal = inputElement.value.replace(/\s+/g, "");
         let exist = false;
         if (!inputVal) return;
@@ -275,6 +306,7 @@
         try {
             let response = await fetch(`/api/simcard/${encodeURIComponent(inputVal)}`);
             let data = await response.json();
+            if (!inputElement.isConnected || inputElement.value !== originalValue || queryVersions.get(inputElement) !== version) return;
             if (!data.error) {
                 inputElement.classList.add('db-exist-warn');
 

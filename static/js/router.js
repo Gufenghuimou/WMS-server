@@ -39,8 +39,10 @@ function loadPageCSS(cssFileName) {
 }
 
 // 加载JS
+const pageScriptLoads = new Map();
 function loadPageJS(jsFileName) {
-    return new Promise((resolve, reject) => {
+    if (pageScriptLoads.has(jsFileName)) return pageScriptLoads.get(jsFileName);
+    const loading = new Promise((resolve, reject) => {
         if (!jsFileName) return resolve();
         if (document.querySelector(`script[data-route-js="${jsFileName}"]`)) return resolve();
 
@@ -48,20 +50,31 @@ function loadPageJS(jsFileName) {
         script.src = `/static/js/${jsFileName}.js?t=${window.SYS_VER || new Date().getTime()}`;
         script.setAttribute('data-route-js', jsFileName);
         script.onload = resolve;
-        script.onerror = reject;
+        script.onerror = (error) => {
+            script.remove();
+            pageScriptLoads.delete(jsFileName);
+            reject(error);
+        };
         document.head.appendChild(script);
     });
+    pageScriptLoads.set(jsFileName, loading);
+    return loading;
 }
 
 // 核心路由控制器
+let navigationId = 0;
+let viewController = null;
+let activeInitialization = Promise.resolve();
 const router = async () => {
+    const requestId = ++navigationId;
+    viewController?.abort();
+    const controller = new AbortController();
+    viewController = controller;
+    window.dispatchEvent(new Event('routeleave'));
     const path = window.location.pathname;
     const route = routes[path] || routes['/'];
 
     const topActionsContainer = document.querySelector('.top-actions');
-    if (topActionsContainer) {
-        topActionsContainer.innerHTML = ``;
-    }
     // 唤醒全局 Loader 动画
     const loader = document.getElementById('global-page-loader');
     if (loader) {
@@ -70,21 +83,24 @@ const router = async () => {
     }
 
     const viewContainer = document.getElementById('router-view');
-    if (viewContainer) {
-        viewContainer.innerHTML = ``;
-    }
 
     // 在请求 HTML 的同时，并行触发 CSS 加载
-    loadPageCSS(route.css);
-
     try {
+        if (!route) throw new Error('Unknown route');
+        // Older initializers must finish before a new view can be mounted.
+        await activeInitialization.catch(() => {});
+        if (requestId !== navigationId) return;
+        if (topActionsContainer) topActionsContainer.innerHTML = '';
+        if (viewContainer) viewContainer.innerHTML = '';
+        loadPageCSS(route.css);
         window.onCurrentViewLanguageChange = null;
         const [htmlResponse] = await Promise.all([
-            fetch(route.view),
+            fetch(route.view, { signal: controller.signal }),
             loadPageJS(route.js)
         ]);
         if (!htmlResponse.ok) throw new Error("View not found");
         const htmlContent = await htmlResponse.text();
+        if (requestId !== navigationId) return;
 
         // 注入 HTML 碎片
         viewContainer.innerHTML = htmlContent;
@@ -96,17 +112,20 @@ const router = async () => {
 
         // 触发页面专属初始化函数
         if (route.init && typeof window[route.init] === 'function') {
-            await window[route.init]();
+            activeInitialization = Promise.resolve().then(() => window[route.init]());
+            await activeInitialization;
         }
+        if (requestId !== navigationId) return;
 
         // 更新侧边栏高亮状态
         updateSidebarActive(path);
 
     } catch (error) {
+        if (requestId !== navigationId || error.name === 'AbortError') return;
         viewContainer.innerHTML = '<div style="color:red; padding: 50px; text-align: center;">页面加载失败或模块开发中</div>';
         console.error("Router Load Error:", error);
     } finally {    
-        if (typeof window.hideGlobalLoader === 'function') {
+        if (requestId === navigationId && typeof window.hideGlobalLoader === 'function') {
             window.hideGlobalLoader();
         }
     }

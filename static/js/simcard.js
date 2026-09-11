@@ -1,4 +1,7 @@
 (() => {
+
+    let sortDirection = {};
+
     // 从后端捞取数据
     window.initSimcardPage = async function() {
         const topActionsContainer = document.querySelector('.top-actions');
@@ -87,9 +90,8 @@
             }
 
             let btnGroupHtml = `
-                <button type="button" class="btn-primary" 
-                    style="background-color: #f0f2f5; color: #555; box-shadow: none; border: 1px solid #ddd; height: 28px; padding: 0 5px; border-radius: 6px; font-size: 0.75rem;" 
-                    onclick="openSimcardActionModal(${item.id})">
+                <button type="button" class="btn-primary btn-action" data-id="${item.id}"
+                    style="background-color: #f0f2f5; color: #555; box-shadow: none; border: 1px solid #ddd; height: 28px; padding: 0 5px; border-radius: 6px; font-size: 0.75rem;">
                 <i class="material-icons">more_horiz</i>
             </button>
             `;
@@ -100,7 +102,7 @@
                     <td class="font-monospace icc-id">${betterIcc}</td>
                     <td>${item.carrier}</td>
                     <td class='font-monospace phone_number'>${item.phone_number}</td>
-                    <td style="cursor: pointer; color: var(--primary); font-weight: 500; white-space: nowrap;" onclick="openFooterMap('${item.location}')">
+                    <td class="loc-anchor" data-loc="${item.location}" style="cursor: pointer; color: var(--primary); font-weight: 500; white-space: nowrap;">
                         <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.95rem;">
                             <i class="material-icons" style="font-size: 1rem;">place</i>
                             ${item.location}
@@ -148,11 +150,10 @@
     }
 
     // 表格排序 无搜索冲突
-    window.sortTable = function(columnIndex, dataType) {
+    window.sortSimcardTable = function(columnIndex, dataType) {
         const table = document.getElementById("advancedTable");
         const tbody = table.querySelector("tbody");
         const mainRows = Array.from(tbody.querySelectorAll(".main-row"));
-        let sortDirection = {};
 
         const isAscending = sortDirection[columnIndex] !== 'asc';
         sortDirection[columnIndex] = isAscending ? 'asc' : 'desc';
@@ -181,12 +182,33 @@
     }
 
     function bindEvents() {
+        const tBody = document.getElementById('simcardTbody');
         const targetForms = ['simcardToggleForm', 'simcardEditForm', 'activeToggleForm'];
         targetForms.forEach(formId => {
             const form = document.getElementById(formId);
             if (form) form.onsubmit = handleFormSubmit;
         });
+
+        if (!tBody) return;
+        tBody.onclick = function(e) {
+            let actionBtn = e.target.closest('.btn-action');
+            let locAnchor = e.target.closest('.loc-anchor');
+            if (actionBtn) {
+                e.stopPropagation();
+                let dataId = actionBtn.getAttribute('data-id');
+                openSimcardActionModal(dataId);
+                return;
+            }
+            if (locAnchor) {
+                e.stopPropagation();
+                let location = locAnchor.getAttribute('data-loc');
+                window.openFooterMap(location);
+                return;
+            }
+        }
+
     }
+
     async function handleFormSubmit(e){
         const form = e.target;
         e.preventDefault();
@@ -215,6 +237,9 @@
                 if (window.closeActionModal) window.closeActionModal();
                 updateTableRow(result.data);
                 renderSimcard(window.SIMCARD_DATA);
+            } else {
+                showToast(result.message || 'Submit Error', 'error');
+                await openAlertModal(t('card.backend_fail'));
             }
         } catch (err) {
             showToast(err.message, 'error');

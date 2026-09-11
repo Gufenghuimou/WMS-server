@@ -132,7 +132,7 @@
                             src="${group.has_image ? `/static/asset_images/${group.pn1}.jpg?t=${window.SYS_VER}` : 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}" 
                             style="display: ${group.has_image ? 'block' : 'none'}; cursor: pointer;" 
                             loading="lazy" 
-                            data-group-id="'${groupId}" data-pn1="${group.pn1}" data-name="${group.name}"
+                            data-group-id="${groupId}"
                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                         
                         <div class="card-img" style="display: ${group.has_image ? 'none' : 'flex'}; justify-content:center; align-items:center; background:#f8f9fa;">
@@ -482,7 +482,12 @@
                 let showImg = e.target.closest('.has-image');
                 if (showImg) {
                     e.stopPropagation();
-                    window.openShowImgModal(showImg.getAttribute('data-group-id'), showImg.getAttribute('data-pn1'), showImg.getAttribute('data-name'));
+                    const card = showImg.closest('.asset-card');
+                    if (!card) return;
+                    const groupId = showImg.getAttribute('data-group-id');
+                    const group = window.ASSET_DATA[groupId];
+                    if (!group) return;
+                    window.openShowImgModal(groupId, group.pn1, group.name || '');
                     return;
                 }
 

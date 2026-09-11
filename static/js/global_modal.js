@@ -279,7 +279,9 @@
         reader.onload = function(e) {
             document.getElementById('cropImageTarget').src = e.target.result;
             document.getElementById('cropModal').style.display = 'flex';
-            document.getElementById('confirmCrop').setAttribute('onclick', 'window.confirmAssetCrop()');
+            document.getElementById('confirmCrop').addEventListener('click', () => {
+                window.confirmAssetCrop();
+            });
 
             if (cropper) { cropper.destroy(); }
 
@@ -357,7 +359,9 @@
         reader.onload = function(e) {
             document.getElementById('cropImageTarget').src = e.target.result;
             document.getElementById('cropModal').style.display = 'flex';
-            document.getElementById('confirmCrop').setAttribute('onclick', 'window.confirmInventoryCrop()');
+            document.getElementById('confirmCrop').addEventListener('click', () => {
+                window.confirmInventoryCrop();
+            });
 
             if (cropper) { cropper.destroy(); }
 
@@ -854,7 +858,7 @@
         let safeLoc = location.split('-')[0];
         locBtn.onclick = function() { if(window.openFooterMap) window.openFooterMap(safeLoc); };
 
-        let stockInput = document.getElementById('realStock');
+        let stockInput = document.getElementById('realStockReq');
         stockInput.value = '';
         stockInput.style.backgroundColor = 'transparent';
         document.getElementById('approveError').style.display = 'none';

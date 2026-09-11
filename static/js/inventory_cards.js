@@ -7,12 +7,28 @@
     let autoPlayTimer = null;
     let filterTimeout;
     // 排序参数
-    const maxSpins = 35;
-    let spinsDelay = 40;
-    let spins = 0;
+    const maxSpins = 15;
+    let sortTimeout = null;
+    let renderTimeout = null;
+    let pageGeneration = 0;
+
+    function cancelSort() {
+        clearTimeout(sortTimeout);
+        sortTimeout = null;
+    }
+
+    window.addEventListener('routeleave', () => {
+        pageGeneration++;
+        cancelSort();
+        clearTimeout(renderTimeout);
+        clearTimeout(filterTimeout);
+        window.stopAutoPlay();
+        grid = null;
+    });
 
     // 主程序入口
     window.initInventoryPage = async function() {
+        const generation = ++pageGeneration;
         const topActionsContainer = document.querySelector('.top-actions');
         const pageActions = document.getElementById('page-top-actions');
         if (pageActions) {
@@ -22,14 +38,14 @@
 
         // 重置状态
         coverFlowIndex = 0;
-        spins = 0;
-        spinsDelay = 10;
+        cancelSort();
         grid = document.getElementById('inventoryGrid');
         stopAutoPlay();
 
         try {
             const response = await fetch('/api/inventory');
             const result = await response.json();
+            if (generation !== pageGeneration) return;
 
             if (result.status === 'success') {
                 const invData = result.data;
@@ -37,7 +53,7 @@
                 favs = invData.userBookmarks || [];
                 
                 renderInventory(invData.items);
-                setTimeout(() => { sortCards(currentSortMode); }, spinsDelay);
+                sortCards(currentSortMode);
                 // 修改左下指示灯
                 const indicator = document.getElementById('indicator');
                 if (indicator) {
@@ -58,10 +74,23 @@
                 } 
             }
         } catch (error) {
+            if (generation !== pageGeneration) return;
             console.error("Data Loaded Fail", error);
             if (grid) grid.innerHTML = `<div style="text-align:center; color:red;">加载失败，请刷新重试</div>`;
         }
     };
+
+    // 辅助函数 查找物品信息，html中避免写大量data-*
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, char => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[char]));
+    }
+
+    function findItem(itemId) {
+        if (itemId == null) return null;
+        return window.INVENTORY_DATA.find(item => String(item.id) === itemId);
+    }
 
     // 事件绑定
     function bindEvents() {
@@ -90,6 +119,7 @@
             const reqBtn = e.target.closest('.btn-request');
             const bookmark = e.target.closest('.bookmark-ribbon');
             const locAnchor = e.target.closest('.loc-anchor');
+            const scrapBtn = e.target.closest('.btn-scrap');
 
             if (!card) return;
             if (!card.classList.contains('is-active')) {
@@ -103,9 +133,9 @@
             if (imgContainer) {
                 e.stopPropagation();
                 let itemId = imgContainer.getAttribute('data-itemid');
-                let itemPn = imgContainer.getAttribute('data-item-pn1');
-                let itemName = imgContainer.getAttribute('data-item-name');
-                window.openShowImgModal(itemId, itemPn, itemName);
+                const item = findItem(itemId);
+                if (!item) return;
+                window.openShowImgModal(itemId, item.pn_1, item.name);
                 return;
             }
             if (editBtn) {
@@ -116,20 +146,18 @@
             if (reqBtn) {
                 e.stopPropagation();
                 let itemId = reqBtn.getAttribute('data-item-id');
-                let itemPn = reqBtn.getAttribute('data-item-pn1');
-                let itemName = reqBtn.getAttribute('data-item-name');
-                let itemStock = reqBtn.getAttribute('data-item-stock');
-                window.openRequestModal(itemId, itemPn, itemName, itemStock);
+                const item = findItem(itemId);
+                if (!item) return;
+                window.openRequestModal(itemId, item.pn_1, item.name, item.stock);
                 return;
             }
             if (outBtn) {
                 e.stopPropagation();
                 let itemId = outBtn.getAttribute('data-item-id');
-                let itemPn = outBtn.getAttribute('data-item-pn1');
-                let itemName = outBtn.getAttribute('data-item-name');
-                let itemStock = outBtn.getAttribute('data-item-stock');
-                let itemLoc = outBtn.getAttribute('data-item-loc');
-                window.openOutModal(itemId, itemPn, itemName, itemStock, itemLoc);
+                const item = findItem(itemId);
+                if (!item) return;
+                let itemLoc = item.location || '';
+                window.openOutModal(itemId, item.pn_1, item.name, item.stock, itemLoc);
                 return;
             }
             if (bookmark) {
@@ -141,6 +169,12 @@
             if (locAnchor) {
                 e.stopPropagation();
                 window.openFooterMap(locAnchor.getAttribute('data-loc'));
+            }
+            if (scrapBtn) {
+                e.stopPropagation();
+                let itemId = scrapBtn.getAttribute('data-id');
+                window.openScrapModal(itemId);
+                return;
             }
         }, { capture: true });
 
@@ -169,6 +203,7 @@
 
     // 渲染逻辑
     function renderInventory(data, focusItemId = null) {
+        cancelSort();
         if (!grid) return;
 
         // 🌟 核心保护：重绘前，必须把借住在卡片上的模板收回保险库！
@@ -190,24 +225,20 @@
         }
 
         const cardsHtml = data.map(item => {
-            const hasImage = item.has_image ? `<img class="card-item-img" data-itemid="${item.id}" data-item-pn1="${item.pn_1}" data-item-name="${item.name}" src="/static/item_images/${item.id}.jpg?t=${window.SYS_VER}" loading="lazy" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : '';
+            const hasImage = item.has_image ? `<img class="card-item-img" data-itemid="${item.id}" src="/static/item_images/${item.id}.jpg?t=${window.SYS_VER}" loading="lazy" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : '';
             let safeLoc = item.location && item.location.includes('-') ? item.location.split('-')[0].toUpperCase() : (item.location || '').toUpperCase();
 
             let actionBtn = '';
             if (window.CURRENT_USER && window.CURRENT_USER.role.includes('admin')) {
                 actionBtn= `
-                    <button class="btn-action btn-edit"
-                        data-id="${item.id}" data-pn1="${item.pn_1}" data-name="${item.name}"
-                        data-stock="${item.stock}" data-pn2="${item.pn_2 || ''}"
-                        data-desc1="${item.description_1 || ''}" data-desc2="${item.description_2 || ''}"
-                        data-loc="${item.location || ''}" data-remarks="${item.remarks || ''}">
+                    <button class="btn-action btn-edit" data-id="${item.id}">
                         ${t('card.edit')}
                     </button>
-                    <button class="btn-action btn-out" data-item-id="${item.id}" data-item-pn1="${item.pn_1}" data-item-name="${item.name}" data-item-stock="${item.stock}" data-item-loc="${item.location || ''}">${t('card.outbound')}</button>
+                    <button class="btn-action btn-out" data-item-id="${item.id}">${t('card.outbound')}</button>
                 `;
             } else {
                 actionBtn= `
-                    <button class="btn-action btn-request" data-item-id="${item.id}" data-item-pn1="${item.pn_1}" data-item-name="${item.name}" data-item-stock="${item.stock}" style="background: var(--primary-blue); color: white;">
+                    <button class="btn-action btn-request" data-item-id="${item.id}" style="background: var(--primary-blue); color: white;">
                         <i class="material-icons" style="font-size: 1.1rem; margin-right: 4px;">pan_tool</i> ${t('card.request')}
                     </button>
                 `;
@@ -217,18 +248,18 @@
             const isFav = favs.includes(item.id) ? 'bookmarked' : '';
 
             return `
-                <div class="item-card" data-id="${item.id}" data-sort-usage="${item.usage_1y || 0}" data-sort-id="${item.id}" data-search="${searchKey}">
+                <div class="item-card" data-id="${item.id}" data-sort-usage="${escapeHtml(item.usage_1y || 0)}" data-sort-id="${item.id}" data-search="${escapeHtml(searchKey)}">
                     <div class="card-front">
                         <i class="material-icons bookmark-ribbon ${isFav}" data-bookmark-id="${item.id}">bookmark</i>
                         <div class="card-header">
                             <div>
                                 <div style="white-space: nowrap;">
-                                    <span class="card-title font-monospace" title="${item.pn_1}" style="font-size: 1.3rem">${item.pn_1}</span>
-                                    <span class="card-title-sec font-monospace" title="${item.pn_2 || ''}">${item.pn_2 || ''}</span>
+                                    <span class="card-title font-monospace" title="${escapeHtml(item.pn_1)}" style="font-size: 1.3rem">${escapeHtml(item.pn_1)}</span>
+                                    <span class="card-title-sec font-monospace" title="${escapeHtml(item.pn_2 || '')}">${escapeHtml(item.pn_2 || '')}</span>
                                 </div>
-                                <span class="card-subtitle" title="${item.name || t('card.unnamed_item')}">${item.name || t('card.unnamed_item')}</span>
+                                <span class="card-subtitle" title="${escapeHtml(item.name || t('card.unnamed_item'))}">${escapeHtml(item.name || t('card.unnamed_item'))}</span>
                             </div>
-                            <div class="stock-badge ${(item.stock < (item.warning_level || 0)) ? 'warning' : ''}">${item.stock}</div>
+                            <div class="stock-badge ${(item.stock < (item.warning_level || 0)) ? 'warning' : ''}">${escapeHtml(item.stock)}</div>
                         </div>
                         <div class="img-container">
                             ${hasImage}
@@ -236,12 +267,12 @@
                                 <i class="material-icons" style="font-size: 2rem;">insert_photo</i>
                             </div>
                         </div>
-                        <div class="detail-row"><span>${t('card.category')}</span><span>${item.description_1 || '-'}</span></div>
-                        <div class="detail-row"><span>${t('card.desc')}</span><span>${item.description_2 || '-'}</span></div>
-                        <div class="detail-row"><span>${t('card.location')}</span><span class="loc-anchor" data-loc="${safeLoc}" style="color: var(--primary); cursor: pointer;"><i class="material-icons" style="font-size: 0.85rem; vertical-align: bottom;">place</i>${item.location || '-'}</span></div>
-                        <div class="detail-row"><span>${t('card.usage_1y')}</span><span>${item.usage_1y || 0}</span></div>
-                        <div class="detail-row"><span>${t('card.warning_level')}</span><span>${item.warning_level || 0}</span></div>
-                        <div class="detail-row" style="border-bottom: none;"><span>${t('card.remarks')}</span><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.remarks || ''}">${item.remarks || '-'}</span></div>
+                        <div class="detail-row"><span>${t('card.category')}</span><span>${escapeHtml(item.description_1 || '-')}</span></div>
+                        <div class="detail-row"><span>${t('card.desc')}</span><span>${escapeHtml(item.description_2 || '-')}</span></div>
+                        <div class="detail-row"><span>${t('card.location')}</span><span class="loc-anchor" data-loc="${escapeHtml(safeLoc)}" style="color: var(--primary); cursor: pointer;"><i class="material-icons" style="font-size: 0.85rem; vertical-align: bottom;">place</i>${escapeHtml(item.location || '-')}</span></div>
+                        <div class="detail-row"><span>${t('card.usage_1y')}</span><span>${escapeHtml(item.usage_1y || 0)}</span></div>
+                        <div class="detail-row"><span>${t('card.warning_level')}</span><span>${escapeHtml(item.warning_level || 0)}</span></div>
+                        <div class="detail-row" style="border-bottom: none;"><span>${t('card.remarks')}</span><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(item.remarks || '')}">${escapeHtml(item.remarks || '-')}</span></div>
                         <div class="card-actions">${actionBtn}</div>
                     </div>
                     <div class="card-back"></div>
@@ -295,41 +326,46 @@
     }
 
     function handleSort(e) {
-        const sortTimeout = null;
-        const sortMode = e.target.value;
-        currentSortMode = sortMode;
-        coverFlowIndex = 0;
-        spins = 0;
-        spinsDelay = 40;
-        clearTimeout(sortTimeout);
-        sortTimeout = setTimeout(() => { sortCards(currentSortMode); }, spinsDelay);
+        currentSortMode = e.target.value;
+        sortCards(currentSortMode);
     }
 
     function sortCards(sortMode) {
-        const cards = document.querySelectorAll('.item-card');
-        cards.forEach(c => c.style.transition = 'transform 0.1s linear, opacity 0.1s, filter 0.1s');
+        cancelSort();
+        if (!grid || !grid.isConnected) return;
+        window.stopAutoPlay();
 
-        coverFlowIndex += 1;
+        sortStatically(sortMode);
+
+        const cards = grid.querySelectorAll('.item-card');
+        if (!cards.length) return;
+
+        let position = -maxSpins;
+        let delay = 40;
+        cards.forEach(card => {
+            card.style.transition = 'transform 0.1s linear, opacity 0.1s, filter 0.1s';
+        });
+
+        coverFlowIndex = position;
         window.updateCoverFlow();
-        spins++;
-        if (spins < maxSpins) {
-            spinsDelay *= 1.05;
-            setTimeout(() => { sortCards(sortMode); }, spinsDelay);
-        } else {
-            const cardArray = Array.from(cards);
-            cardArray.sort((a, b) => {
-                let valA = parseInt(a.dataset[sortMode === 'usage_desc' ? 'sortUsage' : 'sortId']) || 0;
-                let valB = parseInt(b.dataset[sortMode === 'usage_desc' ? 'sortUsage' : 'sortId']) || 0;
-                return valB - valA;
-            });
-            cardArray.forEach(c => grid.appendChild(c));
 
-            setTimeout(() => {
-                cards.forEach(c => c.style.transition = 'transform 0.7s cubic-bezier(0.2, 1, 0.3, 1), opacity 0.7s, filter 0.7s, box-shadow 0.7s');
-                coverFlowIndex = 0;
-                window.updateCoverFlow();
-            }, 50);
+        function step() {
+            position++;
+            coverFlowIndex = position;
+            window.updateCoverFlow();
+
+            if (position < 0) {
+                delay *= 1.05;
+                sortTimeout = setTimeout(step, delay);
+            } else {
+                sortTimeout = null;
+                cards.forEach(card => {
+                    card.style.transition = 'transform 0.7s cubic-bezier(0.2, 1, 0.3, 1), opacity 0.7s, filter 0.7s, box-shadow 0.7s';
+                });
+            }
         }
+
+        sortTimeout = setTimeout(step, delay);
     }
 
     function sortStatically(sortMode) {
@@ -352,6 +388,7 @@
     }
 
     async function handleFormSubmit(e) {
+        const generation = pageGeneration;
         e.preventDefault();
         const form = e.target;
         let submitBtn = form.querySelector('button[type="submit"]');
@@ -366,6 +403,7 @@
             let formData = new FormData(form);
             let response = await fetch(form.action, { method: 'POST', body: formData });
             let result = await response.json();
+            if (generation !== pageGeneration) return;
 
             if (result.status === 'success') {
                 const updatedItem = result.data;
@@ -375,7 +413,13 @@
                 }
                 showToast(result.message, 'success');
                 window.unflipCard();
-                setTimeout(() => { renderInventory(window.INVENTORY_DATA, updatedItem.id); }, 300)
+                cancelSort();
+                clearTimeout(renderTimeout);
+                renderTimeout = setTimeout(() => {
+                    if (generation === pageGeneration) {
+                        renderInventory(window.INVENTORY_DATA, updatedItem.id);
+                    }
+                }, 300);
 
             } else {
                 await openAlertModal(result.message || t('card.backend_fail'));
@@ -526,7 +570,7 @@
         clearBackFace();
 
         let showLoc = document.getElementById('showLocation');
-        showLoc.innerHTML = `<i class="material-icons" style="color: var(--primary); font-size: 1.15rem; vertical-align: bottom">place</i> ${location}`;
+        showLoc.innerHTML = `<i class="material-icons" style="color: var(--primary); font-size: 1.15rem; vertical-align: bottom">place</i> ${escapeHtml(location)}`;
         showLoc.onclick = () => {
             if (location && location.trim() !== '' && location !== '-' && location !== 'None') {
                 let locParts = location.split('-');
@@ -668,6 +712,8 @@
 
         let targetCard = btn.closest('.item-card');
         let id = btn.getAttribute('data-id');
+        const item = findItem(id);
+        if (!item) return;
         window.currentEditItemId = id;
 
         let imgPreview = document.getElementById('editImagePreview');
@@ -678,16 +724,14 @@
         imgPreview.onerror = function() { this.style.display = 'none'; placeholder.style.display = 'flex'; };
 
         document.getElementById('editForm').action = '/edit/' + id;
-        document.getElementById('editPn1').value = btn.getAttribute('data-pn1');
-        document.getElementById('editPn2').value = btn.getAttribute('data-pn2');
-        document.getElementById('editName').value = btn.getAttribute('data-name');
-        document.getElementById('editDesc1').value = btn.getAttribute('data-desc1');
-        document.getElementById('editDesc2').value = btn.getAttribute('data-desc2');
-        document.getElementById('editStock').value = btn.getAttribute('data-stock');
-        document.getElementById('editLoc').value = btn.getAttribute('data-loc');
-        document.getElementById('editRemarks').value = btn.getAttribute('data-remarks');
-
-        if (document.getElementById('deleteBtn')) document.getElementById('deleteBtn').setAttribute('onclick', `window.openScrapModal(${id})`);
+        document.getElementById('editPn1').value = item.pn_1;
+        document.getElementById('editPn2').value = item.pn_2;
+        document.getElementById('editName').value = item.name;
+        document.getElementById('editDesc1').value = item.description_1;
+        document.getElementById('editDesc2').value = item.description_2;
+        document.getElementById('editStock').value = item.stock;
+        document.getElementById('editLoc').value = item.location;
+        document.getElementById('editRemarks').value = item.remarks;
 
         const backFace = targetCard.querySelector('.card-back');
         const formTemplate = document.getElementById('editFormTemplate');

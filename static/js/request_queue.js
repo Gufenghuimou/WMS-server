@@ -15,11 +15,11 @@
 
                 const tabsContainer = document.querySelector('.queue-headers-container');
                 tabsContainer.innerHTML = `
-                    <div id="switchTabConsumable" class="queue-header-tab active" onclick="switchQueueTab('consumable', this)">
+                    <div id="switchTabConsumable" class="queue-header-tab active">
                         <h2><i class="material-icons">inventory_2</i> <span data-i18n="queue.consumables">${t('queue.consumables')}</span></h2>
                         <span class="count-badge">${reqData.inv_req.length}</span>
                     </div>
-                    <div id="switchTabAsset" class="queue-header-tab inactive" onclick="switchQueueTab('asset', this)">
+                    <div id="switchTabAsset" class="queue-header-tab inactive">
                         <h2><i class="material-icons">devices</i> <span data-i18n="queue.assets">${t('queue.assets')}</span></h2>
                         <span class="count-badge">${reqData.asset_req.length}</span>
                     </div>
@@ -41,6 +41,15 @@
                 } else if (reqData.asset_req.length === 0 && reqData.inv_req.length > 0 && tabAssetBtn.classList.contains('active')) {
                     window.switchQueueTab('consumable', tabConsumableBtn);
                 }
+
+                tabsContainer.addEventListener('click', (e) => {
+                    let targetTab = 'consumable';
+                    if (e.target === tabAssetBtn) {
+                        targetTab = 'asset';
+                    }
+                    switchQueueTab(targetTab, e.target);
+                    return;
+                });
 
                 bindEvents();
                 window.onCurrentViewLanguageChange = () => {
@@ -73,8 +82,9 @@
             let actionBtn = '';
             if (invReq.item) {
                 actionBtn = `
-                    <button class="btn-primary" style="background: #1db954; height: 40px; padding: 0 15px;"
-                            onclick="openApproveModal('${invReq.req.id}', '${invReq.req.pn_1}', '${invReq.req.item_name}', ${invReq.req.req_qty}, ${invReq.item.stock}, '${invReq.item.location || ''}')">
+                    <button class="btn-primary btn-approve-consumable" style="background: #1db954; height: 40px; padding: 0 15px;"
+                            data-id="${invReq.req.id}" data-pn1="${invReq.req.pn_1}" data-name="${invReq.req.item_name}" data-qty="${invReq.req.req_qty}"
+                            data-stock="${invReq.item.stock}" data-loc="${invReq.item.location || ''}">
                         <i class="material-icons">check_circle</i> ${t('queue.approve')}
                     </button>
                 `;
@@ -173,7 +183,7 @@
                                 <i class="material-icons" style="font-size: 0.9rem; vertical-align: middle;">chat_bubble_outline</i>
                                 ${assReq.req.note || t('queue.no_reason')}
                             </span>
-                            <span style="font-size: 0.95rem; font-weight: bold; color: var(--primary); cursor: pointer;" onclick="openFooterMap('${safeLoc}')"><i class="material-icons" style="vertical-align: bottom; font-size: 1.05rem;">place</i>${assReq.req.department}</span>
+                            <span class="loc-anchor" data-loc="${safeLoc}" style="font-size: 0.95rem; font-weight: bold; color: var(--primary); cursor: pointer;"><i class="material-icons" style="vertical-align: bottom; font-size: 1.05rem;">place</i>${assReq.req.department}</span>
                         </div>
                     </div>
 
@@ -183,8 +193,9 @@
                     </div>
 
                     <div class="req-actions">
-                        <button class="btn-primary" style="background: #1db954; height: 40px; padding: 0 15px;"
-                                onclick="openAssetApproveModal('${assReq.req.id}', '${assReq.req.matter}', '${assReq.req.pn_1}', '${assReq.req.req_qty}', '${assReq.req.ctrl_no || ''}')">
+                        <button class="btn-primary btn-approve-asset" style="background: #1db954; height: 40px; padding: 0 15px;"
+                                data-id="${assReq.req.id}" data-matter="${assReq.req.matter}" data-pn="${assReq.req.pn_1}"
+                                data-qty="${assReq.req.req_qty}" data-ctrl="${assReq.req.ctrl_no || ''}">
                             <i class="material-icons">check_circle</i> ${t('queue.approve')}
                         </button>
 
@@ -213,7 +224,7 @@
 
     function bindEvents() {
         // 耗材表单逻辑
-        const realStockInput = document.getElementById('realStock');
+        const realStockInput = document.getElementById('realStockReq');
         if (realStockInput) {
             realStockInput.oninput = () => {
                 document.getElementById('approveError').style.display = 'none';
@@ -226,11 +237,11 @@
             approveForm.onsubmit = async function(e) {
                 e.preventDefault();
 
-                let realStock = parseInt(document.getElementById('realStock').value) || 0;
+                let realStock = parseInt(document.getElementById('realStockReq').value) || 0;
                 let targetReqQty = parseInt(document.getElementById('modalReqQty').innerText) || 0;
                 let errorBox = document.getElementById('approveError');
                 let errorText = document.getElementById('approveErrorText');
-                let stockInput = document.getElementById('realStock');
+                let stockInput = document.getElementById('realStockReq');
 
                 if (realStock < targetReqQty) {
                     e.preventDefault();
@@ -373,8 +384,47 @@
         const tabAsset = document.getElementById('tab-asset');
 
         // 使用 onsubmit 防止每次进入页面重复绑定
-        if (tabConsumable) tabConsumable.onsubmit = handleRejectSubmit;
-        if (tabAsset) tabAsset.onsubmit = handleRejectSubmit;
+        if (!tabConsumable) return; 
+        if (!tabAsset) return;
+        tabConsumable.onsubmit = handleRejectSubmit;
+        tabAsset.onsubmit = handleRejectSubmit;
+
+        // 事件委托
+        tabConsumable.onclick = function(e) {
+            let approveBtnConsumable = e.target.closest('.btn-approve-consumable');
+            if (approveBtnConsumable) {
+                e.stopPropagation();
+                let dataId = approveBtnConsumable.getAttribute('data-id');
+                let dataPn = approveBtnConsumable.getAttribute('data-pn1');
+                let dataName = approveBtnConsumable.getAttribute('data-name');
+                let dataQty = approveBtnConsumable.getAttribute('data-qty');
+                let dataStock = approveBtnConsumable.getAttribute('data-stock');
+                let dataLoc = approveBtnConsumable.getAttribute('data-loc');
+                openApproveModal(dataId, dataPn, dataName, dataQty, dataStock, dataLoc);
+                return;
+            }
+        }
+        tabAsset.onclick = function(e) {
+            let approveBtnAsset = e.target.closest('.btn-approve-asset');
+            let locAnchor = e.target.closest('.loc-anchor');
+            if (approveBtnAsset) {
+                e.stopPropagation();
+                let dataId = approveBtnAsset.getAttribute('data-id');
+                let dataMatter = approveBtnAsset.getAttribute('data-matter');
+                let dataPn = approveBtnAsset.getAttribute('data-pn');
+                let dataQty = approveBtnAsset.getAttribute('data-qty');
+                let dataCtrl = approveBtnAsset.getAttribute('data-ctrl');
+                openAssetApproveModal(dataId, dataMatter, dataPn, dataQty, dataCtrl);
+                return;
+            }
+            if (locAnchor) {
+                e.stopPropagation();
+                let location = locAnchor.getAttribute('data-loc');
+                window.openFooterMap(location);
+                return;
+            }
+        }
+
     }
 
     // 操作后移除卡片

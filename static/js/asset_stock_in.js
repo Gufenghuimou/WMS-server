@@ -70,15 +70,31 @@
         });
     };
 
+    function resetGrid() {
+        const body = document.getElementById('gridBody');
+        if (!body) return;
+        body.innerHTML = '';
+        currentRowCount = 0;
+        addAssetRow();
+    }
+
     window.clearAssetGrid = async function() {
-        if (await openConfirmModal(t('asset_stockin.confirm_clear_all'))) {
-            document.getElementById('gridBody').innerHTML = '';
-            currentRowCount = 0;
-            addAssetRow();
-        }
+        if (await openConfirmModal(t('asset_stockin.confirm_clear_all'))) resetGrid();
     };
 
-    async function triggerAutoComplete(inputElement) {
+    const pendingQueries = new Set();
+    const queryVersions = new WeakMap();
+    function triggerAutoComplete(inputElement) {
+        const task = completeInput(inputElement);
+        pendingQueries.add(task);
+        task.then(() => pendingQueries.delete(task), () => pendingQueries.delete(task));
+        return task;
+    }
+
+    async function completeInput(inputElement) {
+        const originalValue = inputElement.value;
+        const version = (queryVersions.get(inputElement) || 0) + 1;
+        queryVersions.set(inputElement, version);
         let pnVal = inputElement.value.trim().toUpperCase();
         if (!pnVal) return;
 
@@ -126,6 +142,7 @@
         try {
             let response = await fetch(`/api/item/${encodeURIComponent(pnVal)}`);
             let data = await response.json();
+            if (!inputElement.isConnected || inputElement.value !== originalValue || queryVersions.get(inputElement) !== version) return;
 
             if (!data.error) {
                 // 如果扫的是 PN2 被后端认出来了，自动把 PN1 纠正过来
@@ -166,10 +183,10 @@
                 0
             </span>
         `;
-        
+
         const gridBody = document.getElementById('gridBody');
         if (gridBody) gridBody.innerHTML = '';
-        
+
         currentRowCount = 0;
         addAssetRow();
 
@@ -267,6 +284,13 @@
             // ==========================================
             form.onsubmit = async function(e) {
                 e.preventDefault();
+                if (this.dataset.submitting === 'true') return;
+                this.dataset.submitting = 'true';
+                try {
+                    await Promise.all([...pendingQueries]);
+                    if (!this.isConnected) return;
+
+                e.preventDefault();
 
                 let isValid = true;
                 let hasData = false;
@@ -314,7 +338,7 @@
 
                 if (!isValid) return;
 
-                let submitBtn = form.querySelector('button[type="submit"]');
+                let submitBtn = e.submitter;
                 let originalBtnText = submitBtn ? submitBtn.innerHTML : '';
                 if (submitBtn) {
                     submitBtn.disabled = true;
@@ -327,10 +351,11 @@
                         body: new FormData(form)
                     });
                     let result = await response.json();
+                    if (!this.isConnected) return;
 
                     if (result.status === 'success') {
                         showToast(result.message, 'success');
-                        window.clearAssetGrid();
+                        resetGrid();
                     } else {
                         await openAlertModal('Upload Error');
                         // alert('Upload Error');
@@ -344,6 +369,10 @@
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = originalBtnText;
                     }
+                }
+
+                } finally {
+                    delete this.dataset.submitting;
                 }
             }
         }

@@ -246,7 +246,7 @@
                 await openAlertModal('拉取失败');
                 // alert(result.message);
             }
-        } catch (e) {
+        } catch (error) {
             // alert(t('asset_scrap.fetch_net_error'));
             showToast('Fetch Error', error)
             await openAlertModal(t('asset_scrap.fetch_net_error'));

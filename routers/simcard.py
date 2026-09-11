@@ -230,13 +230,23 @@ async def simcard_batch_submit(
     lang = request.state.lang
     with Session(engine) as session:
         for i in range(len(icc_id)):
-            current_icc_id = icc_id[i].replace(" ", "").strip()
+            current_icc_id = ''.join(icc_id[i].split())
             if not current_icc_id:
                 continue
+            current_number = phone_number[i].strip() if i < len(phone_number) else ''
+            current_carrier = carrier[i].strip() if i < len(carrier) else ''
+            if not current_number or not current_carrier:
+                return {'status': 'error', 'message': f'Row {i + 1}: carrier and phone number are required'}
+            existing = session.exec(select(PhysicalSimCard).where(
+                (PhysicalSimCard.icc_id == current_icc_id) |
+                (PhysicalSimCard.phone_number == current_number)
+            )).first()
+            if existing:
+                return {'status': 'error', 'message': f'Row {i + 1}: ICCID or phone number already exists'}
             new_simcard = PhysicalSimCard(
                 icc_id = current_icc_id,
-                carrier = carrier[i].strip() if i < len(carrier) else "",
-                phone_number = phone_number[i].strip() if i < len(phone_number) else "",
+                carrier = current_carrier,
+                phone_number = current_number,
                 is_active = True,
                 is_stock = True,
                 location = "Warehouse",

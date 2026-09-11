@@ -94,7 +94,7 @@
             }
             let hasImage = '';
             if (item.has_image) {
-                hasImage = `<img class="lazy-image" data-src="/static/item_images/${item.id}.jpg?t=${window.SYS_VER}" loading="lazy" alt="Item Image" onclick="openShowImgModal('${item.id}', '${item.pn_1}', '${item.name}')">`;
+                hasImage = `<img class="lazy-image" data-id="${item.id}" data-pn="${item.pn_1}" data-name="${item.name}" data-src="/static/item_images/${item.id}.jpg?t=${window.SYS_VER}" loading="lazy" alt="Item Image">`;
             }
             return `
                 <tr class="main-row" data-id="${item.id}" id="row-${item.id}">
@@ -192,6 +192,7 @@
             const scrapBtn = e.target.closest('.scrap-btn')
             const locationBtn = e.target.closest('.location-map-btn');
             const detailRow = e.target.closest('.detail-row');
+            const imgContainer = e.target.closest('.lazy-image');
             if (detailRow) {
                 const mainRow = detailRow.previousElementSibling;
                 const nameInput = mainRow.querySelector('.name-input');
@@ -315,6 +316,15 @@
                     }
                     return;
                 }
+                
+                if (imgContainer) {
+                    const itemId = imgContainer.getAttribute('data-id');
+                    const item = window.INV_TAB_DATA.find(item => String(item.id) === itemId);
+                    // const itemPn = imgContainer.getAttribute('data-pn');
+                    // const itemName = imgContainer.getAttribute('data-name');
+                    window.openShowImgModal(itemId, item.pn_1, item.name);
+                    return
+                }
             }
 
             if (e.target.closest('input, label, button')) {
@@ -367,7 +377,7 @@
     }
 
     // 表格排序 搜索无冲突版
-    window.sortTable = function(columnIndex, dataType) {
+    window.sortInventoryTable = function(columnIndex, dataType) {
         const table = document.getElementById("advancedTable");
         const tbody = table.querySelector("tbody");
         const mainRows = Array.from(tbody.querySelectorAll(".main-row"));

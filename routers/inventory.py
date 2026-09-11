@@ -453,6 +453,8 @@ async def batch_submit(
                     description_1=safe_desc1,
                     description_2=safe_desc2,
                     stock=incoming_stock,
+                    total_in=incoming_stock,
+                    total_out=0,
                     location=safe_loc,
                     first_in_date=safe_date,
                     remarks=safe_remarks,
@@ -502,10 +504,11 @@ async def undo_history_log(request: Request, log_id: int, current_user: dict = D
         item = session.exec(statement).first()
         if not item:
             return {'status': 'error', 'message': t_lang("do.undo_fail", lang)}
-        if item.stock < 0:
+        new_stock = (item.stock or 0) - log.change_qty
+        if item.stock < 0 or new_stock < 0:
             return {'status': 'error', 'message': t_lang("do.undo_fail", lang)}
         revert_qty = -log.change_qty
-        item.stock = (item.stock or 0) + revert_qty
+        item.stock = new_stock
 
         if log.change_qty > 0:
             item.total_in = (item.total_in or 0) - log.change_qty

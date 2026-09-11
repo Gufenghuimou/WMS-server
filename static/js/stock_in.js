@@ -19,12 +19,18 @@
             <td><input type="text" name="location" class="cell-input loc-input" data-row="${i}"></td>
             <td><input type="text" name="remarks" class="cell-input rem-input" data-row="${i}"></td>
             <td style="text-align: center; vertical-align: middle;">
-            <button type="button" class="btn-undo" onclick="clearSingleRow(${i})" data-i18n-title="stockin.clear_row_title" title="${t('stockin.clear_row_title')}">
+            <button type="button" class="btn-undo" data-i18n-title="stockin.clear_row_title" title="${t('stockin.clear_row_title')}">
                 <i class="material-icons" style="font-size: 1.2rem">delete_outline</i>
             </button>
             </td>
         `;
         document.getElementById('gridBody').appendChild(tr);
+
+        let clearBtn = tr.querySelector('.btn-undo');
+        clearBtn.addEventListener('click', () => {
+            clearSingleRow(i);
+            return;
+        });
 
         // 绑定该行 PN1 的失焦查询和输入增行逻辑
         let pn1Input = tr.querySelector('.pn1-input');
@@ -147,6 +153,13 @@
             // 5. 智能表单提交校验
             stockInForm.onsubmit = async function(e) {
                 e.preventDefault();
+                if (this.dataset.submitting === 'true') return;
+                this.dataset.submitting = 'true';
+                try {
+                    await Promise.all([...pendingQueries]);
+                    if (!this.isConnected) return;
+
+                e.preventDefault();
                 if (checkAllDuplicates()) {
                     await openAlertModal(t('stockin.err_duplicate'));
                     // alert(t('stockin.err_duplicate'));
@@ -198,7 +211,7 @@
                 }
 
                 if (!isValid) return;
-                let submitBtn = stockInForm.querySelector('button[type="submit"]');
+                let submitBtn = e.submitter;
                 let originalBtnText = submitBtn ? submitBtn.innerHTML : '';
                 if (submitBtn) {
                     submitBtn.disabled = true;
@@ -211,9 +224,10 @@
                         body: new FormData(stockInForm)
                     });
                     let result = await response.json();
+                    if (!this.isConnected) return;
                     if (result.status === 'success') {
                         showToast(result.message, 'success');
-                        window.clearGrid();
+                        resetGrid();
                     } else {
                         // alert('Upload Error');
                         await openAlertModal('Upload Error');
@@ -228,6 +242,10 @@
                         submitBtn.innerHTML = originalBtnText;
                     }
                 }
+
+                } finally {
+                    delete this.dataset.submitting;
+                }
             }
         }
     };
@@ -235,7 +253,7 @@
     // ==========================================
     // 🌟 挂载到 Window 的外部调用函数
     // ==========================================
-    window.clearSingleRow = function(rowIndex) {
+    function clearSingleRow(rowIndex) {
         let inputs = document.querySelectorAll(`input[data-row="${rowIndex}"]`);
         inputs.forEach(input => {
             if (input.type === 'date') {
@@ -248,12 +266,16 @@
         checkAllDuplicates();
     };
 
+    function resetGrid() {
+        const body = document.getElementById('gridBody');
+        if (!body) return;
+        body.innerHTML = '';
+        currentRowCount = 0;
+        addRow();
+    }
+
     window.clearGrid = async function() {
-        if (!(await openConfirmModal(t('stockin.confirm_clear_all')))) {
-            document.getElementById('gridBody').innerHTML = '';
-            currentRowCount = 0;
-            addRow();
-        }
+        if (await openConfirmModal(t('stockin.confirm_clear_all'))) resetGrid();
     };
 
     // ==========================================
@@ -297,7 +319,19 @@
         return hasDuplicates;
     }
 
-    async function triggerAutoComplete(inputElement) {
+    const pendingQueries = new Set();
+    const queryVersions = new WeakMap();
+    function triggerAutoComplete(inputElement) {
+        const task = completeInput(inputElement);
+        pendingQueries.add(task);
+        task.then(() => pendingQueries.delete(task), () => pendingQueries.delete(task));
+        return task;
+    }
+
+    async function completeInput(inputElement) {
+        const originalValue = inputElement.value;
+        const version = (queryVersions.get(inputElement) || 0) + 1;
+        queryVersions.set(inputElement, version);
         let pnVal = inputElement.value.trim();
         if (!pnVal) return;
 
@@ -306,6 +340,7 @@
         try {
             let response = await fetch(`/api/item/${encodeURIComponent(pnVal)}`);
             let data = await response.json();
+            if (!inputElement.isConnected || inputElement.value !== originalValue || queryVersions.get(inputElement) !== version) return;
             if (!data.error) {
                 if (data.match_type === "pn_2") {
                     inputElement.value = data.pn_1;

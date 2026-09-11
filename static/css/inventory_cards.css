@@ -289,7 +289,7 @@
 .btn-save:hover {
     background: #288ccf;
 }
-#deleteBtn {
+.btn-scrap {
     background: #fadbd8;
     color: var(--danger-red);
     border: 1px solid var(--danger-red);
@@ -299,7 +299,7 @@
     display: flex;
     align-items: center;
 }
-#deleteBtn:hover {
+.btn-scrap:hover {
     background: #eecfcc;
 }
 
