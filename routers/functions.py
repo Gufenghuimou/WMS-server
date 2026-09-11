@@ -13,7 +13,7 @@ import uuid
 import utils
 
 from database import engine
-from models import User, ChatMessage, InventoryItem, AssetItem, OutboundRequest, AuditRecord, AssetAuditRecord, PhysicalSimCard, PhysicalSimCardLog
+from models import User, ChatMessage, InventoryItem, AssetItem, OutboundRequest, AuditRecord, AssetAuditRecord, PhysicalSimCard, PhysicalSimCardLog, AssetRequest
 from dependencies import get_current_user, require_admin
 from core import templates, t_lang
 
@@ -117,6 +117,8 @@ async def save_layout(request: Request, current_user: dict = Depends(require_adm
     except Exception as e:
         return {'status': 'error', 'message': str(e)}
 
+# ------------------------------------ 手机页面相关 ------------------------------------------- #
+
 def require_mobile_auth(request: Request):
     user = request.session.get("user")
     if not user:
@@ -164,55 +166,161 @@ async def mobile_login_page(request: Request, token: Optional[str] = None):
 
     return templates.TemplateResponse(request, "mobile_login.html", {"request": request})
 
+# @router.get("/mobile/approve", response_class=HTMLResponse)
+# async def mobile_approve_page(request: Request, current_user: dict = Depends(require_mobile_auth)):
+#     with Session(engine) as session:
+#         statement = select(OutboundRequest).where(OutboundRequest.status == 'Pending').order_by(OutboundRequest.created_at)
+#         requests = session.exec(statement).all()
+
+#         req_data = []
+#         for req in requests:
+#             item = session.get(InventoryItem, req.item_id)
+#             if item:
+#                 req_data.append({'req': req, 'item': item})
+
+#     return templates.TemplateResponse(request, "mobile_approve.html", {
+#         "request": request,
+#         "user": current_user,
+#         "req_data": req_data
+#     })
+
 @router.get("/mobile/approve", response_class=HTMLResponse)
 async def mobile_approve_page(request: Request, current_user: dict = Depends(require_mobile_auth)):
+    return templates.TemplateResponse(request, "m_index.html", {"request": request, "user": current_user})
+
+@router.get("/api/mobile/request_queue")
+async def get_request_queue(request: Request, current_user: dict = Depends(require_mobile_auth)):
     with Session(engine) as session:
         statement = select(OutboundRequest).where(OutboundRequest.status == 'Pending').order_by(OutboundRequest.created_at)
         requests = session.exec(statement).all()
-
         req_data = []
         for req in requests:
             item = session.get(InventoryItem, req.item_id)
-            if item:
-                req_data.append({'req': req, 'item': item})
+            req_data.append({'req': req, 'item': item})
 
-    return templates.TemplateResponse(request, "mobile_approve.html", {
-        "request": request,
-        "user": current_user,
-        "req_data": req_data
-    })
+    with Session(engine) as session:
+        statement = select(AssetRequest).where(AssetRequest.status == 'Pending').order_by(AssetRequest.created_at)
+        requests = session.exec(statement).all()
+        asset_req_data = []
+        for req in requests:
+            asset = None
+            asset = session.exec(select(AssetItem).where(AssetItem.ctrl_no == req.ctrl_no)).first()
+            asset_req_data.append({'req': req, 'asset': asset})
+    return {
+        'status': 'success',
+        'data':{
+            'inv_req': req_data,
+            'asset_req': asset_req_data
+            }
+        }
 
 @router.get("/mobile/upload", response_class=HTMLResponse)
 async def mobile_upload_page(request: Request, current_user: dict = Depends(require_mobile_auth)):
-    return templates.TemplateResponse(request, "mobile_upload.html", {
-        "request": request,
-        "user": current_user
-    })
+    return templates.TemplateResponse(request, "mobile_upload.html", {"request": request,"user": current_user})
+
+# @router.get("/mobile/audit_asset", response_class=HTMLResponse)
+# async def mobile_audit_asset_page(request: Request, current_user: dict = Depends(require_mobile_auth)):
+#     lang = request.state.lang
+
+#     with Session(engine) as session:
+#         statement = select(AssetAuditRecord).order_by(AssetAuditRecord.expected_location)
+#         records = session.exec(statement).all()
+
+#         grouped = defaultdict(list)
+#         for r in records:
+#             loc = r.actual_location or r.expected_location or t_lang("asset_audit.unassigned_init_loc", lang)
+#             grouped[loc].append(r)
+
+#     return templates.TemplateResponse(request, "mobile_audit_asset.html", {
+#         "request": request,
+#         "user": current_user,
+#         "grouped": grouped,
+#         "lang": lang
+#     })
 
 @router.get("/mobile/audit_asset", response_class=HTMLResponse)
 async def mobile_audit_asset_page(request: Request, current_user: dict = Depends(require_mobile_auth)):
-    lang = request.state.lang
+    return templates.TemplateResponse(request, "mobile_audit_asset.html", {"request": request, "user": current_user})
 
+@router.get("/api/mobile/audit_asset")
+async def get_mobile_audit_asset(request: Request, current_user: dict = Depends(require_mobile_auth)):
     with Session(engine) as session:
         statement = select(AssetAuditRecord).order_by(AssetAuditRecord.expected_location)
         records = session.exec(statement).all()
+        total = len(records)
+        completed = 0
+        missing = []
+        misplaced = []
+
+        for r in records:
+            if r.status != 'Pending':
+                completed += 1
+            if r.status == 'Pending':
+                missing.append(r)
+            if r.status == 'Completed' and r.expected_location != r.actual_location:
+                misplaced.append(r)
+        progress = int((completed / total * 100)) if total > 0 else 0
+
+        location_status = {}
+        for r in records:
+            locs_to_check = [r.expected_location, r.actual_location]
+            for loc in locs_to_check:
+                if not loc:
+                    continue
+                if '-' in loc:
+                    loc = loc.split('-')[0]
+                if loc not in location_status:
+                    location_status[loc] = True
+                if r.status == 'Pending':
+                    location_status[loc] = False
+        audited_locations = [loc for loc, is_completed in location_status.items() if is_completed]
 
         grouped = defaultdict(list)
         for r in records:
-            loc = r.actual_location or r.expected_location or t_lang("asset_audit.unassigned_init_loc", lang)
+            loc = r.actual_location or r.expected_location
             grouped[loc].append(r)
 
-    return templates.TemplateResponse(request, "mobile_audit_asset.html", {
-        "request": request,
-        "user": current_user,
-        "grouped": grouped,
-        "lang": lang
-    })
+    return {
+        'status': 'success',
+        'data': {
+            'grouped': grouped,
+            'stats': {
+                'total': total,
+                'completed': completed,
+                'progress': progress,
+                'missing_count': len(missing),
+                'misplaced_count': len(misplaced)
+            },
+            'audited_locations': audited_locations
+        }
+    }
+
+# @router.get("/mobile/audit_inventory", response_class=HTMLResponse)
+# async def mobile_audit_inventory_page(request: Request, current_user: dict = Depends(require_mobile_auth)):
+#     lang = request.state.lang
+
+#     with Session(engine) as session:
+#         statement = select(AuditRecord).order_by(AuditRecord.expected_location)
+#         records = session.exec(statement).all()
+
+#         grouped = defaultdict(list)
+#         for r in records:
+#             loc = r.actual_location or r.expected_location or 'Unallocated'
+#             grouped[loc].append(r)
+
+#     return templates.TemplateResponse(request, "mobile_audit_inventory.html", {
+#         "request": request,
+#         "user": current_user,
+#         "grouped": grouped,
+#         "lang": lang
+#     })
 
 @router.get("/mobile/audit_inventory", response_class=HTMLResponse)
 async def mobile_audit_inventory_page(request: Request, current_user: dict = Depends(require_mobile_auth)):
-    lang = request.state.lang
+    return templates.TemplateResponse(request, "mobile_audit_inventory.html", {"request": request, "user": current_user})
 
+@router.get("/api/mobile/audit_inventory")
+async def get_mobile_audit_inventory(request: Request, current_user: dict = Depends(require_mobile_auth)):
     with Session(engine) as session:
         statement = select(AuditRecord).order_by(AuditRecord.expected_location)
         records = session.exec(statement).all()
@@ -222,12 +330,20 @@ async def mobile_audit_inventory_page(request: Request, current_user: dict = Dep
             loc = r.actual_location or r.expected_location or 'Unallocated'
             grouped[loc].append(r)
 
-    return templates.TemplateResponse(request, "mobile_audit_inventory.html", {
-        "request": request,
-        "user": current_user,
-        "grouped": grouped,
-        "lang": lang
-    })
+        total = len(records)
+        completed = sum(1 for r in records if r.status != 'Pending')
+        progress = int((completed / total * 100)) if total > 0 else 0
+    return {
+        'status': 'success',
+        'data': {
+            'grouped': grouped,
+            'stats': {
+                'total': total,
+                'completed': completed,
+                'progress': progress
+            }
+        }
+    }
 
 @router.post("/api/mobile_upload_image")
 async def mobile_upload_image(
@@ -261,6 +377,8 @@ async def mobile_upload_image(
             f.write(await file.read())
         session.commit()
     return {'status': 'success', 'url': f'/{file_path}?t={datetime.now().timestamp()}'}
+
+# ---------------------------------------------- 打印机相关 ------------------------------------------------------- #
 
 @router.get("/api/printer_status")
 async def get_printer_status():

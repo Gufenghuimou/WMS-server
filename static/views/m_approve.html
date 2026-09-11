@@ -1,0 +1,49 @@
+<section id="mobileApprovals" aria-label="Approvals">
+
+    <div class="approval-tabs" role="group" aria-label="Request type">
+        <button type="button" data-tab="inv_req" aria-pressed="true">
+            <span data-i18n="mspa.inventory">
+                Consumables
+            </span>
+            <span id="inventoryCount" style="background:var(--danger-red); color: #fff; padding: 2px 10px; border-radius: 20px; font-weight: bold; font-size: 0.8rem; position: absolute; right: -6px; top: -6px;">
+                0
+            </span>
+        </button>
+        <button type="button" data-tab="asset_req" aria-pressed="false">
+            <span data-i18n="mspa.assets">
+                Assets
+            </span>
+            <span id="assetCount" style="background: var(--danger-red); color: #fff; padding: 2px 10px; border-radius: 20px; font-weight: bold; font-size: 0.8rem;  position: absolute; right: -6px; top: -6px;">
+                0
+            </span>
+        </button>
+    </div>
+
+    <p id="approvalNotice" role="status" aria-live="polite"></p>
+
+    <div id="approvalList"></div>
+
+    <div id="approveModal" class="custom-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="approvalTitle">
+        <div class="custom-modal-content">
+        <form id="approveForm">
+            <button type="button" class="close-modal" data-action="cancel" aria-label="Close">&times;</button>
+            <h3 id="approvalTitle">
+            </h3>
+            <p id="approvalSummary">
+            </p>
+            <div id="approvalFields">
+            </div>
+            <p id="approvalError" class="mobile-error" role="alert">
+            </p>
+            <div class="req-actions">
+                <button type="button" data-action="cancel" class="btn-reject" data-i18n="mspa.cancel">
+                    Cancel
+                </button>
+                <button type="submit" class="btn-approve" data-i18n="mspa.confirm">
+                    Confirm
+                </button>
+            </div>
+        </form>
+        </div>
+    </div>
+</section>

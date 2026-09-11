@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="{{ request.state.lang or 'en' }}">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>
+            WMS Mobile
+        </title>
+        <link rel="stylesheet" href="/static/css/mobile.css">
+        <script id="mobileContext" type="application/json">
+            {{ user | tojson }}
+        </script>
+        <script src="/static/js/m_index.js" defer>
+        </script>
+        <script src="/static/js/m_approve.js" defer>
+        </script>
+        <script src="/static/js/m_router.js" defer>
+        </script>
+    </head>
+    <body>
+        <header class="header">
+            <h2>
+                <i class="material-icons" aria-hidden="true">
+                    inbox
+                </i>
+                <span data-i18n="mobile_approve.page_title">
+                    Approvals
+                </span>
+            </h2>
+            <button type="button" class="avatar-btn" id="mobileMenuToggle" aria-label="Menu" aria-controls="mobileMenu" aria-expanded="false">
+                <i class="material-icons">
+                    settings
+                </i>
+            </button>
+        </header>
+        <div class="mobile-menu-overlay" id="mobileMenuOverlay" hidden>
+        </div>
+        <nav class="mobile-menu" id="mobileMenu" aria-label="Mobile navigation" inert>
+
+            <div class="menu-header-box">
+                <div class="avatar-large">
+                    <img class="user-avatar" id="mobileAvatar" alt="">
+                    <i id="mobileAvatarFallback" class="material-icons" hidden>
+                        person
+                    </i>
+                </div>
+                <div class="menu-user-info">
+                    <h3 id="mobileUserName">
+                    </h3>
+                    <p id="mobileUserRole">
+                    </p>
+                </div>
+            </div>
+            <div class="menu-nav">
+                <div>
+                    <a href="/mobile/approve" class="menu-item active" data-mobile-link aria-current="page">
+                        <i class="material-icons">
+                            inbox
+                        </i>
+                        <span data-i18n="mobile.approve_page">
+                            Approvals
+                        </span>
+                    </a>
+                    <a href="/mobile/audit_inventory" class="menu-item">
+                        <i class="material-icons">
+                            inventory_2
+                        </i>
+                        <span data-i18n="mobile.inventory_audit">
+                            Inventory audit
+                        </span>
+                    </a>
+                    <a href="/mobile/audit_asset" class="menu-item">
+                        <i class="material-icons">
+                            fact_check
+                        </i>
+                        <span data-i18n="mobile.asset_audit">
+                            Asset audit
+                        </span>
+                    </a>
+                    <a href="/mobile/upload" class="menu-item">
+                        <i class="material-icons">
+                            linked_camera
+                        </i>
+                        <span data-i18n="mobile.image_upload">
+                            Upload
+                        </span>
+                    </a>
+                    <div class="menu-divider">
+                    </div>
+                    <div class="lang-flags-container">
+                        <button class="lang-flag" data-lang="zh" aria-label="中文">
+                            <img src="/static/flags/cn.svg" alt="中文">
+                        </button>
+                        <button class="lang-flag" data-lang="en" aria-label="English">
+                            <img src="/static/flags/us.svg" alt="English">
+                        </button>
+                        <button class="lang-flag" data-lang="ja" aria-label="日本語">
+                            <img src="/static/flags/jp.svg" alt="日本語">
+                        </button>
+                        <button class="lang-flag" data-lang="vi" aria-label="Tiếng Việt">
+                            <img src="/static/flags/vn.svg" alt="Tiếng Việt">
+                        </button>
+                    </div>
+                </div>
+                <a href="/logout" class="menu-item">
+                    <i class="material-icons">
+                        logout
+                    </i>
+                    <span data-i18n="mobile.logout">
+                        Logout
+                    </span>
+                </a>
+            </div>
+        </nav>
+        <p id="mobileLoader" class="empty-state" role="status" data-i18n="mspa.loading">
+            Loading…
+        </p>
+        <main id="router-view" class="container">
+        </main>
+    </body>
+</html>
