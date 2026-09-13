@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ request.state.lang or 'en' }}">
+<html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,12 +7,20 @@
             WMS Mobile
         </title>
         <link rel="stylesheet" href="/static/css/mobile.css">
-        <script id="mobileContext" type="application/json">
-            {{ user | tojson }}
-        </script>
+        <link rel="stylesheet" href="/static/css/cropper.min.css">
         <script src="/static/js/m_index.js" defer>
         </script>
         <script src="/static/js/m_approve.js" defer>
+        </script>
+        <script src="/static/js/html5-qrcode.min.js" defer>
+        </script>
+        <script src="/static/js/cropper.min.js" defer>
+        </script>
+        <script src="/static/js/m_audit_inventory.js" defer>
+        </script>
+        <script src="/static/js/m_audit_asset.js" defer>
+        </script>
+        <script src="/static/js/m_upload.js" defer>
         </script>
         <script src="/static/js/m_router.js" defer>
         </script>
@@ -20,10 +28,10 @@
     <body>
         <header class="header">
             <h2>
-                <i class="material-icons" aria-hidden="true">
+                <i class="material-icons" id="mobilePageIcon" aria-hidden="true">
                     inbox
                 </i>
-                <span data-i18n="mobile_approve.page_title">
+                <span id="mobilePageTitle" data-i18n="mobile_approve.page_title">
                     Approvals
                 </span>
             </h2>
@@ -61,7 +69,7 @@
                             Approvals
                         </span>
                     </a>
-                    <a href="/mobile/audit_inventory" class="menu-item">
+                    <a href="/mobile/audit_inventory" class="menu-item" data-mobile-link>
                         <i class="material-icons">
                             inventory_2
                         </i>
@@ -69,7 +77,7 @@
                             Inventory audit
                         </span>
                     </a>
-                    <a href="/mobile/audit_asset" class="menu-item">
+                    <a href="/mobile/audit_asset" class="menu-item" data-mobile-link>
                         <i class="material-icons">
                             fact_check
                         </i>
@@ -77,7 +85,7 @@
                             Asset audit
                         </span>
                     </a>
-                    <a href="/mobile/upload" class="menu-item">
+                    <a href="/mobile/upload" class="menu-item" data-mobile-link>
                         <i class="material-icons">
                             linked_camera
                         </i>

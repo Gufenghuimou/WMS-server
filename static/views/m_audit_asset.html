@@ -1,0 +1,47 @@
+<section id="mobileAuditAsset" aria-label="Asset audit">
+    <div class="action-row">
+        <form id="assetAuditCommitForm" action="/api/asset_audit/commit" method="post" style="flex: 0 0 auto; margin: 0;">
+            <button type="submit" class="action-btn btn-commit" style="width: 100%;">
+                <i class="material-icons" style="font-size: 1.1rem;">done_all</i>
+                <span data-i18n="mobile_audit_asset.sync" role="status" aria-live="polite">Sync</span>
+            </button>
+        </form>
+        <span id="auditProgress" role="status"></span>
+    </div>
+
+
+    <div class="scan-card" id="scanCardBox">
+        <div class="input-group">
+            <label for="scanLocation" data-i18n="mobile_audit_asset.current_loc">Current Loc</label>
+            <div class="input-box">
+                <input type="text" id="scanLocation" data-i18n-placeholder="mobile_audit_asset.ph_loc" placeholder="Enter/scan loc" autocomplete="off" enterkeyhint="next">
+                <button type="button" class="scan-icon-btn" data-action="scan" data-target="scanLocation" aria-label="Scan location">
+                    <i class="material-icons">qr_code_scanner</i>
+                </button>
+            </div>
+        </div>
+        <div class="input-group">
+            <label for="scanBarcode" data-i18n="mobile_audit_asset.ctrl_no">Scan Ctrl No</label>
+            <div class="input-box">
+                <input type="text" id="scanBarcode" data-i18n-placeholder="mobile_audit_asset.ctrl_no" placeholder="Scan Ctrl No" autocomplete="off" enterkeyhint="done">
+                <button type="button" class="scan-icon-btn" data-action="scan" data-target="scanBarcode" aria-label="Scan asset">
+                    <i class="material-icons">qr_code_scanner</i>
+                </button>
+            </div>
+        </div>
+        <div class="scan-result-box" id="scanResult" role="status" aria-live="polite">
+            <span style="color: #999;">
+                <i class="material-icons" data-result-icon style="vertical-align: bottom; font-size: 1.2rem;">barcode_reader</i>
+                <span data-result-text data-i18n="mobile_audit_asset.scanner_idle">Waiting for scan...</span>
+            </span>
+        </div>
+    </div>
+
+    <div id="auditContainer"></div>
+
+    <div id="scannerModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="scannerTip">
+        <div id="scannerTip" style="color: white; margin-bottom: 15px; font-size: 1.1rem; font-weight: bold;" data-i18n="mobile_audit_asset.scanner_info">Scan [Location] or [Ctrl No]</div>
+        <div id="reader"></div>
+        <button type="button" data-action="close-scanner" data-i18n="mobile_upload.btn_close_scanner" style="margin-top: 20px; padding: 12px 24px; background: #fff; color: #333; border-radius: 8px; border: none; font-size: 1rem; font-weight: bold;">Close</button>
+    </div>
+</section>

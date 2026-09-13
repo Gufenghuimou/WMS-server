@@ -1,29 +1,7 @@
-# middlewares.py
 from fastapi import Request
-from sqlmodel import Session, select, func
-
-from database import engine
-from models import OutboundRequest, AssetRequest
 
 
-async def inject_global_template_data(request: Request, call_next):
-    lang = request.session.get("lang", "zh")
-    request.state.lang = lang
-
-    if request.url.path.startswith(("/static","/api")):
-        return await call_next(request)
-    try:
-        with Session(engine) as session:
-            count_consumable = session.exec(
-                select(func.count(OutboundRequest.id)).where(OutboundRequest.status == 'Pending')
-            ).one()
-            count_asset = session.exec(
-                select(func.count(AssetRequest.id)).where(AssetRequest.status == 'Pending')
-            ).one()
-            request.state.pending_count = count_consumable + count_asset
-    except Exception as e:
-        request.state.pending_count = 0
-
+async def inject_request_context(request: Request, call_next):
+    request.state.lang = request.session.get("lang", "zh")
     request.state.sys_ver = request.app.state.sys_ver
-    response = await call_next(request)
-    return response
+    return await call_next(request)

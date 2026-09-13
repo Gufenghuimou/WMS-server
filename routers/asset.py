@@ -15,7 +15,7 @@ from datetime import datetime
 from database import engine
 from models import AssetItem, AssetLog, AssetScrapRecord, AssetAuditRecord, User, AssetRequest
 from dependencies import get_current_user, require_admin, require_superadmin
-from core import templates, t_lang
+from core import t_lang
 from routers import request
 from utils import zpl_print_task, generate_next_seq
 
@@ -26,11 +26,6 @@ router = APIRouter(tags=["Assets"])
 # ============================================================= #
 
 # -----------------------------资产信息--------------------------#
-
-# TemplateResponse 不能返回Json，所以TamplateResponse 和 JSONResponse 分开写
-# @router.get("/asset", response_class=HTMLResponse)
-# async def get_asset_page(request: Request, current_user: dict = Depends(get_current_user)):
-#     return templates.TemplateResponse(request, "asset.html", {'user': current_user, 'active_page': 'asset'})
 
 @router.get("/api/asset")
 async def get_asset(request: Request, query: Optional[str] = None, current_user: dict = Depends(get_current_user)):
@@ -456,11 +451,7 @@ def asset_export_summary(request: Request, current_user: dict = Depends(require_
 
 # -----------------------------资产登记--------------------------#
 
-# @router.get("/asset_stock_in", response_class=HTMLResponse)
-# async def asset_stock_in(request: Request, current_user: dict = Depends(get_current_user)):
-#     return templates.TemplateResponse(request, "asset_stock_in.html", {"request": request, "user": current_user, "active_page": "asset_stock_in"})
-
-@router.get("/api/asset/next_seq")
+@router.get("/api/asset/last_seq")
 async def get_next_asset_seq():
     current_year = datetime.now().strftime("%y")
     prefix = f'JPE{current_year}'
@@ -484,8 +475,6 @@ async def asset_batch_submit(
     location:List[str] = Form(default=[]),
     first_in_date: List[str] = Form(default=[]),
     remarks: List[str] = Form(default=[]),
-    # po_type: List[str] = Form(default=[]),
-    # model: List[str] = Form(default=[]),
     current_user: dict = Depends(require_admin)
 ):
     lang = request.state.lang
@@ -493,6 +482,9 @@ async def asset_batch_submit(
     prefix = f'JPE{current_year}'
     with Session(engine) as session:
         seq_cache = {}
+        prepared_rows = []
+        submitted_numbers = set()
+        duplicate_numbers = set()
         for i in range(len(pn_1)):
             current_pn = pn_1[i].strip()
             if not current_pn:
@@ -507,6 +499,24 @@ async def asset_batch_submit(
                 seq_cache[prefix] = generate_next_seq(seq_cache[prefix])
                 current_ctrl_no = f'{prefix}{seq_cache[prefix]}'
 
+            if current_ctrl_no in submitted_numbers:
+                duplicate_numbers.add(current_ctrl_no)
+            submitted_numbers.add(current_ctrl_no)
+            prepared_rows.append((i, current_pn, current_ctrl_no))
+
+        if submitted_numbers:
+            statement = select(AssetItem.ctrl_no).where(AssetItem.ctrl_no.in_(submitted_numbers))
+            duplicate_numbers.update(session.exec(statement).all())
+
+        if duplicate_numbers:
+            duplicates = sorted(duplicate_numbers)
+            return {
+                'status': 'error',
+                'message': t_lang('queue.scan_repeated', lang) + ' ' + ', '.join(duplicates),
+                'duplicate_ctrl_no': duplicates,
+            }
+
+        for i, current_pn, current_ctrl_no in prepared_rows:
             new_asset = AssetItem(
                 ctrl_no=current_ctrl_no,
                 pn_1=current_pn,
@@ -521,7 +531,6 @@ async def asset_batch_submit(
                 is_stock=True
             )
             session.add(new_asset)
-            background_tasks.add_task(zpl_print_task, left_text=current_pn, right_barcode=current_ctrl_no)
             log = AssetLog(
                 ctrl_no=current_ctrl_no,
                 pn_1=current_pn,
@@ -533,13 +542,11 @@ async def asset_batch_submit(
             )
             session.add(log)
         session.commit()
+        for i, current_pn, current_ctrl_no in prepared_rows:
+            background_tasks.add_task(zpl_print_task, left_text=current_pn, right_barcode=current_ctrl_no)
     return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 # -----------------------------资产报废--------------------------#
-
-# @router.get("/asset_scrap", response_class=HTMLResponse)
-# async def asset_scrap(request: Request, current_user: dict = Depends(get_current_user)):
-#     return templates.TemplateResponse(request, "asset_scrap.html", {"request": request, "user": current_user, "active_page": "asset_scrap"})
 
 @router.get("/api/asset_scrap")
 async def get_asset_scrap(request: Request, current_user: dict = Depends(require_admin)):
@@ -758,10 +765,6 @@ def asset_scrap_export(request: Request, current_user: dict = Depends(require_ad
 
     # -----------------------------资产变动--------------------------#
 
-# @router.get('/asset_history', response_class=HTMLResponse)
-# async def asset_history(request: Request, current_user: dict = Depends(get_current_user)):
-#     return templates.TemplateResponse(request, "asset_history.html", {"request": request, 'user': current_user, 'active_page': 'asset_history'})
-
 @router.get("/api/asset_history")
 async def get_asset_history(request: Request, current_user: dict = Depends(require_admin)):
     with Session(engine) as session:
@@ -833,59 +836,6 @@ async def asset_history_import(request: Request, file: UploadFile = File(...), c
         return {"error": t_lang("do.read_excel_error", lang, error=str(e))}
 
 # -----------------------------资产盘点--------------------------#
-
-# @router.get("/asset_audit/dashboard", response_class=HTMLResponse)
-# async def view_asset_audit(request: Request, current_user: dict = Depends(get_current_user)):
-#     return templates.TemplateResponse(request, "asset_audit.html", {"request": request, "user": current_user, "active_page": "asset_audit"})
-
-# @router.get("/asset_audit/dashboard", response_class=HTMLResponse)
-# async def view_asset_audit(request: Request, current_user: dict = Depends(get_current_user)):
-#     with Session(engine) as session:
-#         statement = select(AssetAuditRecord).order_by(AssetAuditRecord.expected_location)
-#         records = session.exec(statement).all()
-#         total = len(records)
-#         completed = sum(1 for r in records if r.status != 'Pending')
-#         progress = int((completed / total * 100)) if total > 0 else 0
-
-#         statement_missing = select(AssetAuditRecord).where(AssetAuditRecord.status == 'Pending')
-#         missing = session.exec(statement_missing).all()
-
-#         statement_misplaced = select(AssetAuditRecord).where(
-#             AssetAuditRecord.status == 'Completed',
-#             AssetAuditRecord.expected_location != AssetAuditRecord.actual_location
-#         )
-#         misplaced = session.exec(statement_misplaced).all()
-
-#         location_status = {}
-#         for r in records:
-#             locs_to_check = [r.expected_location, r.actual_location]
-#             for loc in locs_to_check:
-#                 if not loc:
-#                     continue
-#                 if '-' in loc:
-#                     loc = loc.split('-')[0]
-#                 if loc not in location_status:
-#                     location_status[loc] = True
-#                 if r.status == 'Pending':
-#                     location_status[loc] = False
-#         audited_locations = [loc for loc, is_completed in location_status.items() if is_completed]
-
-#         grouped = defaultdict(list)
-#         for r in records:
-#             loc = r.actual_location or r.expected_location
-#             grouped[loc].append(r)
-#     return templates.TemplateResponse(request, "asset_audit.html", {
-#         "records": records,
-#         'missing': missing,
-#         'misplaced': misplaced,
-#         "total": total,
-#         "progress": progress,
-#         "completed": completed,
-#         "grouped": grouped,
-#         "user": current_user,
-#         "active_page": "asset_audit",
-#         "audited_locations": json.dumps(audited_locations)
-#         })
 
 @router.get("/api/get_asset_audit")
 async def get_asset_audit(request: Request, current_user: dict = Depends(require_admin)):
@@ -961,9 +911,6 @@ async def start_audit(request: Request, current_user: dict = Depends(require_adm
             )
             session.add(record)
         session.commit()
-    referer = request.headers.get("referer", "")
-    target_url = "/mobile/audit_asset" if "mobile" in referer else "/asset_audit"
-    # return RedirectResponse(url=target_url, status_code=303)
     return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 @router.post("/api/asset_audit/scan")
@@ -1027,9 +974,6 @@ async def commit_asset_audit(request: Request, current_user: dict = Depends(requ
                     session.add(log)
                 session.add(asset)
         session.commit()
-    referer = request.headers.get("referer", "")
-    target_url = "/mobile/audit_asset" if "mobile" in referer else "/asset_audit"
-    # return RedirectResponse(url=target_url, status_code=303)
     return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 @router.get("/asset_audit/export")

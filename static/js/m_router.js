@@ -1,9 +1,29 @@
-// Mobile 路由：后续迁移新页面时，在 mobileRoutes 中增加配置。
+// Mobile 路由：页面配置、导航状态、HTML 加载和离页清理。
 (() => {
     const mobileRoutes = {
         '/mobile/approve': {
             view: '/static/views/m_approve.html',
-            init: 'initMobileApprovePage'
+            init: 'initMobileApprovePage',
+            title: 'mobile_approve.page_title',
+            icon: 'inbox'
+        },
+        '/mobile/audit_inventory': {
+            view: '/static/views/m_audit_inventory.html',
+            init: 'initMobileAuditInventoryPage',
+            title: 'mobile_audit_inv.page_title',
+            icon: 'inventory_2'
+        },
+        '/mobile/audit_asset': {
+            view: '/static/views/m_audit_asset.html',
+            init: 'initMobileAuditAssetPage',
+            title: 'mobile_audit_asset.page_title',
+            icon: 'fact_check'
+        },
+        '/mobile/upload': {
+            view: '/static/views/m_upload.html',
+            init: 'initMobileUploadPage',
+            title: 'mobile_upload.header_title',
+            icon: 'linked_camera'
         }
     };
     let navigationVersion = 0;
@@ -30,11 +50,20 @@
         loader.hidden = false;
         viewContainer.replaceChildren();
         try {
-            // 未迁移的 mobile 页面仍由后端返回完整 HTML。
             if (!route) {
                 window.location.reload();
                 return;
             }
+            const pageTitle = document.getElementById('mobilePageTitle');
+            pageTitle.dataset.i18n = route.title;
+            pageTitle.textContent = window.t(route.title);
+            document.getElementById('mobilePageIcon').textContent = route.icon;
+            document.querySelectorAll('a[data-mobile-link]').forEach(link => {
+                const isCurrentPage = link.pathname === window.location.pathname;
+                link.classList.toggle('active', isCurrentPage);
+                if (isCurrentPage) link.setAttribute('aria-current', 'page');
+                else link.removeAttribute('aria-current');
+            });
             const response = await fetch(route.view, { signal: pageSignal });
             if (!response.ok) throw new Error(window.t('mspa.requestError', 'Unable to load page'));
             const html = await response.text();
@@ -61,6 +90,7 @@
     document.addEventListener('click', function(e) {
         const link = e.target.closest('a[data-mobile-link]');
         if (!link || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0) return;
+        if (link.origin !== window.location.origin || !mobileRoutes[link.pathname]) return;
         e.preventDefault();
         if (window.location.pathname !== link.pathname) {
             history.pushState(null, '', link.href);

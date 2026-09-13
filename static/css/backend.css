@@ -105,3 +105,9 @@
 @keyframes spin {
     100% { transform: rotate(360deg); }
 }
+@media screen and (max-width: 1100px) {
+    .admin-import-grid { flex-wrap: wrap; }
+    .admin-import-grid > div { flex: 1 1 320px !important; min-width: 0; }
+    .admin-import-grid form { flex-wrap: wrap; }
+    .admin-import-grid input { max-width: 100%; min-width: 0; }
+}

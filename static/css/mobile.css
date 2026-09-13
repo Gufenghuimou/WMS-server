@@ -6,6 +6,12 @@ font-family: 'Material Icons';
     src: url('/static/fonts/material-icons.woff2') format('woff2');
 }
 
+.font-monospace {
+    /* 优先使用苹果的 SF Mono 或系统的等宽字体 */
+    font-family: "SF Mono", "Monaco", "Consolas", "Liberation Mono", "Courier New", monospace !important;
+    letter-spacing: 0; /* 数字不需要额外间距 */
+}
+
 .material-icons {
     font-family: 'Material Icons';
     font-weight: normal;
@@ -575,11 +581,13 @@ from { transform: translateY(100%); } to { transform: translateY(0); }
 
 .item-header {
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 12px;
-    padding-bottom: 12px;
+    margin-bottom: 4px;
+    padding-bottom: 4px;
     border-bottom: 1px dashed #e0e0e0;
+    position: relative;
 }
 
 .item-title {
@@ -598,8 +606,8 @@ from { transform: translateY(100%); } to { transform: translateY(0); }
 }
 
 .item-pn2 {
-    font-size: 0.75rem;
-    color: #999;
+    font-size: 0.85rem;
+    color: #666;
     margin: 2px 0 0 0;
 }
 
@@ -621,7 +629,7 @@ from { transform: translateY(100%); } to { transform: translateY(0); }
 .form-row {
     display: flex;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 4px;
     gap: 10px;
 }
 
@@ -643,7 +651,7 @@ from { transform: translateY(100%); } to { transform: translateY(0); }
     border-radius: 6px;
     font-size: 1rem;
     background: #fff;
-    width: 100%;
+    width: 80px;
     box-sizing: border-box;
 }
 
@@ -654,29 +662,30 @@ from { transform: translateY(100%); } to { transform: translateY(0); }
 
 .qty-input {
     text-align: center;
-    font-size: 1.2rem !important;
+    font-size: 1.05rem !important;
     font-weight: bold;
     color: var(--primary-blue);
 }
 
 .card-footer {
     display: flex;
-    justify-content: flex-end;
-    margin-top: 15px;
+    justify-content: space-between;
+    /* margin-top: 6px; */
 }
 
 .btn-save {
     background: var(--primary-blue);
     color: white;
     border: none;
-    padding: 10px 25px;
+    padding: 10px 15px;
     border-radius: 20px;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     font-weight: bold;
     display: flex;
     align-items: center;
     gap: 5px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    height: fit-content;
 }
 
 .container {
@@ -777,6 +786,37 @@ from { transform: translateY(100%); } to { transform: translateY(0); }
     background: white;
     border: 1px solid #ccc !important;
     color: var(--text-muted);
+}
+
+#mobileAuditInventory > .action-row,
+#mobileAuditAsset > .action-row {
+    position: sticky;
+    top: var(--mobile-header-height, 62px);
+    z-index: 45;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 0;
+    padding: 10px 0;
+    background: var(--bg-color);
+}
+
+#mobileAuditInventory > .action-row .btn-commit,
+#mobileAuditAsset > .action-row .btn-commit {
+    flex: 0 0 auto;
+    padding: 0 16px;
+}
+
+#mobileAuditInventory #auditProgress,
+#mobileAuditAsset #auditProgress {
+    margin-left: auto;
+    color: var(--text-muted);
+    text-align: right;
+}
+
+#mobileAuditInventory .scan-card,
+#mobileAuditAsset .scan-card {
+    top: calc(var(--mobile-header-height, 62px) + var(--audit-toolbar-height, 60px) + 8px);
 }
 
 .btn-commit {
@@ -885,7 +925,7 @@ from { transform: translateY(100%); } to { transform: translateY(0); }
 
 .status-badge {
     padding: 4px 8px;
-    border-radius: 4px;
+    border-radius: 12px;
     font-size: 0.75rem;
     font-weight: bold;
     white-space: nowrap;

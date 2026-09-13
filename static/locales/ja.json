@@ -776,6 +776,18 @@
     "location": "返却先",
     "brokenConfirm": "故障を確認し、資産をNGエリアに移動しますか？",
     "rejectConfirm": "この申請を却下しますか？",
-    "success": "保存しました"
+    "success": "保存しました",
+    "auditEmpty": "棚卸記録はありません",
+    "auditReadOnly": "棚卸操作は管理者のみ実行できます。",
+    "enterControlNumber": "資産管理番号を入力してください",
+    "scanLocation": "保管場所のバーコードをスキャンしてください",
+    "scanAsset": "資産のバーコードをスキャンしてください",
+    "submitting": "送信中…",
+    "auditMatched": "一致",
+    "auditIssue": "差異あり",
+    "auditCommit": "棚卸結果を同期",
+    "auditCommitConfirm": "棚卸済みの数量と保管場所を在庫に反映しますか？",
+    "locationLocated": "保管場所を表示：{location}",
+    "imageProcessError": "画像を処理できませんでした。もう一度選択してください。"
   }
 }

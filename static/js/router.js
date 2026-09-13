@@ -18,8 +18,7 @@ const routes = {
     '/simcard_history':     { view: '/static/views/simcard_history.html',   js: 'simcard_history',  init: 'initSimcardHistoryPage', css: 'simcard_history'  },
     '/simcard_stock_in':    { view: '/static/views/simcard_stock_in.html',  js: 'simcard_stock_in', init: 'initSimcardStockPage',   css: 'simcard_stock_in' },
     '/simcard':             { view: '/static/views/simcard.html',           js: 'simcard',          init: 'initSimcardPage',        css: 'simcard'          },
-    '/stock_in':            { view: '/static/views/stock_in.html',          js: 'stock_in',         init: 'initStockPage',          css: 'stock_in'         },
-    '/settings':            { view: '/static/views/settings.html',          js: 'settings',         init: 'initSettingsPage',       css: 'settings'         }
+    '/stock_in':            { view: '/static/views/stock_in.html',          js: 'stock_in',         init: 'initStockPage',          css: 'stock_in'         }
 };
 
 // 加载CSS

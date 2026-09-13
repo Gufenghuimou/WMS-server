@@ -48,11 +48,13 @@
 
                 tabsContainer.addEventListener('click', (e) => {
                     e.stopPropagation();
+                    const tab = e.target.closest('.log-tab');
+                    if (!tab) return;
                     let targetTab = 'consumable';
-                    if (e.target === tabA) {
+                    if (tab === tabA) {
                         targetTab = 'asset';
                     }
-                    switchLogTab(targetTab, e.target);
+                    switchLogTab(targetTab, tab);
                     return;
                 });
 

@@ -60,3 +60,5 @@
 2026-09-08 09:53:54,413 - [IP: 127.0.0.1] - [User: superadmin] - Superadmin logged in successfully
 2026-09-08 09:54:42,683 - [IP: 127.0.0.1] - [User: superadmin] - Superadmin logged in successfully
 2026-09-10 08:14:51,475 - [IP: 127.0.0.1] - [User: superadmin] - Superadmin logged in successfully
+2026-09-12 13:06:10,820 - [IP: 127.0.0.1] - [User: superadmin] - Superadmin logged in successfully
+2026-09-13 01:32:44,011 - [IP: 127.0.0.1] - [User: superadmin] - Accessed: GET /api/users_list

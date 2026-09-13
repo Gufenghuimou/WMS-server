@@ -40,10 +40,8 @@
 
                 scanInput = document.getElementById('scanInput');
                 scrapList = document.getElementById('scrapList');
-                emptyState = document.getElementById('emptyState');
                 countDisplay = document.getElementById('countDisplay');
-
-                scrapActionButton = document.querySelector('button[onclick="openScrapModal()"]');
+                window.updateUI();
 
                 // 1. 绑定扫码回车事件
                 if (scanInput) {
@@ -127,6 +125,7 @@
         if (!val || assetSet.has(val)) return false;
 
         assetSet.add(val);
+        window.ASSET_SCRAP_DATA.unshift({ ...item, ctrl_no: val, is_stop: isFromFetch || item.is_stop });
 
         // 1. 插入表格行 <tr>
         let raisonHtml = item.is_no_use ? 'NO USE' : 'NG Scrap';
@@ -271,8 +270,8 @@
             if (result.status === 'success') {
                 showToast(result.message, 'success');
                 assetSet.delete(val);
-                const tr = btnElement.closest('.scrap-item');
-                if (tr) tr.remove();
+                window.ASSET_SCRAP_DATA = window.ASSET_SCRAP_DATA.filter(item => item.ctrl_no.trim().toUpperCase() !== val);
+                renderAssetScrap(window.ASSET_SCRAP_DATA);
                 // const input = document.getElementById('hidden_' + val);
                 // if (input) input.remove();
                 window.updateUI();

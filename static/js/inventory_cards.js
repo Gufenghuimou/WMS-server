@@ -391,6 +391,7 @@
         const generation = pageGeneration;
         e.preventDefault();
         const form = e.target;
+        if (form === document.getElementById('outForm') && !window.validateOutForm(e)) return;
         let submitBtn = form.querySelector('button[type="submit"]');
         let originalBtnText = submitBtn ? submitBtn.innerHTML : 'Submit';
         

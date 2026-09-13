@@ -1,0 +1,71 @@
+<section id="mobileUpload" aria-label="Image upload">
+    <div class="form-card">
+        <div style="font-size: 0.8rem; color: #888; margin-bottom: 15px; line-height: 1.5;" data-i18n="mobile_upload.smart_hint">
+            Auto-fill: Enter one field and tap outside, the system will autofill or correct others.
+        </div>
+        <div class="input-group">
+            <label for="ctrlInput" data-i18n="mobile_upload.lbl_ctrl_no">Ctrl No</label>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="ctrlInput" data-query-type="ctrl" data-i18n-placeholder="mobile_upload.ph_ctrl_no" placeholder="Enter or scan Ctrl No" autocomplete="off">
+                <button type="button" data-action="scan" data-target="ctrlInput" aria-label="Scan Ctrl No" style="padding: 0 10px; background: #fff; border: none;">
+                    <i class="material-icons" aria-hidden="true">qr_code_scanner</i>
+                </button>
+            </div>
+        </div>
+        <div class="input-group">
+            <label for="pn1Input"><span data-i18n="mobile_upload.lbl_pn1">PN1 (Main)</span> <span style="color: red;">*</span></label>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="pn1Input" data-query-type="pn1" data-i18n-placeholder="mobile_upload.ph_pn1" placeholder="Enter or scan PN1" autocomplete="off" required>
+                <button type="button" data-action="scan" data-target="pn1Input" aria-label="Scan PN1" style="padding: 0 10px; background: #fff; border: none;">
+                    <i class="material-icons" aria-hidden="true">qr_code_scanner</i>
+                </button>
+            </div>
+        </div>
+        <div class="input-group">
+            <label for="pn2Input" data-i18n="mobile_upload.lbl_pn2">PN2 (Sub)</label>
+            <input type="text" id="pn2Input" data-query-type="pn2" data-i18n-placeholder="mobile_upload.ph_pn2" placeholder="Enter or scan PN2" autocomplete="off">
+        </div>
+        <p id="uploadNotice" role="status" aria-live="polite"></p>
+    </div>
+
+    <div class="upload-card">
+        <input type="file" id="fileInput" accept="image/*" capture="environment" style="display: none;">
+        <div class="camera-btn" id="cameraBtn" data-action="choose-photo" role="button" tabindex="0">
+            <i class="material-icons" style="font-size: 3rem;" aria-hidden="true">add_a_photo</i>
+            <span style="font-weight: bold;" data-i18n="mobile_upload.btn_take_photo">Take/Select Photo</span>
+        </div>
+        <div class="camera-btn" id="existingImageBtn" data-action="choose-photo" role="button" tabindex="0">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                <span style="color: var(--primary-green); font-size: 0.9rem;" data-i18n="mobile_upload.btn_retake">Retake</span>
+            </div>
+            <img id="existingImagePreview" alt="" style="max-width: 100%; border-radius: 8px; max-height: 100%; object-fit: contain;">
+        </div>
+        <div class="preview-area" id="previewArea">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span style="font-size: 0.9rem; font-weight: bold;" data-i18n="mobile_upload.crop_done_title">Cropped &amp; Compressed</span>
+                <button type="button" data-action="choose-photo" style="background: none; border: none; color: var(--primary-green); font-size: 0.9rem; padding: 0;" data-i18n="mobile_upload.btn_retake">Retake</button>
+            </div>
+            <img id="finalPreview" alt="">
+            <div class="file-info" id="fileInfo" role="status"></div>
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <button type="button" class="submit-btn" id="submitBtn" data-action="upload" disabled>
+            <i class="material-icons" aria-hidden="true">cloud_upload</i>
+            <span data-i18n="mobile_upload.btn_submit">Upload Now</span>
+        </button>
+    </div>
+
+    <div class="crop-modal" id="cropModal" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Crop image">
+        <div class="crop-container"><img id="cropImage" alt=""></div>
+        <div class="crop-actions">
+            <button type="button" class="crop-btn btn-cancel" data-action="cancel-crop" data-i18n="mobile_upload.btn_cancel">Cancel</button>
+            <button type="button" class="crop-btn btn-confirm" data-action="confirm-crop" data-i18n="mobile_upload.btn_confirm_crop">Confirm Crop</button>
+        </div>
+    </div>
+    <div id="scannerModal" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Camera scanner">
+        <div id="reader"></div>
+        <button type="button" data-action="stop-scanner" style="margin-top: 20px; padding: 12px 24px; background: #fff; color: #333; border-radius: 8px; border: none; font-size: 1rem; font-weight: bold;" data-i18n="mobile_upload.btn_close_scanner">Close</button>
+    </div>
+</section>

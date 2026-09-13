@@ -2,16 +2,16 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title data-i18n="title.base">WMS System</title>
     
     <!-- 🌟 只保留全局公用的 CSS，业务 CSS 全部删掉，交由 Router 动态加载 -->
     <link rel="stylesheet" href="/static/css/base.css">
-    <link rel="stylesheet" href="/static/css/backend.css">
+    <!-- <link rel="stylesheet" href="/static/css/backend.css"> -->
     <link rel="stylesheet" href="/static/css/cropper.min.css">
     <link rel="stylesheet" href="/static/css/global_modal.css">
 
     <!-- 所有的 JS 依然可以全部 defer 加载，因为 JS 我们已经用 IIFE 做了作用域隔离 -->
-    <script src="/static/js/backend.js" defer></script>
     <!-- <script src="/static/js/asset.js" defer></script> -->
     <!-- <script src="/static/js/asset_audit.js" defer></script> -->
     <!-- <script src="/static/js/asset_history.js" defer></script> -->
@@ -22,7 +22,6 @@
     <script src="/static/js/cropper.min.js" defer></script>
     <script src="/static/js/global_modal.js" defer></script>
     <!-- <script src="/static/js/history.js" defer></script> -->
-    <script src="/static/js/html5-qrcode.min.js"></script>
     <script src="/static/js/index.js"></script>
     <!-- <script src="/static/js/inventory_cards.js" defer></script> -->
     <!-- <script src="/static/js/inventory_table.js" defer></script> -->
@@ -57,55 +56,52 @@
     </div>
 
     <nav class="sidebar">
-        <!-- 侧边栏代码保持不变 -->
-        <a href="/settings" class="user-profile" data-link="" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 12px; margin-bottom: 30px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-            <div class="avatar" style="width: 72px; height: 72px; min-width: 36px; overflow: hidden; background: #282828; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-                <img id="navUserAvatar" class="user-avatar" src="/static/avatars/default.jpg" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                <i class="material-icons" style="display:none; color:#777; font-size: 20px;">person</i>
-            </div>
-            <div class="user-info" style="flex: 1; overflow: hidden;">
-                <div id="navUserName" class="user-name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.95rem; color: var(--text-white); font-weight: 500;">Loading...</div>
-                <div id="navUserRole" class="user-role" >...</div>
-            </div>
-        </a>
-        <div class="lang-flags-container">
-            <div id="zh" class="lang-flag" title="中文">
-                <img src="/static/flags/cn.svg" alt="ZH">
-            </div>
-            <div id="en" class="lang-flag" title="English">
-                <img src="/static/flags/us.svg" alt="EN">
-            </div>
-            <div id="ja" class="lang-flag" title="日本語">
-                <img src="/static/flags/jp.svg" alt="JP">
-            </div>
-            <div id="vi" class="lang-flag" title="Tiếng Việt">
-                <img src="/static/flags/vn.svg" alt="VN">
+        <div class="sidebar-user">
+            <a href="/settings" class="user-profile" data-link data-i18n-title="title.settings">
+                <div class="avatar">
+                    <img id="navUserAvatar" class="user-avatar" src="/static/avatars/default.jpg" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <i class="material-icons" style="display:none; color:#777; font-size: 20px;">person</i>
+                </div>
+            </a>
+            <div class="sidebar-user-details">
+                <a href="/settings" class="user-details-link" data-link>
+                    <div class="user-info" style="flex: 1; overflow: hidden;">
+                        <div id="navUserName" class="user-name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.95rem; color: var(--text-white); font-weight: 500;">Loading...</div>
+                        <div id="navUserRole" class="user-role" >...</div>
+                    </div>
+                </a>
+                <div class="lang-flags-container">
+                    <button type="button" id="zh" class="lang-flag" title="中文"><img src="/static/flags/cn.svg" alt="ZH"></button>
+                    <button type="button" id="en" class="lang-flag" title="English"><img src="/static/flags/us.svg" alt="EN"></button>
+                    <button type="button" id="ja" class="lang-flag" title="日本語"><img src="/static/flags/jp.svg" alt="JP"></button>
+                    <button type="button" id="vi" class="lang-flag" title="Tiếng Việt"><img src="/static/flags/vn.svg" alt="VN"></button>
+                </div>
             </div>
         </div>
         <div class="nav-menu">
             <div class="nav-group-title" data-i18n="base.request">Request</div>
-            <a href="/request_queue" class="nav-item auth-admin" data-link><i class="material-icons">notifications</i><span data-i18n="title.request_queue">Request Queue</span><span id="badge-pending" style="display: none; background-color: var(--danger-red); color: white; border-radius: 12px; min-width: 24px; height: 24px; font-size: 0.9rem; font-weight: bold; margin-left: auto; text-align: center; line-height: 24px;"></span></a>
-            <a href="/request_log" class="nav-item" data-link><i class="material-icons">list_alt</i><span data-i18n="title.request_log">Request Log</span></a>
+            <a href="/request_queue" class="nav-item auth-admin" data-link data-i18n-title="title.request_queue"><i class="material-icons">notifications</i><span data-i18n="title.request_queue">Request Queue</span><span id="badge-pending" style="display: none; background-color: var(--danger-red); color: white; border-radius: 12px; min-width: 24px; height: 24px; font-size: 0.9rem; font-weight: bold; margin-left: auto; text-align: center; line-height: 24px;"></span></a>
+            <a href="/request_log" class="nav-item" data-link data-i18n-title="title.request_log"><i class="material-icons">list_alt</i><span data-i18n="title.request_log">Request Log</span></a>
             <div class="nav-group-title" data-i18n="base.inventory">Inventory</div>
-            <a href="/inventory_cards" class="nav-item" data-link><i class="material-icons">inventory_2</i><span data-i18n="title.inventory_cards">Inventory Cards</span></a>
-            <a href="/inventory_table" class="nav-item auth-admin" data-link><i class="material-icons">view_list</i><span data-i18n="title.inventory_table">Inventory Table</span></a>
-            <a href="/stock_in" class="nav-item auth-admin" data-link><i class="material-icons">add_box</i><span data-i18n="title.stock_in">Stock In</span></a>
-            <a href="/history" class="nav-item auth-admin" data-link><i class="material-icons">history</i><span data-i18n="title.history">History</span></a>
-            <a href="/audit" class="nav-item auth-admin" data-link><i class="material-icons">fact_check</i><span data-i18n="title.audit">Audit</span></a>
+            <a href="/inventory_cards" class="nav-item" data-link data-i18n-title="title.inventory_cards"><i class="material-icons">inventory_2</i><span data-i18n="title.inventory_cards">Inventory Cards</span></a>
+            <a href="/inventory_table" class="nav-item auth-admin" data-link data-i18n-title="title.inventory_table"><i class="material-icons">view_list</i><span data-i18n="title.inventory_table">Inventory Table</span></a>
+            <a href="/stock_in" class="nav-item auth-admin" data-link data-i18n-title="title.stock_in"><i class="material-icons">add_box</i><span data-i18n="title.stock_in">Stock In</span></a>
+            <a href="/history" class="nav-item auth-admin" data-link data-i18n-title="title.history"><i class="material-icons">history</i><span data-i18n="title.history">History</span></a>
+            <a href="/audit" class="nav-item auth-admin" data-link data-i18n-title="title.audit"><i class="material-icons">fact_check</i><span data-i18n="title.audit">Audit</span></a>
             <div class="nav-group-title" data-i18n="base.asset">Asset</div>
-            <a href="/asset" class="nav-item" data-link><i class="material-icons">devices</i><span data-i18n="title.asset">Asset</span></a>
-            <a href="/asset_stock_in" class="nav-item auth-admin" data-link><i class="material-icons">app_registration</i><span data-i18n="title.asset_stock_in">Asset Stock In</span></a>
-            <a href="/asset_history" class="nav-item auth-admin" data-link><i class="material-icons">manage_history</i><span data-i18n="title.asset_history">Asset History</span></a>
-            <a href="/asset_audit" class="nav-item auth-admin" data-link><i class="material-icons">barcode_reader</i><span data-i18n="title.asset_audit">Asset Audit</span></a>
-            <a href="/asset_scrap" class="nav-item auth-admin" data-link><i class="material-icons">playlist_remove</i><span data-i18n="title.asset_scrap">Asset Scrap</span></a>
+            <a href="/asset" class="nav-item" data-link data-i18n-title="title.asset"><i class="material-icons">devices</i><span data-i18n="title.asset">Asset</span></a>
+            <a href="/asset_stock_in" class="nav-item auth-admin" data-link data-i18n-title="title.asset_stock_in"><i class="material-icons">app_registration</i><span data-i18n="title.asset_stock_in">Asset Stock In</span></a>
+            <a href="/asset_history" class="nav-item auth-admin" data-link data-i18n-title="title.asset_history"><i class="material-icons">manage_history</i><span data-i18n="title.asset_history">Asset History</span></a>
+            <a href="/asset_audit" class="nav-item auth-admin" data-link data-i18n-title="title.asset_audit"><i class="material-icons">barcode_reader</i><span data-i18n="title.asset_audit">Asset Audit</span></a>
+            <a href="/asset_scrap" class="nav-item auth-admin" data-link data-i18n-title="title.asset_scrap"><i class="material-icons">playlist_remove</i><span data-i18n="title.asset_scrap">Asset Scrap</span></a>
             <div class="nav-group-title auth-admin" data-i18n="base.simcard">Simcard</div>
-            <a href="/simcard" class="nav-item auth-admin" data-link><i class="material-icons">sim_card</i><span data-i18n="title.simcard">Simcard</span></a>
-            <a href="/simcard_stock_in" class="nav-item auth-admin" data-link><i class="material-icons">add_box</i><span data-i18n="title.simcard_stock_in">Simcard Stock In</span></a>
-            <a href="/simcard_history" class="nav-item auth-admin" data-link><i class="material-icons">history</i><span data-i18n="title.simcard_history">Simcard History</span></a>
+            <a href="/simcard" class="nav-item auth-admin" data-link data-i18n-title="title.simcard"><i class="material-icons">sim_card</i><span data-i18n="title.simcard">Simcard</span></a>
+            <a href="/simcard_stock_in" class="nav-item auth-admin" data-link data-i18n-title="title.simcard_stock_in"><i class="material-icons">add_box</i><span data-i18n="title.simcard_stock_in">Simcard Stock In</span></a>
+            <a href="/simcard_history" class="nav-item auth-admin" data-link data-i18n-title="title.simcard_history"><i class="material-icons">history</i><span data-i18n="title.simcard_history">Simcard History</span></a>
             <div class="nav-group-title auth-admin" data-i18n="base.system">System</div>
-            <a href="/backend" class="nav-item auth-superadmin" data-link><i class="material-icons">admin_panel_settings</i><span data-i18n="title.admin">Admin</span></a>
+            <a href="/backend" class="nav-item auth-superadmin" data-link data-i18n-title="title.admin"><i class="material-icons">admin_panel_settings</i><span data-i18n="title.admin">Admin</span></a>
         </div>
-        <a href="/logout" class="nav-item" style="margin-top: auto; color: #e74c3c; flex-shrink: 0;"><i class="material-icons">logout</i><span data-i18n="base.logout">Logout</span></a>
+        <a href="/logout" class="nav-item" style="margin-top: auto; color: #e74c3c; flex-shrink: 0;" data-i18n-title="base.logout"><i class="material-icons">logout</i><span data-i18n="base.logout">Logout</span></a>
     </nav>
 
     <footer class="bottom-bar">
@@ -165,110 +161,11 @@
                     <div style="text-align: center; color: #aaa; font-size: 0.8rem; margin-top: 10px;" data-i18n="base.chat_note">Chat Note</div>
                 </div>
                 <div class="chat-footer">
-                    <!-- 🌟 替换了 jinja 占位符 -->
                     <input type="text" id="chatInput" data-i18n-placeholder="base.chat_placeholder" placeholder="Type a message..." onkeydown="if(event.key === 'Enter') window.sendChatMessage()">
                     <button class="chat-send-btn" onclick="window.sendChatMessage()"><i class="material-icons">send</i></button>
                 </div>
             </div>
         </div>
     </main>
-
-    <!-- 🌟 全局隐藏表单模板：去除了所有的 {{ }} Jinja 语法，全部替换为 data-i18n -->
-    <div id="formStorage" style="display: none;">
-        <div id="outFormTemplate" style="display: none; height: 100%; flex-direction: column;">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 10px;">
-                <h3 style="margin: 0; color: var(--danger-red); font-size: 1.05rem;"><i class="material-icons" style="vertical-align: middle; font-size: 1.2rem;">outbox</i> <span data-i18n="card.out_title">Outbound</span></h3>
-                <span id="showLocation" style="font-size: 0.95rem; color: var(--primary); cursor: pointer;"></span>
-            </div>
-            <form id="outForm" method="post" style="flex: 1; display: flex; flex-direction: column;">
-                <div style="display: flex; gap: 8px;">
-                    <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.pn1">PN1</label><input type="text" id="outPn1" disabled></div>
-                    <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.current_stock">Stock</label><input type="text" id="outCurrentStock" disabled style="color: var(--primary-blue); font-weight: bold;"></div>
-                </div>
-                <div class="form-group-modal"><label data-i18n="card.name">Name</label><input type="text" id="outName" disabled></div>
-                <div class="form-group-modal"><label><span data-i18n="card.out_qty">QTY</span> <span style="color: red;">*</span></label><input type="number" name="req_qty" id="outQty" required min="1" style="border-color: var(--danger-red);"></div>
-                <div class="form-group-modal"><label><span data-i18n="card.real_stock">Real Stock</span> <span style="color: red;">*</span></label><input type="number" name="real_stock" id="realStock" required min="0" step="1" style="border-color: var(--danger-red);"></div>
-                <div style="display: flex; gap: 8px;">
-                    <div class="form-group-modal" style="flex: 1;"><label><span data-i18n="card.dept">Department</span><span style="color: red;">*</span></label><input type="text" name="dept" id="department" style="border-color: var(--danger-red);"></div>
-                    <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.applicant">Applicant</label><input type="text" name="applicant" id="outApplicant" readonly style="background: #f5f5f5; color: #888; cursor: not-allowed;"></div>
-                </div>
-                <div class="form-group-modal"><label data-i18n="card.out_note">Note</label><input type="text" name="note" data-i18n-placeholder="card.optional" placeholder="Optional"></div>
-
-                <div id="outFormError" style="display: none; background: #fce8e6; color: #d93025; padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; margin-top: 10px; margin-bottom: 10px; align-items: center; gap: 5px; border: 1px solid #fadbd8; animation: modalFadeIn 0.2s ease-out;">
-                    <i class="material-icons" style="font-size: 1.1rem;">error_outline</i>
-                    <span id="outFormErrorText"></span>
-                </div>
-                <div style="display: flex; gap: 8px; margin-top: auto; padding-top: 8px;">
-                    <button type="button" class="modal-btn btn-cancel" onclick="window.unflipCard()" data-i18n="table.cancel_btn">Cancel</button>
-                    <button type="submit" class="modal-btn btn-out-confirm" data-i18n="card.confirm_out">Confirm</button>
-                </div>
-            </form>
-        </div>
-
-        <div id="editFormTemplate" style="display: none; height: 100%; flex-direction: column;">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 8px;">
-                <h3 style="margin: 0; color: var(--primary-blue); font-size: 1.05rem;"><i class="material-icons" style="vertical-align: middle; font-size: 1.2rem;">edit</i> <span data-i18n="card.edit_title">Edit</span></h3>
-                <button type="button" id="deleteBtn" data-i18n-title="card.scrap" title="Scrap"><i class="material-icons" style="font-size: 0.95rem;">delete_forever</i></button>
-            </div>
-            <form id="editForm" method="post" style="flex: 1; display: flex; flex-direction: column;">
-                <div class="img-edit-container">
-                    <div class="img-edit-tray">
-                        <img id="editImagePreview" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
-                        <div id="editImagePlaceholder" style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; color: #ccc;"><i class="material-icons" style="font-size: 1.2rem;">insert_photo</i></div>
-                    </div>
-                    <div class="btn-upload">
-                        <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="window.handleImageSelect(event)">
-                        <button type="button" onclick="document.getElementById('imageInput').click()" class="btn-primary" style="height: 26px; padding: 0 10px; background-color: var(--primary-blue);"><i class="material-icons" style="font-size: 1rem;">add_photo_alternate</i></button>
-                    </div>
-                </div>
-
-                <div style="display: flex; gap: 8px;">
-                    <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.pn1">PN1</label><input type="text" id="editPn1" name="pn_1" readonly></div>
-                    <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.pn2_short">PN2</label><input type="text" id="editPn2" name="pn_2"></div>
-                </div>
-                <div style="display: flex; gap: 8px;">
-                    <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.book_stock">Stock</label><input type="number" id="editStock" name="stock" required></div>
-                    <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.location">Location</label><input type="text" id="editLoc" name="location"></div>
-                </div>
-                <div class="form-group-modal"><label data-i18n="card.name">Name</label><input type="text" id="editName" name="name" required></div>
-                <div style="display: flex; gap: 8px;">
-                    <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.category">Category</label><input type="text" id="editDesc1" name="description_1"></div>
-                    <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.desc">Description</label><input type="text" id="editDesc2" name="description_2"></div>
-                </div>
-                <div class="form-group-modal"><label data-i18n="card.remarks">Remarks</label><input type="text" id="editRemarks" name="remarks"></div>
-
-                <div style="display: flex; gap: 8px; margin-top: auto; padding-top: 8px;">
-                    <button type="button" class="modal-btn btn-cancel" onclick="window.unflipCard()" data-i18n="table.cancel_btn">Cancel</button>
-                    <button type="submit" class="modal-btn btn-save" data-i18n="card.save_changes">Save Changes</button>
-                </div>
-            </form>
-        </div>
-
-        <div id="requestFormTemplate" style="display: none; height: 100%; flex-direction: column;">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 10px;">
-                <h3 style="margin: 0; color: var(--primary-blue); font-size: 1.05rem;"><i class="material-icons" style="vertical-align: middle; font-size: 1.2rem;">pan_tool</i> <span data-i18n="card.req_title">Request</span></h3>
-                <i class="material-icons" style="cursor: pointer; color: #999; font-size: 1.2rem;" onclick="window.unflipCard()">close</i>
-            </div>
-
-            <form id="requestForm" method="post" style="flex: 1; display: flex; flex-direction: column;" onsubmit="window.submitRequest(event)">
-                <input type="hidden" id="reqItemId" name="item_id">
-                <div style="display: flex; gap: 8px;">
-                    <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.pn1">PN1</label><input type="text" id="reqPn1" readonly style="background: #f5f5f5; border: none;"></div>
-                    <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.book_remain">Remain</label><input type="text" id="reqStock" readonly style="color: var(--primary-blue); font-weight: bold; background: #f5f5f5; border: none;"></div>
-                </div>
-                <div class="form-group-modal"><label data-i18n="card.name">Name</label><input type="text" id="reqName" readonly style="background: #f5f5f5; border: none;"></div>
-                <div class="form-group-modal">
-                    <label><span data-i18n="card.req_qty">Req Qty</span> <span style="color: red;">*</span></label>
-                    <input type="number" id="reqQty" name="req_qty" required min="1" style="border-color: var(--primary-blue);">
-                </div>
-                <div style="display: flex; gap: 8px;">
-                    <div class="form-group-modal" style="flex: 1;"><label data-i18n="card.applicant">Applicant</label><input type="text" name="applicant" id="reqApplicant" readonly style="background: #f5f5f5;"></div>
-                    <div class="form-group-modal" style="flex: 1;"><label><span data-i18n="card.dept">Dept</span><span style="color: red;">*</span></label><input type="text" id="reqDept" name="department" required autocomplete="on"></div>
-                </div>
-                <div class="form-group-modal"><label data-i18n="card.req_reason">Reason</label><input type="text" id="reqNote" name="note"></div>
-                <button type="submit" class="modal-btn" id="btnSubmitReq" style="margin-top: auto; width: 100%; background: var(--primary-blue); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;" data-i18n="card.send_req">Send Request</button>
-            </form>
-        </div>
-    </div>
 </body>
 </html>

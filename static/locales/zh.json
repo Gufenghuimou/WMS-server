@@ -716,7 +716,7 @@
   "mobile_audit_asset": {
     "page_title": "资产盘点",
     "reset": "重置",
-    "sync": "同步",
+    "sync": "同步盘点",
     "current_loc": "当前位置",
     "ph_loc": "输入或扫码位置",
     "ctrl_no": "扫描管理编号",
@@ -776,6 +776,18 @@
     "location": "归还库位",
     "brokenConfirm": "确认资产损坏并移至 NG 区域？",
     "rejectConfirm": "确认拒绝此申请？",
-    "success": "保存成功"
+    "success": "保存成功",
+    "auditEmpty": "暂无盘点记录",
+    "auditReadOnly": "仅管理员可以执行盘点操作。",
+    "enterControlNumber": "请输入资产管理编号",
+    "scanLocation": "请扫描库位条码",
+    "scanAsset": "请扫描资产条码",
+    "submitting": "提交中…",
+    "auditMatched": "正常",
+    "auditIssue": "差异",
+    "auditCommit": "同步盘点",
+    "auditCommitConfirm": "确认将已盘点的数量和库位同步到库存？",
+    "locationLocated": "已定位库位：{location}",
+    "imageProcessError": "图片处理失败，请重新选择图片。"
   }
 }

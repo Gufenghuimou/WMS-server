@@ -15,7 +15,7 @@ from datetime import datetime
 from database import engine
 from models import InventoryItem, HistoryLog, OutboundRequest, AssetRequest, AssetItem, AssetLog
 from dependencies import get_current_user, require_admin
-from core import templates, t_lang
+from core import t_lang
 from utils import update_single_usage
 
 router = APIRouter(tags=['Request'])
@@ -329,10 +329,6 @@ async def reject_asset_request(request: Request, req_id: int, current_user: dict
             session.add(req)
             session.commit()
     return {'status': 'success', 'message': t_lang("do.success", lang)}
-
-# @router.get("/request_log", response_class=HTMLResponse)
-# async def view_request_log(request: Request, current_user: dict = Depends(get_current_user)):
-#     return templates.TemplateResponse(request, 'request_log.html', {'user': current_user, 'active_page': 'request_log'})
 
 @router.get("/api/request_log")
 async def get_request_log(request: Request, current_user: dict = Depends(get_current_user)):

@@ -1,7 +1,6 @@
 (() => {
     const alertAudio = new Audio('../static/sound/alert.mp3');
     const doneAudio = new Audio('../static/sound/done.mp3');
-    const noticeAudio = new Audio('../static/sound/notice.mp3');
 
     // 后端数据捞取
     window.initAssetAuditPage = async function () {
@@ -336,7 +335,7 @@
                 const isConfirmed = await openConfirmModal(t('asset_audit.confirm_commit'));
                 try {
                     if (!isConfirmed) return;
-                    let response = await fetch('/api/audit/commit', {
+                    let response = await fetch('/api/asset_audit/commit', {
                         method: 'POST'
                     });
                     let result = await response.json();
@@ -406,42 +405,6 @@
             alertAudio.play().catch(() => console.log("Loading sound fail"));
         }
 
-        if(barcodeInput) {
-            barcodeInput.value = '';
-            barcodeInput.focus();
-        }
-    }
-
-    window.openRepeatedConfirmModal = function(ctrlNo, previousLoc, currentLoc) {
-        const modal = document.getElementById('repeatedConfirmModal');
-        const text = document.getElementById('repeatedConfirmText');
-        const submitBtn = document.getElementById('repeatedSubmitBtn');
-        const cancelBtn = document.getElementById('repeatedCancelBtn');
-                    
-        let safePrev = previousLoc ? previousLoc.split('-')[0].toUpperCase().replace(/'/g, "\\'").replace(/"/g, "&quot;") : '';
-        let safeCurr = currentLoc ? currentLoc.split('-')[0].toUpperCase().replace(/'/g, "\\'").replace(/"/g, "&quot;") : '';
-
-        let prevHtml = `<span class="prev-loc-text" style="cursor:pointer; color:var(--primary); font-weight:500; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;"><i class="material-icons" style="font-size:1.1rem">place</i>${previousLoc}</span>`;
-        let currHtml = `<span class="curr-loc-text" style="cursor:pointer; color:var(--primary); font-weight:500; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;"><i class="material-icons" style="font-size:1.1rem">place</i>${currentLoc}</span>`;
-
-        text.innerHTML = t('asset_audit.repeated_text').replace('{previousLoc}', prevHtml).replace('{currentLoc}', currHtml);
-        text.querySelector('.prev-loc-text').addEventListener('click', () => {window.openFooterMap(safePrev);});
-        text.querySelector('.curr-loc-text').addEventListener('click', () => {window.openFooterMap(safeCurr);});
-        modal.style.display = 'flex';
-        cancelBtn.focus();
-        
-        noticeAudio.currentTime = 0;
-        noticeAudio.play().catch(() => console.log("Loading sound fail"));
-        
-        submitBtn.onclick = async function() {
-            window.closeRepeatedConfirmModal();
-            await window.executeAuditSubmit(ctrlNo, currentLoc);
-        }
-    }
-
-    window.closeRepeatedConfirmModal = function() {
-        document.getElementById('repeatedConfirmModal').style.display = 'none';
-        const barcodeInput = document.getElementById('scanBarcode');
         if(barcodeInput) {
             barcodeInput.value = '';
             barcodeInput.focus();

@@ -13,38 +13,9 @@ from datetime import datetime
 from database import engine
 from models import PhysicalSimCard, PhysicalSimCardLog
 from dependencies import get_current_user, require_admin
-from core import templates, t_lang
+from core import t_lang
 
 router = APIRouter(tags=["Simcard"])
-
-
-# @router.get("/simcard", response_class=HTMLResponse)
-# async def get_simcard(request: Request, query: Optional[str] = None, current_user: dict = Depends(get_current_user)):
-#     with Session(engine) as session:
-#         statement = select(PhysicalSimCard)
-
-#         if query:
-#             statement = statement.where(
-#                 or_(
-#                     PhysicalSimCard.icc_id.like(f'%{query}%'),
-#                     PhysicalSimCard.carrier.like(f'%{query}%'),
-#                     PhysicalSimCard.phone_number.like(f'%{query}%'),
-#                     PhysicalSimCard.location.like(f'%{query}%'),
-#                     PhysicalSimCard.direct_user.like(f'%{query}%'),
-#                     PhysicalSimCard.project.like(f'%{query}%'),
-#                     PhysicalSimCard.note.like(f'%{query}%')
-#                 )
-#             )
-#         else:
-#             statement = statement.order_by(PhysicalSimCard.project)
-#         items = session.exec(statement).all()
-#         total = len(items)
-
-#     return templates.TemplateResponse(request, "simcard.html", {"request": request, "items": items, 'query': query, 'user': current_user, 'active_page': 'simcard', 'simcard_total_count': total})
-
-# @router.get("/simcard", response_class=HTMLResponse)
-# async def get_simcard(request: Request, current_user: dict = Depends(get_current_user)):
-#     return templates.TemplateResponse(request, "simcard.html", {'user': current_user, 'active_page': 'simcard'})
 
 @router.get("/api/simcard")
 async def get_simcard_api(request: Request, query: Optional[str] = None, current_user: dict = Depends(get_current_user)):
@@ -131,7 +102,8 @@ async def simcard_edit(
         location: str = Form(...),
         direct_user: str = Form(""),
         project: str = Form(""),
-        note: str = Form("")
+        note: str = Form(""),
+        current_user: dict = Depends(require_admin)
 ):
     lang = request.state.lang
     with Session(engine) as session:
@@ -210,14 +182,13 @@ async def simcard_active_toggle(
             'data': {
                 'id': item.id,
                 'is_active': item.is_active,
+                'is_stock': item.is_stock,
+                'direct_user': item.direct_user,
+                'project': item.project,
                 'location': item.location
             },
             'message': t_lang("do.success", lang)
         }
-
-# @router.get("/simcard_stock_in", response_class=HTMLResponse)
-# async def simcard_stock_in(request: Request,current_user: dict = Depends(get_current_user)):
-#     return templates.TemplateResponse(request, "simcard_stock_in.html", {"request": request, "user": current_user, 'active_page': 'simcard_stock_in'})
 
 @router.post("/api/simcard_batch_submit")
 async def simcard_batch_submit(
@@ -314,10 +285,6 @@ async def simcard_delete(request: Request, item_id: int, current_user: dict = De
             redirect_url = referer if referer else "/simcard"
     return RedirectResponse(url=redirect_url, status_code=303)
     # return {'status': 'success', 'message':  t_lang("do.success", lang)}
-
-# @router.get("/simcard_history", response_class=HTMLResponse)
-# async def simcard_history(request: Request, current_user: dict = Depends(get_current_user)):
-#     return templates.TemplateResponse(request, "simcard_history.html", {'user': current_user, 'active_page': 'simcard_history'})
 
 @router.get("/api/simcard_history")
 async def get_simcard_history(request: Request, current_user: dict = Depends(get_current_user)):

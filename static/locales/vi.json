@@ -776,6 +776,18 @@
     "location": "Vị trí trả",
     "brokenConfirm": "Xác nhận tài sản hỏng và chuyển đến khu vực NG?",
     "rejectConfirm": "Từ chối yêu cầu này?",
-    "success": "Đã lưu"
+    "success": "Đã lưu",
+    "auditEmpty": "Chưa có bản ghi kiểm kê",
+    "auditReadOnly": "Chỉ quản trị viên mới có thể thực hiện kiểm kê.",
+    "enterControlNumber": "Nhập mã quản lý tài sản",
+    "scanLocation": "Quét mã vạch vị trí",
+    "scanAsset": "Quét mã vạch tài sản",
+    "submitting": "Đang gửi…",
+    "auditMatched": "Khớp",
+    "auditIssue": "Chênh lệch",
+    "auditCommit": "Đồng bộ kiểm kê",
+    "auditCommitConfirm": "Đồng bộ số lượng và vị trí đã kiểm kê vào kho?",
+    "locationLocated": "Đã tìm thấy vị trí: {location}",
+    "imageProcessError": "Không thể xử lý ảnh. Vui lòng chọn lại."
   }
 }

@@ -14,7 +14,7 @@ from datetime import datetime
 from database import engine
 from models import InventoryItem, HistoryLog, AuditRecord, User, UserBookmark, OutboundRequest
 from dependencies import get_current_user, require_admin, require_superadmin
-from core import templates, t_lang
+from core import t_lang
 from utils import update_single_usage, update_all_usage_stats, zpl_print_task
 
 router = APIRouter(tags=['Inventory'])
@@ -76,7 +76,8 @@ async def do_out(
         req_qty: int = Form(...),
         real_stock: int = Form(...),
         current_user: dict = Depends(require_admin),
-        dept: str = Form(...)
+        dept: str = Form(...),
+        note: str = Form("")
 ):
     lang = request.state.lang
     with Session(engine) as session:
@@ -117,7 +118,7 @@ async def do_out(
             change_qty=-req_qty,
             applicant=real_applicant,
             department=dept,
-            note='OUT'
+            note=note.strip() or 'OUT'
         )
         session.add(log)
         update_single_usage(session, item.pn_1)
@@ -142,7 +143,8 @@ async def do_out(
                 'usage_2y': item.usage_2y,
                 'usage_3y': item.usage_3y,
                 'has_image': item.has_image,
-                'is_mva': item.is_mva
+                'is_mva': item.is_mva,
+                'remarks': item.remarks
             },
             'message': t_lang("do.success", lang)
         }
@@ -199,7 +201,8 @@ async def update_edit(
                 'usage_2y': item.usage_2y,
                 'usage_3y': item.usage_3y,
                 'has_image': item.has_image,
-                'is_mva': item.is_mva
+                'is_mva': item.is_mva,
+                'remarks': item.remarks
             },
             'message': t_lang("do.success", lang)
         }
@@ -395,10 +398,6 @@ def export_mva(request: Request, current_user: dict = Depends(require_admin)):
 
 # -----------------------------快速入库--------------------------#
 
-# @router.get("/stock_in", response_class=HTMLResponse)
-# async def stock_in(request: Request, current_user: dict = Depends(get_current_user)):
-#     return templates.TemplateResponse(request, "stock_in.html", {"request": request, "user": current_user, "active_page": "stock_in"})
-
 @router.post("/api/batch_submit")
 async def batch_submit(
     request: Request,
@@ -477,10 +476,6 @@ async def batch_submit(
     return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 # -----------------------------历史记录--------------------------#
-
-# @router.get('/history', response_class=HTMLResponse)
-# async def view_history(request: Request, current_user: dict = Depends(get_current_user)):
-#     return templates.TemplateResponse(request, "history.html", {'user': current_user, 'active_page': 'history'})
 
 @router.get("/api/history")
 async def get_history(request: Request, current_user: dict = Depends(require_admin)):
@@ -598,10 +593,6 @@ def export_history(request: Request, current_user: dict = Depends(require_admin)
 
 # -----------------------------盘点工作台--------------------------#
 
-# @router.get("/audit", response_class=HTMLResponse)
-# async def view_audit(request: Request, current_user: dict = Depends(get_current_user)):
-#     return templates.TemplateResponse(request, "audit.html", {"user": current_user, "active_page": "audit"})
-
 @router.get("/api/audit")
 async def get_audit(request: Request, current_user: dict = Depends(require_admin)):
     with Session(engine) as session:
@@ -650,9 +641,6 @@ async def start_audit(request: Request, current_user: dict = Depends(require_adm
             )
             session.add(record)
         session.commit()
-    referer = request.headers.get("referer", "")
-    target_url = "/mobile/audit_inventory" if "mobile" in referer else "/audit"
-    # return RedirectResponse(url=target_url, status_code=303)
     return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 @router.post("/audit/submit/{audit_id}")
@@ -767,9 +755,6 @@ async def commit_audit(request: Request, current_user: dict = Depends(require_ad
                     session.add(log)
                 session.add(item)
         session.commit()
-    referer = request.headers.get("referer", "")
-    target_url = "/mobile/audit_inventory" if "mobile" in referer else "/audit"
-    # return RedirectResponse(url=target_url, status_code=303)
     return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 @router.get("/audit/export")

@@ -52,7 +52,7 @@
 ## 技术栈
 
 - **Backend:** Python3, FastAPI, SQLModel
-- **Frontend:** HTML5/CSS3/Vanilla JavaScript, Jinja2
+- **Frontend:** HTML5/CSS3/Vanilla JavaScript，HTML 页面配合 JSON API
 - **Libraries/Tools:** Cropper.js, Pandas + Openpyxl
 - **I18N:** 自定义多语言翻译系统 (中/英/日/越南)
 
@@ -77,13 +77,10 @@ git clone [https://github.com/yourusername/wms-system.git](https://github.com/yo
 cd wms-system
 pip install -r requirements.txt
 
-# 3. 初始化数据库 (初次运行)
-python init_db.py
-
-# 4. 启动 FastAPI 服务
+# 3. 启动 FastAPI 服务（启动时自动初始化数据库）
 uvicorn main:app --reload
 
-# 5. 浏览器访问 https://127.0.0.1  默认超管账号: superadmin  PW: superadmin
+# 4. 浏览器访问 http://127.0.0.1:8000  默认超管账号: superadmin  PW: superadmin
 ```
 
 ## TODO

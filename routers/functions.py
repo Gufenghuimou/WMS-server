@@ -1,6 +1,6 @@
 # /routers/functions.py
 from fastapi import Request, Form, UploadFile, File, Depends, BackgroundTasks, APIRouter, HTTPException, status
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from starlette.responses import RedirectResponse
 from sqlmodel import Session, select, or_, desc
 from typing import Optional
@@ -15,12 +15,11 @@ import utils
 from database import engine
 from models import User, ChatMessage, InventoryItem, AssetItem, OutboundRequest, AuditRecord, AssetAuditRecord, PhysicalSimCard, PhysicalSimCardLog, AssetRequest
 from dependencies import get_current_user, require_admin
-from core import templates, t_lang
+from core import base_dir, t_lang
 
 router = APIRouter(tags=['Functions'])
 
 # -----------------------------全局功能--------------------------#
-
 
 @router.get("/api/switch_lang/{lang}")
 async def switch_lang(lang: str, request: Request):
@@ -46,6 +45,7 @@ def get_item_api(request: Request, pn_or_loc: str, current_user: dict = Depends(
                 'location': getattr(item_obj, 'location', ''),
                 'remarks': getattr(item_obj, 'remarks', ''),
                 'match_type': match_type,
+                'item_type': 'inventory' if isinstance(item_obj, InventoryItem) else 'asset',
                 'has_image': item_obj.has_image
             }
         item = session.exec(select(InventoryItem).where(InventoryItem.pn_1 == pn_or_loc)).first()
@@ -122,8 +122,21 @@ async def save_layout(request: Request, current_user: dict = Depends(require_adm
 def require_mobile_auth(request: Request):
     user = request.session.get("user")
     if not user:
+        if request.url.path.startswith("/api/"):
+            raise HTTPException(status_code=401, detail="Unauthorized")
         raise HTTPException(status_code=status.HTTP_303_SEE_OTHER, headers={"Location": "/mobile/login"})
     return user
+
+@router.get("/api/mobile/context")
+async def mobile_context(request: Request, current_user: dict = Depends(require_mobile_auth)):
+    return JSONResponse(content={
+        'status': 'success',
+        'data': {
+            'user': {key: current_user.get(key) for key in ('username', 'full_name', 'role')},
+            'lang': request.state.lang,
+            'sys_ver': request.app.state.sys_ver,
+        },
+    }, headers={"Cache-Control": "no-store"})
 
 MOBILE_AUTH_TOKENS = {}
 @router.post("/api/generate_mobile_token")
@@ -155,6 +168,7 @@ async def mobile_login_page(request: Request, token: Optional[str] = None):
             user = session.exec(select(User).where(User.username == token_data['username'])).first()
             if user:
                 request.session["user"] = {
+                    "id": user.id,
                     "username": user.username,
                     "full_name": user.full_name,
                     "role": user.role
@@ -164,29 +178,11 @@ async def mobile_login_page(request: Request, token: Optional[str] = None):
 
             return HTMLResponse(t_lang("settings.user_error", lang), status_code=404)
 
-    return templates.TemplateResponse(request, "mobile_login.html", {"request": request})
-
-# @router.get("/mobile/approve", response_class=HTMLResponse)
-# async def mobile_approve_page(request: Request, current_user: dict = Depends(require_mobile_auth)):
-#     with Session(engine) as session:
-#         statement = select(OutboundRequest).where(OutboundRequest.status == 'Pending').order_by(OutboundRequest.created_at)
-#         requests = session.exec(statement).all()
-
-#         req_data = []
-#         for req in requests:
-#             item = session.get(InventoryItem, req.item_id)
-#             if item:
-#                 req_data.append({'req': req, 'item': item})
-
-#     return templates.TemplateResponse(request, "mobile_approve.html", {
-#         "request": request,
-#         "user": current_user,
-#         "req_data": req_data
-#     })
+    return FileResponse(os.path.join(base_dir, "templates", "mobile_login.html"), headers={"Cache-Control": "no-cache"})
 
 @router.get("/mobile/approve", response_class=HTMLResponse)
 async def mobile_approve_page(request: Request, current_user: dict = Depends(require_mobile_auth)):
-    return templates.TemplateResponse(request, "m_index.html", {"request": request, "user": current_user})
+    return FileResponse(os.path.join(base_dir, "templates", "m_index.html"), headers={"Cache-Control": "no-cache"})
 
 @router.get("/api/mobile/request_queue")
 async def get_request_queue(request: Request, current_user: dict = Depends(require_mobile_auth)):
@@ -216,31 +212,11 @@ async def get_request_queue(request: Request, current_user: dict = Depends(requi
 
 @router.get("/mobile/upload", response_class=HTMLResponse)
 async def mobile_upload_page(request: Request, current_user: dict = Depends(require_mobile_auth)):
-    return templates.TemplateResponse(request, "mobile_upload.html", {"request": request,"user": current_user})
-
-# @router.get("/mobile/audit_asset", response_class=HTMLResponse)
-# async def mobile_audit_asset_page(request: Request, current_user: dict = Depends(require_mobile_auth)):
-#     lang = request.state.lang
-
-#     with Session(engine) as session:
-#         statement = select(AssetAuditRecord).order_by(AssetAuditRecord.expected_location)
-#         records = session.exec(statement).all()
-
-#         grouped = defaultdict(list)
-#         for r in records:
-#             loc = r.actual_location or r.expected_location or t_lang("asset_audit.unassigned_init_loc", lang)
-#             grouped[loc].append(r)
-
-#     return templates.TemplateResponse(request, "mobile_audit_asset.html", {
-#         "request": request,
-#         "user": current_user,
-#         "grouped": grouped,
-#         "lang": lang
-#     })
+    return FileResponse(os.path.join(base_dir, "templates", "m_index.html"), headers={"Cache-Control": "no-cache"})
 
 @router.get("/mobile/audit_asset", response_class=HTMLResponse)
 async def mobile_audit_asset_page(request: Request, current_user: dict = Depends(require_mobile_auth)):
-    return templates.TemplateResponse(request, "mobile_audit_asset.html", {"request": request, "user": current_user})
+    return FileResponse(os.path.join(base_dir, "templates", "m_index.html"), headers={"Cache-Control": "no-cache"})
 
 @router.get("/api/mobile/audit_asset")
 async def get_mobile_audit_asset(request: Request, current_user: dict = Depends(require_mobile_auth)):
@@ -295,29 +271,9 @@ async def get_mobile_audit_asset(request: Request, current_user: dict = Depends(
         }
     }
 
-# @router.get("/mobile/audit_inventory", response_class=HTMLResponse)
-# async def mobile_audit_inventory_page(request: Request, current_user: dict = Depends(require_mobile_auth)):
-#     lang = request.state.lang
-
-#     with Session(engine) as session:
-#         statement = select(AuditRecord).order_by(AuditRecord.expected_location)
-#         records = session.exec(statement).all()
-
-#         grouped = defaultdict(list)
-#         for r in records:
-#             loc = r.actual_location or r.expected_location or 'Unallocated'
-#             grouped[loc].append(r)
-
-#     return templates.TemplateResponse(request, "mobile_audit_inventory.html", {
-#         "request": request,
-#         "user": current_user,
-#         "grouped": grouped,
-#         "lang": lang
-#     })
-
 @router.get("/mobile/audit_inventory", response_class=HTMLResponse)
 async def mobile_audit_inventory_page(request: Request, current_user: dict = Depends(require_mobile_auth)):
-    return templates.TemplateResponse(request, "mobile_audit_inventory.html", {"request": request, "user": current_user})
+    return FileResponse(os.path.join(base_dir, "templates", "m_index.html"), headers={"Cache-Control": "no-cache"})
 
 @router.get("/api/mobile/audit_inventory")
 async def get_mobile_audit_inventory(request: Request, current_user: dict = Depends(require_mobile_auth)):
@@ -390,10 +346,6 @@ async def get_printer_status():
     except Exception as e:
         return {"status": "error", "detail": str(e)}
 
-# @router.get("/reprint", response_class=HTMLResponse)
-# async def view_reprint_page(request: Request, current_user: dict = Depends(get_current_user)):
-#     return templates.TemplateResponse(request, "reprint.html", {"user": current_user, "active_page": "reprint"})
-
 @router.post("/api/update_printer_config")
 async def update_printer_config(request: Request, ip: str = Form(...), port: int = Form(...), current_user: dict = Depends(require_admin)):
     lang = request.state.lang
@@ -415,9 +367,7 @@ async def trigger_print(
         return {'status': 'error', 'message': error_message}
     else:
         return {'status': 'success', 'message': t_lang("do.mission_sent", lang)}
-    # background_tasks.add_task(utils.zpl_print_task, left_text, right_barcode)
-    # return {'status': 'success', 'message': t_lang("do.mission_sent", lang)}
-
+ 
 @router.get("/api/asset_info/{ctrl_no}")
 def get_asset_info_api(request: Request, ctrl_no: str, current: dict = Depends(get_current_user)):
     lang = request.state.lang

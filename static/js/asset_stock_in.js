@@ -1,7 +1,27 @@
 (() => {
     let currentRowCount = 0;
     let globalAssetPrefix = "";
-    let globalCurrentSeq = 0;
+    let globalCurrentSeq = '000';
+
+    function generateNextSeq(lastSeq) {
+        if (!lastSeq) return '001';
+        if (/^\d+$/.test(lastSeq) && Number(lastSeq) < 999) {
+            return String(Number(lastSeq) + 1).padStart(3, '0');
+        }
+        if (lastSeq === '999') return '99A';
+
+        const chars = '0123456789ABCDEF';
+        const seq = lastSeq.split('');
+        for (let i = 2; i >= 0; i--) {
+            const nextIndex = chars.indexOf(seq[i]) + 1;
+            if (nextIndex < chars.length) {
+                seq[i] = chars[nextIndex];
+                break;
+            }
+            seq[i] = '0';
+        }
+        return seq.join('');
+    }
 
     function addAssetRow() {
         let i = currentRowCount;
@@ -44,9 +64,8 @@
                 let ctrlInput = tr.querySelector('.ctrl-input');
 
                 if (ctrlInput && ctrlInput.value.trim() === '' && globalAssetPrefix) {
-                    globalCurrentSeq++;
-                    let seqStr = globalCurrentSeq.toString().padStart(3, '0');
-                    ctrlInput.value = globalAssetPrefix + seqStr;
+                    globalCurrentSeq = generateNextSeq(globalCurrentSeq);
+                    ctrlInput.value = globalAssetPrefix + globalCurrentSeq;
 
                     ctrlInput.classList.add('correct-flash');
                     setTimeout(() => ctrlInput.classList.remove('correct-flash'), 500);
@@ -115,9 +134,8 @@
         // 🌟 核心逻辑：自动生成 ctrl_no (如果还没填的话)
         let ctrlInput = currentRow.querySelector('.ctrl-input');
         if (ctrlInput && ctrlInput.value.trim() === '' && globalAssetPrefix) {
-            globalCurrentSeq++;
-            let seqStr = globalCurrentSeq.toString().padStart(3, '0');
-            ctrlInput.value = globalAssetPrefix + seqStr;
+            globalCurrentSeq = generateNextSeq(globalCurrentSeq);
+            ctrlInput.value = globalAssetPrefix + globalCurrentSeq;
             flashInput(ctrlInput);
         }
 
@@ -146,7 +164,7 @@
 
             if (!data.error) {
                 // 如果扫的是 PN2 被后端认出来了，自动把 PN1 纠正过来
-                if (data.matched_by === "pn_2") {
+                if (data.match_type === "pn_2") {
                     inputElement.value = data.pn_1;
                     safeSet('.pn2-input', pnVal); // 把刚刚扫的放到 pn2 去
                 } else {
@@ -192,15 +210,13 @@
 
         // 🌟 1. 页面加载瞬间，向后端请求当前最新的序列号
         try {
-            let res = await fetch('/api/asset/next_seq');
+            let res = await fetch('/api/asset/last_seq');
             let data = await res.json();
             globalAssetPrefix = data.prefix;
-            globalCurrentSeq = parseInt(data.last_seq, 10);
+            globalCurrentSeq = data.last_seq;
         } catch (e) {
             console.error(t('asset_stockin.err_fetch_seq'), e);
         }
-
-
 
         const form = document.getElementById('assetStockInForm');
 
@@ -357,7 +373,7 @@
                         showToast(result.message, 'success');
                         resetGrid();
                     } else {
-                        await openAlertModal('Upload Error');
+                        await openAlertModal(result.message || 'Upload Error');
                         // alert('Upload Error');
                     }
                 } catch (error) {

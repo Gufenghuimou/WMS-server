@@ -1,6 +1,5 @@
 # main.py
 from fastapi import FastAPI ,Request
-from fastapi.templating import Jinja2Templates
 from starlette.responses import RedirectResponse, HTMLResponse, JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -10,7 +9,7 @@ import time
 
 
 from dependencies import RequiresLoginException
-from middlewares import inject_global_template_data #如果不需要给其他老页面提供模板注入，可以注释掉这行
+from middlewares import inject_request_context
 from init_db import init_application
 import core
 
@@ -24,11 +23,14 @@ class CachingStaticFiles(StaticFiles):
     async def get_response(self, path: str, scope):
         response = await super().get_response(path, scope)
         if response.status_code in [200, 304]:
-            response.headers["Cache-Control"] = "public, max-age=2592000"  # 设置缓存时间为30天
+            if os.path.splitext(path)[1].lower() in {'.js', '.css', '.html', '.json'}:
+                response.headers["Cache-Control"] = "no-cache"
+            else:
+                response.headers["Cache-Control"] = "public, max-age=2592000"
         return response
 
 # 挂载中间件与静态资源
-app.add_middleware(BaseHTTPMiddleware, dispatch=inject_global_template_data) #如果已彻底不用 Jinja，注释掉这个中间件，提升性能
+app.add_middleware(BaseHTTPMiddleware, dispatch=inject_request_context)
 app.add_middleware(SessionMiddleware, secret_key="h8x!kP9z$mQ2vL5w*rB4nJ7c@yT1gF6")
 app.mount("/static", CachingStaticFiles(directory=os.path.join(core.base_dir, "static")), name="static")
 
@@ -73,14 +75,6 @@ async def serve_spa(request: Request, full_path: str):
     if full_path.startswith("api/"):
         return JSONResponse(status_code=404, content={"status": "error", "message": "API Endpoint Not Found"})
         
-    # 2. 排除登录页（如果你的登录页暂时还没有改成 SPA 模式的话，可以让前端直接访问 /login 触发老逻辑）
-    if full_path in ["login", "mobile/login"]:
-        # 根据你现在的逻辑，如果登录页还是要靠 Jinja 渲染，你不能在这里拦截。
-        # 最好的办法是在你的 users.router 里面保留 /login 的 GET 路由，因为路由优先匹配上面的精准路由。
-        pass
-
-    # 3. 兜底返回单页应用的外壳
-    # 假设你刚刚把基础骨架写在了 templates/index.html 里面
     index_path = os.path.join(core.base_dir, "templates", "index.html")
     with open(index_path, "r", encoding="utf-8") as f:
         return HTMLResponse(content=f.read())

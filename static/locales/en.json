@@ -776,6 +776,18 @@
     "location": "Return location",
     "brokenConfirm": "Confirm this asset is broken and move it to the NG area?",
     "rejectConfirm": "Reject this request?",
-    "success": "Saved"
+    "success": "Saved",
+    "auditEmpty": "No audit records",
+    "auditReadOnly": "Only administrators can perform audits.",
+    "enterControlNumber": "Enter an asset control number",
+    "scanLocation": "Scan a location barcode",
+    "scanAsset": "Scan an asset barcode",
+    "submitting": "Submitting…",
+    "auditMatched": "Matched",
+    "auditIssue": "Mismatch",
+    "auditCommit": "Sync audit",
+    "auditCommitConfirm": "Sync the audited quantities and locations to inventory?",
+    "locationLocated": "Location found: {location}",
+    "imageProcessError": "Unable to process this image. Please select it again."
   }
 }

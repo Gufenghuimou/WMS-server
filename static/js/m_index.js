@@ -39,6 +39,9 @@
         document.querySelectorAll('[data-i18n]').forEach(element => {
             element.textContent = window.t(element.dataset.i18n, element.textContent);
         });
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+            element.placeholder = window.t(element.dataset.i18nPlaceholder, element.placeholder);
+        });
     };
 
     window.setMobileMenuOpen = function(isOpen) {
@@ -111,8 +114,8 @@
     }
 
     async function initMobileApplication() {
-        const context = document.getElementById('mobileContext').textContent;
-        window.CURRENT_USER = JSON.parse(context);
+        const result = await window.requestMobileJson('/api/mobile/context', { cache: 'no-store' });
+        window.CURRENT_USER = result.data.user;
         renderMobileUser();
         bindEvents();
 
@@ -132,5 +135,18 @@
         await window.MobileAppRouter();
     }
 
-    document.addEventListener('DOMContentLoaded', initMobileApplication);
+    document.addEventListener('DOMContentLoaded', async function() {
+        try {
+            await initMobileApplication();
+        } catch (error) {
+            console.error('Mobile initialization failed', error);
+            const container = document.getElementById('router-view');
+            container.textContent = error.message;
+            const retryButton = document.createElement('button');
+            retryButton.type = 'button';
+            retryButton.textContent = window.t('mspa.retry', 'Retry');
+            retryButton.onclick = () => window.location.reload();
+            container.appendChild(retryButton);
+        }
+    });
 })();

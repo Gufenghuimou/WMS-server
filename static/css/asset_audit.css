@@ -79,9 +79,10 @@
 /* =========================================
    🌟 5. 盘点表格极致紧凑
    ========================================= */
-.audit-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-.audit-table th { background: #f1f5f9; border-bottom: 1px solid var(--border-color); color: var(--text-muted); white-space: nowrap; padding: 12px 15px; text-align: left; }
+.audit-table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 0.9rem; }
+.audit-table th { background: #f1f5f9; border-bottom: 1px solid var(--border-color); color: var(--text-muted); white-space: normal; padding: 12px 15px; text-align: left; }
 .audit-table td { padding: 10px 15px; border-bottom: 1px solid #f1f1f1; vertical-align: middle; }
+.audit-table th, .audit-table td { box-sizing: border-box; overflow-wrap: anywhere; }
 
 .text-truncate {
     white-space: nowrap;

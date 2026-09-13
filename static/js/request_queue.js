@@ -43,11 +43,13 @@
                 }
 
                 tabsContainer.addEventListener('click', (e) => {
+                    const tab = e.target.closest('.queue-header-tab');
+                    if (!tab) return;
                     let targetTab = 'consumable';
-                    if (e.target === tabAssetBtn) {
+                    if (tab === tabAssetBtn) {
                         targetTab = 'asset';
                     }
-                    switchQueueTab(targetTab, e.target);
+                    switchQueueTab(targetTab, tab);
                     return;
                 });
 

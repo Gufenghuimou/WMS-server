@@ -218,7 +218,7 @@
         
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite;">autorenew</i> ${t('base.processing') || 'Processing'}`;
+            submitBtn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite;">autorenew</i> ${t('admin.processing') || 'Processing'}`;
         }
 
         try {

@@ -53,6 +53,7 @@
                 window.onCurrentViewLanguageChange = () => {
                     if (window.USERS_LIST) {
                         renderUsers(window.USERS_LIST);
+                        bindAsyncForms();
                     }
                 } 
             }

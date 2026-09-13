@@ -1,0 +1,34 @@
+<section id="mobileAuditInventory" aria-label="Inventory audit">
+    <div class="action-row">
+        <button type="button" class="action-btn btn-commit" data-action="commit" data-admin-only>
+            <i class="material-icons" style="font-size: 1.1rem;">cloud_upload</i>
+            <span data-i18n="mspa.auditCommit" role="status" aria-live="polite">Sync</span>
+        </button>
+        <span id="auditProgress" role="status"></span>
+    </div>
+
+    <div class="scan-card" id="scanCardBox">
+        <div class="input-group" style="margin-bottom: 0;">
+            <div class="input-box">
+                <input type="text" id="scanInput" aria-label="Scan location or part number" placeholder="Enter/Scan..." data-i18n-placeholder="mobile_audit_inv.ph_scan_input" autocomplete="off">
+                <button type="button" class="scan-icon-btn" data-action="scan" aria-label="Scan">
+                    <i class="material-icons">qr_code_scanner</i>
+                </button>
+            </div>
+        </div>
+        <div class="scan-result-box" id="scanResultBox" style="margin-top: 10px;" role="status" aria-live="polite">
+            <span style="color: #999;">
+                <i class="material-icons" style="vertical-align: bottom; font-size: 1.2rem;">barcode_reader</i>
+                <span data-scan-hint></span>
+            </span>
+        </div>
+    </div>
+
+    <div id="auditListWrapper"></div>
+
+    <div id="scannerModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="scannerTitle">
+        <div id="scannerTitle" style="color: white; margin-bottom: 15px; font-size: 1.1rem; font-weight: bold;" data-i18n="mobile_audit_inv.scanner_info">Scan a location or part number</div>
+        <div id="reader"></div>
+        <button type="button" data-action="close-scanner" style="margin-top: 20px; padding: 12px 24px; background: #fff; color: #333; border-radius: 8px; border: none; font-size: 1rem; font-weight: bold;" data-i18n="mobile_upload.btn_close_scanner">Close</button>
+    </div>
+</section>

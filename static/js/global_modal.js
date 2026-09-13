@@ -39,7 +39,7 @@
                             status.innerHTML = `<span class="msg-error">❌ ${data.error}</span>`;
                             pn2.value = ''; name.value = '';
                         } else {
-                            if (data.matched_by === 'pn_2') {
+                            if (data.match_type === 'pn_2') {
                                 status.innerHTML = `<span class="msg-warning">${t('reprint.msg_correct_pn2')}</span>`;
                                 invInput.value = data.pn_1;
                                 pn2.value = data.pn_2 || '';
@@ -836,7 +836,7 @@
         document.getElementById('editDate').value = (dateStr === 'None' || !dateStr) ? '' : dateStr;
         document.getElementById('editPoType').value = (poType === 'None' || !poType) ? '' : poType;
         document.getElementById('applyPoToAllCheckbox').checked= false;
-        document.getElementById('editRemarks').value = remarks || '';
+        document.getElementById('editAssetRemarks').value = remarks || '';
         modal.style.display = 'flex';
     };
 
@@ -1101,10 +1101,41 @@
         document.getElementById('activeToggleModal').style.display = 'none';
     };
 
-    window.closeRepeatedConfirmModal = function() {
+    window.openRepeatedConfirmModal = function(ctrlNo, previousLoc, currentLoc) {
         const modal = document.getElementById('repeatedConfirmModal');
-        if (modal) modal.style.display = 'none';
-    };
+        const text = document.getElementById('repeatedConfirmText');
+        const submitBtn = document.getElementById('repeatedSubmitBtn');
+        const cancelBtn = document.getElementById('repeatedCancelBtn');
+                    
+        let safePrev = previousLoc ? previousLoc.split('-')[0].toUpperCase().replace(/'/g, "\\'").replace(/"/g, "&quot;") : '';
+        let safeCurr = currentLoc ? currentLoc.split('-')[0].toUpperCase().replace(/'/g, "\\'").replace(/"/g, "&quot;") : '';
+
+        let prevHtml = `<span class="prev-loc-text" style="cursor:pointer; color:var(--primary); font-weight:500; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;"><i class="material-icons" style="font-size:1.1rem">place</i>${previousLoc}</span>`;
+        let currHtml = `<span class="curr-loc-text" style="cursor:pointer; color:var(--primary); font-weight:500; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;"><i class="material-icons" style="font-size:1.1rem">place</i>${currentLoc}</span>`;
+
+        text.innerHTML = t('asset_audit.repeated_text').replace('{previousLoc}', prevHtml).replace('{currentLoc}', currHtml);
+        text.querySelector('.prev-loc-text').addEventListener('click', () => {window.openFooterMap(safePrev);});
+        text.querySelector('.curr-loc-text').addEventListener('click', () => {window.openFooterMap(safeCurr);});
+        modal.style.display = 'flex';
+        cancelBtn.focus();
+        
+        noticeAudio.currentTime = 0;
+        noticeAudio.play().catch(() => console.log("Loading sound fail"));
+        
+        submitBtn.onclick = async function() {
+            window.closeRepeatedConfirmModal();
+            await window.executeAuditSubmit(ctrlNo, currentLoc);
+        }
+    }
+
+    window.closeRepeatedConfirmModal = function() {
+        document.getElementById('repeatedConfirmModal').style.display = 'none';
+        const barcodeInput = document.getElementById('scanBarcode');
+        if(barcodeInput) {
+            barcodeInput.value = '';
+            barcodeInput.focus();
+        }
+    }
 
     // ==========================================
     // 7. 新增Alert和Confirm替代Modal 以及 infoModal

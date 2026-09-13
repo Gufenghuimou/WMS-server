@@ -13,6 +13,7 @@ from dateutil.relativedelta import relativedelta
 
 from database import engine
 from models import MonthlyProduction
+from dependencies import get_current_user, require_admin
 from core import t_lang
 
 router = APIRouter(tags=["Productions"])
@@ -20,7 +21,7 @@ router = APIRouter(tags=["Productions"])
 # ----------------------- 产量统计 --------------------- #
 
 @router.post("/production/daily_update")
-async def update_daily_production(request: Request, model_id: int, today_qty: int):
+async def update_daily_production(request: Request, model_id: int, today_qty: int, current_user: dict = Depends(require_admin)):
     lang = request.state.lang
     with Session(engine) as session:
         current_year_month = datetime.now().strftime("%Y-%m")
@@ -41,14 +42,15 @@ async def update_daily_production(request: Request, model_id: int, today_qty: in
     return {'status': 'success', 'message': t_lang("do.success", lang)}
 
 @router.get("/production/dashboard")
-async def get_last_12_months_production(model_id: int):
-    twelve_months_ago = datetime.now() - relativedelta(month=11)
-    taget_month_str = twelve_months_ago.strftime("%Y-%m")
+async def get_last_12_months_production(model_id: int, current_user: dict = Depends(require_admin)):
+    twelve_months_ago = datetime.now() - relativedelta(months=11)
+    target_month_str = twelve_months_ago.strftime("%Y-%m")
     with Session(engine) as session:
         statement = select(MonthlyProduction).where(
             MonthlyProduction.model_id == model_id,
-            MonthlyProduction.year_month > taget_month_str
+            MonthlyProduction.year_month >= target_month_str,
+            MonthlyProduction.year_month <= datetime.now().strftime("%Y-%m")
         ).order_by(MonthlyProduction.year_month)
         records = session.exec(statement).all()
 
-    return {records.year_month: record.quantity for record in records}
+    return {record.year_month: record.quantity for record in records}
