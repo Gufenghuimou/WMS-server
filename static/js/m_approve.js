@@ -134,12 +134,22 @@
         function openActionModal(requestEntry, actionType) {
             currentOperation = { requestEntry, actionType, requestType: currentTab };
             const requestInfo = requestEntry.req;
-            pageContainer.querySelector('#approvalTitle').textContent = t('mspa.' + actionType);
-            pageContainer.querySelector('#approvalSummary').textContent = [requestInfo.pn_1,requestInfo.ctrl_no,requestInfo.applicant,requestInfo.department].filter(Boolean).join(' · ');
-            pageContainer.querySelector('#approvalError').textContent = '';
+            const modal = pageContainer.querySelector('.custom-modal-content');
+            const approveTitle = modal.querySelector('#approvalTitle');
+            const approveSummary = modal.querySelector('#approvalSummary');
+            const submitBtn = modal.querySelector('.btn-approve');
+            modal.style.borderTop = '6px solid var(--primary-green)';
+            approveTitle.textContent = t('mspa.' + actionType);
+            approveSummary.textContent = [requestInfo.pn_1,requestInfo.ctrl_no,requestInfo.applicant,requestInfo.department].filter(Boolean).join(' · ');
+            modal.querySelector('#approvalError').textContent = '';
+            approveTitle.style.color = 'var(--primary-green)';
+            submitBtn.style.background = 'var(--primary-green)';
             let fieldsHtml = '';
             if (actionType === 'reject') {
                 fieldsHtml = `<p>${t('mspa.rejectConfirm')}</p>`;
+                modal.style.borderTop = '6px solid #faad14';
+                approveTitle.style.color = '#faad14';
+                submitBtn.style.background = '#faad14';
             } else if (currentTab === 'inv_req') {
                 fieldsHtml = `
                     <p>${t('card.location', 'Location')}: <span id="approvalLocation"></span></p>
