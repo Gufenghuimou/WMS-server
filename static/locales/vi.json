@@ -1,4 +1,8 @@
 {
+  "request": {
+    "timeout": "Yêu cầu đã hết thời gian chờ. Nếu đã gửi thao tác, hãy kiểm tra kết quả trước khi gửi lại.",
+    "network": "Kết nối mạng thất bại. Vui lòng kiểm tra kết nối."
+  },
   "title": {
     "base": "Hệ thống QL Kho",
     "login": "Đăng nhập",

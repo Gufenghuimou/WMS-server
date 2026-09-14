@@ -4,7 +4,7 @@
     // 捞取后端数据
     window.initRequestQueuePage = async function () {
         try {
-            const response = await fetch('/api/request_queue');
+            const response = await window.apiFetch('/api/request_queue');
             const result = await response.json();
             if (result.status === 'success') {
                 const reqData = result.data;
@@ -62,8 +62,9 @@
                 } 
             }
         } catch (error) {
+            if (error.name === 'AbortError') return;
             console.error("Data Loaded Fail", error);
-            document.querySelector('.queue-container').innerHTML = `<div style="text-align:center; color:red;">加载失败，请刷新重试</div>`;
+            document.querySelector('.queue-container').innerHTML = `<div style="text-align:center; color:red;">${window.requestErrorHtml(error)}</div>`;
         }
     }
 
@@ -262,7 +263,7 @@
                 submitBtn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite">autorenew</i> 校验中...`;
 
                 try {
-                    let response = await fetch(this.action, {
+                    let response = await window.apiFetch(this.action, {
                         method: 'POST',
                         body: new FormData(this)
                     });
@@ -277,7 +278,8 @@
                         showToast(result.message, 'error');
                     }
                 } catch (err) {
-                    showToast('Internet error', 'error');
+                    if (err.name === 'AbortError') return;
+                    window.showToast(window.requestErrorMessage(err), 'error');
                 } finally {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originBtnText;
@@ -317,7 +319,7 @@
                 submitBtn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite">autorenew</i> 校验中...`;
 
                 try {
-                    let response = await fetch(this.action, {
+                    let response = await window.apiFetch(this.action, {
                         method: 'POST',
                         body: new FormData(this)
                     });
@@ -333,7 +335,8 @@
                         showToast(result.message, 'error');
                     }
                 } catch (err) {
-                    showToast('Internet error', 'error');
+                    if (err.name === 'AbortError') return;
+                    window.showToast(window.requestErrorMessage(err), 'error');
                 } finally {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originBtnText;
@@ -356,7 +359,7 @@
                 submitBtn.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite">autorenew</i> 校验中...`;
 
                 try {
-                    let response = await fetch(form.action, {
+                    let response = await window.apiFetch(form.action, {
                         method: 'POST',
                         body: new FormData(form)
                     });
@@ -376,7 +379,8 @@
                         submitBtn.innerHTML = originalHtml;
                     }
                 } catch(err) {
-                    showToast('网络请求失败', 'error');
+                    if (err.name === 'AbortError') return;
+                    window.showToast(window.requestErrorMessage(err), 'error');
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalHtml;
                 }

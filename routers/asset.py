@@ -3,7 +3,6 @@ from fastapi import Request, Form, UploadFile, File, Depends, BackgroundTasks, A
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from sqlmodel import Session, select, or_, desc, delete
 from typing import List, Optional
-from starlette.responses import RedirectResponse
 from collections import defaultdict
 import pandas as pd
 import io
@@ -116,7 +115,7 @@ async def asset_out(
     with Session(engine) as session:
         item = session.get(AssetItem, item_id)
         if not item:
-            return RedirectResponse(url= "/asset", status_code=303)
+            return JSONResponse(status_code=404, content={"status": "error", "message": t_lang("do.not_exist", lang)})
 
         was_in_stock = item.is_stock
         if was_in_stock:
@@ -346,11 +345,11 @@ async def import_asset(request: Request, file: UploadFile = File(...), current_u
                 session.commit()
             except Exception as inner_e:
                 session.rollback()
-                return {"error": t_lang("do.import_error", lang, error=str(inner_e))}
+                return JSONResponse(status_code=400, content={"status": "error", "message": t_lang("do.import_error", lang, error=str(inner_e))})
 
-        return RedirectResponse(url= "/backend", status_code=303)
+        return {"status": "success", "data": {}}
     except Exception as e:
-        return {"error": t_lang("do.read_excel_error", lang, error=str(e))}
+        return JSONResponse(status_code=400, content={"status": "error", "message": t_lang("do.read_excel_error", lang, error=str(e))})
 
 @router.get("/api/asset/export")
 def asset_export(request: Request, current_user: dict = Depends(require_admin)):
@@ -605,7 +604,7 @@ async def asset_batch_scrap(current_user: dict = Depends(require_admin)):
         statement_scrap = delete(AssetScrapRecord)
         session.exec(statement_scrap)
         session.commit()
-    return RedirectResponse(url= "/asset_scrap", status_code=303)
+    return {"status": "success", "data": {}}
 
 @router.get("/api/get_stopped")
 async def get_stopped(request: Request, current_user: dict = Depends(require_admin)):
@@ -830,10 +829,10 @@ async def asset_history_import(request: Request, file: UploadFile = File(...), c
                 session.commit()
         except Exception as inner_e:
             session.rollback()
-            return {"error": t_lang("do.import_error", lang, error=str(inner_e))}
-        return RedirectResponse(url= "/backend", status_code=303)
+            return JSONResponse(status_code=400, content={"status": "error", "message": t_lang("do.import_error", lang, error=str(inner_e))})
+        return {"status": "success", "data": {}}
     except Exception as e:
-        return {"error": t_lang("do.read_excel_error", lang, error=str(e))}
+        return JSONResponse(status_code=400, content={"status": "error", "message": t_lang("do.read_excel_error", lang, error=str(e))})
 
 # -----------------------------资产盘点--------------------------#
 

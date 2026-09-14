@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function initApplication() {
     try {
-        const response = await fetch('/api/system/context');
+        const response = await window.apiFetch('/api/system/context');
         const result = await response.json();
 
         if (result.status === 'success') {
@@ -36,8 +36,7 @@ async function initApplication() {
                 }
             }
 
-            await window.loadI18nDict(targetLang);
-            window.CURRENT_LANG = targetLang;
+            window.CURRENT_LANG = await window.loadI18nDict(targetLang);
            
             // 语言选择
             const langBtns = document.querySelectorAll('.lang-flag');
@@ -50,11 +49,15 @@ async function initApplication() {
                     }
                     btn.addEventListener('click', async () => {
                         if (btn.id === window.CURRENT_LANG) return;
+                        try {
+                            window.CURRENT_LANG = await window.loadI18nDict(btn.id);
+                        } catch (error) {
+                            if (error.name === 'AbortError') return;
+                            await window.openAlertModal(window.requestErrorMessage(error));
+                            return;
+                        }
                         langBtns.forEach(b => b.classList.remove('active'));
                         btn.classList.add('active');
-
-                        await window.loadI18nDict(btn.id);
-                        window.CURRENT_LANG = btn.id;
 
                         localStorage.setItem('userLang', btn.id);
 
@@ -72,13 +75,16 @@ async function initApplication() {
             
             // 加载模态框
             try {
-                let modalRes = await fetch('/static/views/global_modal.html'); 
+                let modalRes = await window.apiFetch('/static/views/global_modal.html');
+                if (!modalRes.ok) throw new Error('Unable to load global dialogs');
                 if (modalRes.ok) {
                     let modalHtml = await modalRes.text();
                     document.body.insertAdjacentHTML('beforeend', modalHtml);
                 }
             } catch (err) {
+                if (err.name === 'AbortError') return;
                 console.error("全局 Modal 加载失败:", err);
+                throw err;
             }
             // 加载翻译
             renderI18n();
@@ -120,7 +126,14 @@ async function initApplication() {
             window.location.href = '/login';
         }
     } catch (error) {
+        if (error.name === 'AbortError') return;
         console.error("初始化系统失败", error);
+        document.body.classList.remove('is-loading');
+        const loader = document.getElementById('global-page-loader');
+        if (loader) loader.style.display = 'none';
+        if (window.confirm(window.requestErrorMessage(error) + '\n是否重新加载？ / Reload?')) {
+            window.location.reload();
+        }
     }
 }
 
@@ -150,12 +163,16 @@ window.t = function(keyString) {
 
 // 获取语言文件
 window.loadI18nDict = async function(lang) {
-    try {
-        const response = await fetch(`/static/locales/${lang}.json`);
-        window.I18N_DICT = await response.json();
-    } catch (error) {
-        console.error("多语言加载失败", error);
-    }
+    lang = ({ jp: 'ja', vn: 'vi' })[lang] || lang;
+    if (!['zh', 'en', 'ja', 'vi'].includes(lang)) lang = 'en';
+    const response = await window.apiFetch(`/static/locales/${lang}.json`);
+    if (!response.ok) throw new Error('Unable to load language');
+    const dictionary = await response.json();
+    const saved = await window.apiFetch(`/api/switch_lang/${lang}`, { method: 'POST' });
+    const result = await saved.json();
+    if (!saved.ok || result.status !== 'success') throw new Error(result.message || 'Unable to save language');
+    window.I18N_DICT = dictionary;
+    return result.data.lang;
 }
 
 // 翻译

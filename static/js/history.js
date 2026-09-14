@@ -11,7 +11,7 @@
         }
         
         try {
-            const response = await fetch('/api/history');
+            const response = await window.apiFetch('/api/history');
             const result = await response.json();
             
             if (result.status === 'success') {
@@ -58,8 +58,9 @@
                 }
             }
         } catch (error) {
+            if (error.name === 'AbortError') return;
             console.error("Data Loaded Fail", error);
-            document.querySelector('tbody').innerHTML = `<div style="text-align:center; color:red;">加载失败，请刷新重试</div>`;
+            document.querySelector('tbody').innerHTML = `<div style="text-align:center; color:red;">${window.requestErrorHtml(error)}</div>`;
         }
     };
 
@@ -150,12 +151,12 @@
         btnElement.innerHTML = `<i class="material-icons" style="animation: spin 1s linear infinite; font-size:1rem;">autorenew</i>`;
 
         try {
-            let response = await fetch(`/undo/${logId}`, { method: 'POST' });
+            let response = await window.apiFetch(`/undo/${logId}`, { method: 'POST' });
             let result = await response.json();
 
             if (result.status === 'success') {
                 showToast(result.message, 'success');
-                fetch('/api/history').then(res => res.json()).then(res => {
+                await window.apiFetch('/api/history').then(res => res.json()).then(res => {
                     window.HISTORY_DATA = res.data;
                     renderHistory(res.data);
                 });
@@ -166,7 +167,8 @@
                 btnElement.innerHTML = originalHtml;
             }
         } catch (error) {
-            await openAlertModal('Loading Fail');
+            if (error.name === 'AbortError') return;
+            await window.openAlertModal(window.requestErrorMessage(error));
             // showToast('Loading Fail', 'error');
             btnElement.disabled = false;
             btnElement.innerHTML = originalHtml;

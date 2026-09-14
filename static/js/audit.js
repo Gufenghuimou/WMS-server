@@ -11,7 +11,7 @@
         }
 
         try {
-            const response = await fetch('/api/audit');
+            const response = await window.apiFetch('/api/audit');
             const result = await response.json();
             if (result.status === 'success') {
                 const auditData = result.data;
@@ -37,8 +37,9 @@
                 } 
             }
         } catch (error) {
+            if (error.name === 'AbortError') return;
             console.error("Data Loaded Fail", error);
-            document.querySelector('tbody').innerHTML = `<div style="text-align:center; color:red;">加载失败，请刷新重试</div>`;
+            document.querySelector('tbody').innerHTML = `<div style="text-align:center; color:red;">${window.requestErrorHtml(error)}</div>`;
         }
     }
 
@@ -322,7 +323,7 @@
                 const isConfirmed = await openConfirmModal(t('audit.confirm_start'));
                 try {
                     if (!isConfirmed) return;
-                    let response = await fetch('/api/audit/start', {
+                    let response = await window.apiFetch('/api/audit/start', {
                         method: 'POST'
                     })
                     let result = await response.json();
@@ -334,8 +335,9 @@
                         await openAlertModal('同步失败');
                     }
                 } catch (error) {
-                    showToast("Sync Error:", error);
-                    await openAlertModal('网络请求异常', 'error');
+                    if (error.name === 'AbortError') return;
+                    window.showToast(window.requestErrorMessage(error), 'error');
+                    await window.openAlertModal(window.requestErrorMessage(error));
                 } finally {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalBtnHtml;
@@ -353,7 +355,7 @@
                 const isConfirmed = await openConfirmModal(t('asset_audit.confirm_commit'));
                 try {
                     if (!isConfirmed) return;
-                    let response = await fetch('/api/audit/commit', {
+                    let response = await window.apiFetch('/api/audit/commit', {
                         method: 'POST'
                     });
                     let result = await response.json();
@@ -365,8 +367,9 @@
                         await openAlertModal('提交失败');
                     }
                 } catch (error) {
-                    showToast("Commit Error:", error);
-                    await openAlertModal('网络请求异常', 'error');
+                    if (error.name === 'AbortError') return;
+                    window.showToast(window.requestErrorMessage(error), 'error');
+                    await window.openAlertModal(window.requestErrorMessage(error));
                 } finally {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalBtnHtml;
@@ -388,7 +391,7 @@
             btn.disabled = true;
 
             try {
-                let response = await fetch(form.action, {
+                let response = await window.apiFetch(form.action, {
                     method: 'POST',
                     body: new FormData(form)
                 });
@@ -435,7 +438,8 @@
                     // alert(result.message);
                 }
             } catch(err) {
-                await openAlertModal("提交时发生网络错误");
+                if (err.name === 'AbortError') return;
+                await window.openAlertModal(window.requestErrorMessage(err));
                 // alert("提交时发生网络错误");
             } finally {
                 btn.innerHTML = oldHtml;

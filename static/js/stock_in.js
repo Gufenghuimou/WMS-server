@@ -219,7 +219,7 @@
                 }
 
                 try {
-                    let response = await fetch('/api/batch_submit', {
+                    let response = await window.apiFetch('/api/batch_submit', {
                         method: 'POST',
                         body: new FormData(stockInForm)
                     });
@@ -233,9 +233,10 @@
                         await openAlertModal('Upload Error');
                     }
                 } catch (error) {
+                    if (error.name === 'AbortError') return;
                         // console.error('提交异常',error);
                         // alert('网络请求错误，请重试！');
-                        await openAlertModal('网络请求错误，请重试！');
+                        await window.openAlertModal(window.requestErrorMessage(error));
                 } finally {
                     if (submitBtn) {
                         submitBtn.disabled = false;
@@ -338,7 +339,7 @@
         let rowIdx = inputElement.getAttribute('data-row');
 
         try {
-            let response = await fetch(`/api/item/${encodeURIComponent(pnVal)}`);
+            let response = await window.apiFetch(`/api/item/${encodeURIComponent(pnVal)}`);
             let data = await response.json();
             if (!inputElement.isConnected || inputElement.value !== originalValue || queryVersions.get(inputElement) !== version) return;
             if (!data.error) {
@@ -366,7 +367,9 @@
                 checkAllDuplicates();
             }
         } catch (err) {
+            if (err.name === 'AbortError') return;
             console.error(t('stockin.query_fail'), err);
+            window.showToast(window.requestErrorMessage(err), 'error');
         }
     }
 })();

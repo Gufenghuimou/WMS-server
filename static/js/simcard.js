@@ -12,7 +12,7 @@
         }
 
         try {
-            const response = await fetch('/api/simcard');
+            const response = await window.apiFetch('/api/simcard');
             const result = await response.json();
 
             if (result.status === 'success') {
@@ -60,8 +60,9 @@
                 } 
             }
         } catch (error) {
+            if (error.name === 'AbortError') return;
             console.error("Data Loaded Fail", error);
-            document.querySelector('.table-header').innerHTML = `<div style="text-align:center; color:red;">加载失败，请刷新重试</div>`;
+            document.querySelector('.table-header').innerHTML = `<div style="text-align:center; color:red;">${window.requestErrorHtml(error)}</div>`;
         }
     };
 
@@ -223,7 +224,7 @@
 
         try {
             let formData = new FormData(form);
-            let response = await fetch(form.action, {
+            let response = await window.apiFetch(form.action, {
                 method: 'POST',
                 body: formData
             });
@@ -242,7 +243,8 @@
                 await openAlertModal(t('card.backend_fail'));
             }
         } catch (err) {
-            showToast(err.message, 'error');
+            if (err.name === 'AbortError') return;
+            window.showToast(window.requestErrorMessage(err), 'error');
         } finally {
             if (submitBtn) {
                 submitBtn.disabled = false;

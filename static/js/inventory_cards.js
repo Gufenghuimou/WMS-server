@@ -43,7 +43,7 @@
         stopAutoPlay();
 
         try {
-            const response = await fetch('/api/inventory');
+            const response = await window.apiFetch('/api/inventory');
             const result = await response.json();
             if (generation !== pageGeneration) return;
 
@@ -74,9 +74,10 @@
                 } 
             }
         } catch (error) {
+            if (error.name === 'AbortError') return;
             if (generation !== pageGeneration) return;
             console.error("Data Loaded Fail", error);
-            if (grid) grid.innerHTML = `<div style="text-align:center; color:red;">加载失败，请刷新重试</div>`;
+            if (grid) grid.innerHTML = `<div style="text-align:center; color:red;">${window.requestErrorHtml(error)}</div>`;
         }
     };
 
@@ -402,7 +403,7 @@
 
         try {
             let formData = new FormData(form);
-            let response = await fetch(form.action, { method: 'POST', body: formData });
+            let response = await window.apiFetch(form.action, { method: 'POST', body: formData });
             let result = await response.json();
             if (generation !== pageGeneration) return;
 
@@ -427,7 +428,8 @@
                 // alert(result.message || `${t('card.backend_fail')}`);
             }
         } catch (err) {
-            await openAlertModal(t('card.net_req_fail'));
+            if (err.name === 'AbortError') return;
+            await window.openAlertModal(window.requestErrorMessage(err));
             // alert(`${t('card.net_req_fail')}`);
             // console.error(err);
         } finally {
@@ -678,7 +680,7 @@
         let itemId = document.getElementById('reqItemId').value;
 
         try {
-            let response = await fetch(`/api/request_item/${itemId}`, { method: 'POST', body: formData });
+            let response = await window.apiFetch(`/api/request_item/${itemId}`, { method: 'POST', body: formData });
             let data = await response.json();
 
             if (data.status === 'success') {
@@ -700,7 +702,8 @@
                 btn.innerHTML = `${t('card.send_req')}`;
             }
         } catch (err) {
-            await openAlertModal(t('card.net_err'));
+            if (err.name === 'AbortError') return;
+            await window.openAlertModal(window.requestErrorMessage(err));
             // alert(`${t('card.net_err')}`);
             btn.disabled = false;
             btn.innerHTML = `${t('card.send_req')}`;
@@ -752,7 +755,7 @@
         let numId = parseInt(itemId);
 
         try {
-            let response = await fetch(`/api/bookmark/toggle/${numId}`, { method: 'POST' });
+            let response = await window.apiFetch(`/api/bookmark/toggle/${numId}`, { method: 'POST' });
             let data = await response.json();
 
             if (data.status === 'added') {
@@ -769,9 +772,10 @@
                 window.applyFilters();
             }
         } catch (err) {
+            if (err.name === 'AbortError') return;
             // console.error(`${t('card.sync_fail')}`, err);
             // alert(`${t('card.sync_net_err')}`);
-            await openAlertModal(t('card.sync_net_err'));
+            await window.openAlertModal(window.requestErrorMessage(err));
         }
     };
 

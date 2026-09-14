@@ -82,7 +82,7 @@
                 msgBox.className = 'settings-msg';
 
                 try {
-                    let response = await fetch('/user/update_settings', {
+                    let response = await window.apiFetch('/user/update_settings', {
                         method: 'POST',
                         body: formData
                     });
@@ -118,8 +118,9 @@
                         }, 1500);
                     }
                 } catch (error) {
+                    if (error.name === 'AbortError') return;
                     console.error(error);
-                    msgBox.innerText = t('settings.network_error') || 'Network Error';
+                    msgBox.innerText = window.requestErrorMessage(error);
                     msgBox.classList.add('msg-error');
                     msgBox.style.display = 'block';
                     btn.disabled = false;

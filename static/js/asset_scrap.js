@@ -15,7 +15,7 @@
         assetSet.clear();
 
         try {
-            const response = await fetch('/api/asset_scrap');
+            const response = await window.apiFetch('/api/asset_scrap');
             const result = await response.json();
 
             if (result.status === 'success') {
@@ -66,8 +66,9 @@
                 }
             }
         } catch (error) {
+            if (error.name === 'AbortError') return;
             console.error("Data Loaded Fail", error);
-            document.querySelector('tbody').innerHTML = `<div style="text-align:center; color:red;">加载失败，请刷新重试</div>`;
+            document.querySelector('tbody').innerHTML = `<div style="text-align:center; color:red;">${window.requestErrorHtml(error)}</div>`;
         }
     }
 
@@ -185,7 +186,7 @@
         formData.append('ctrl_no', val);
 
         try {
-            let response = await fetch('/api/asset_scrap/scan', { method: 'POST', body: formData });
+            let response = await window.apiFetch('/api/asset_scrap/scan', { method: 'POST', body: formData });
             let result = await response.json();
 
             if (result.status === 'success') {
@@ -198,7 +199,8 @@
                 // alert(result.message);
             }
         } catch (e) {
-            await window.openAlertModal(t('asset_scrap.scan_net_error'));
+            if (e.name === 'AbortError') return;
+            await window.openAlertModal(window.requestErrorMessage(e));
             // alert(t('asset_scrap.scan_net_error'));
         }
 
@@ -218,7 +220,7 @@
         }
 
         try {
-            let res = await fetch('/api/get_stopped');
+            let res = await window.apiFetch('/api/get_stopped');
             let result = await res.json();
 
             if (result.status === 'success') {
@@ -246,9 +248,10 @@
                 // alert(result.message);
             }
         } catch (error) {
+            if (error.name === 'AbortError') return;
             // alert(t('asset_scrap.fetch_net_error'));
-            showToast('Fetch Error', error)
-            await openAlertModal(t('asset_scrap.fetch_net_error'));
+            window.showToast(window.requestErrorMessage(error), 'error');
+            await window.openAlertModal(window.requestErrorMessage(error));
         } finally {
             if (btn) {
                 btn.innerHTML = originalHtml;
@@ -263,7 +266,7 @@
         let formData = new FormData();
         formData.append('ctrl_no', val);
         try {
-            let res = await fetch('/api/asset_scrap/delete', {method: 'POST', body: formData});
+            let res = await window.apiFetch('/api/asset_scrap/delete', {method: 'POST', body: formData});
             let result = await res.json();
             console.log(result);
 
@@ -281,7 +284,8 @@
                 // alert(result.message);
             }
         } catch (e) {
-            await openAlertModal("Delete Failed, please check internet.");
+            if (e.name === 'AbortError') return;
+            await window.openAlertModal(window.requestErrorMessage(e));
             // alert("Delete Failed, please check internet.")
         }
     };

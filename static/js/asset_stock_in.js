@@ -158,7 +158,7 @@
 
         // 【策略二：查库兜底】上面没有，去通用物品库里查一下有没有定义过这个 PN
         try {
-            let response = await fetch(`/api/item/${encodeURIComponent(pnVal)}`);
+            let response = await window.apiFetch(`/api/item/${encodeURIComponent(pnVal)}`);
             let data = await response.json();
             if (!inputElement.isConnected || inputElement.value !== originalValue || queryVersions.get(inputElement) !== version) return;
 
@@ -180,7 +180,9 @@
                 flashInput(inputElement);
             }
         } catch (err) {
+            if (err.name === 'AbortError') return;
             console.error(t('asset_stockin.err_query_fail'), err);
+            window.showToast(window.requestErrorMessage(err), 'error');
         }
     }
 
@@ -210,12 +212,14 @@
 
         // 🌟 1. 页面加载瞬间，向后端请求当前最新的序列号
         try {
-            let res = await fetch('/api/asset/last_seq');
+            let res = await window.apiFetch('/api/asset/last_seq');
             let data = await res.json();
             globalAssetPrefix = data.prefix;
             globalCurrentSeq = data.last_seq;
         } catch (e) {
+            if (e.name === 'AbortError') return;
             console.error(t('asset_stockin.err_fetch_seq'), e);
+            window.showToast(window.requestErrorMessage(e), 'error');
         }
 
         const form = document.getElementById('assetStockInForm');
@@ -362,7 +366,7 @@
                 }
 
                 try {
-                    let response = await fetch('/api/asset_batch_submit', {
+                    let response = await window.apiFetch('/api/asset_batch_submit', {
                         method: 'POST',
                         body: new FormData(form)
                     });
@@ -377,8 +381,9 @@
                         // alert('Upload Error');
                     }
                 } catch (error) {
+                    if (error.name === 'AbortError') return;
                     console.error('提交异常',error);
-                    await openAlertModal('网络请求错误，请重试！');
+                    await window.openAlertModal(window.requestErrorMessage(error));
                     // alert('网络请求错误，请重试！');
                 } finally {
                     if (submitBtn) {

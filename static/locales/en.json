@@ -1,4 +1,8 @@
 {
+  "request": {
+    "timeout": "Request timed out. For a submitted operation, check its result before submitting again.",
+    "network": "Network connection failed. Please check your connection."
+  },
   "title": {
     "base": "Smart Warehouse System",
     "login": "System Login",

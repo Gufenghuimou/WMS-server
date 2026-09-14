@@ -3,7 +3,7 @@ from fastapi import Request, Form, UploadFile, File, Depends, APIRouter
 from fastapi.responses import HTMLResponse, JSONResponse
 from sqlmodel import Session, select, or_, desc, delete
 from typing import Optional, List
-from starlette.responses import RedirectResponse, StreamingResponse
+from starlette.responses import StreamingResponse
 from collections import defaultdict
 import pandas as pd
 import io
@@ -51,7 +51,7 @@ async def simcard_out(
     with Session(engine) as session:
         item = session.get(PhysicalSimCard, item_id)
         if not item:
-            return RedirectResponse(url="/simcard", status_code=303)
+            return JSONResponse(status_code=404, content={"status": "error", "message": t_lang("do.not_exist", lang)})
 
         was_in_stock = item.is_stock
         if was_in_stock:
@@ -269,6 +269,8 @@ async def simcard_delete(request: Request, item_id: int, current_user: dict = De
     lang = request.state.lang
     with Session(engine) as session:
         item = session.get(PhysicalSimCard, item_id)
+        if not item:
+            return JSONResponse(status_code=404, content={"status": "error", "message": "Item not found"})
         if item:
             log = PhysicalSimCardLog(
                 icc_id = item.icc_id,
@@ -281,9 +283,7 @@ async def simcard_delete(request: Request, item_id: int, current_user: dict = De
             session.add(log)
             session.delete(item)
             session.commit()
-            referer = request.headers.get('referer')
-            redirect_url = referer if referer else "/simcard"
-    return RedirectResponse(url=redirect_url, status_code=303)
+    return {"status": "success", "data": {"id": item_id}}
     # return {'status': 'success', 'message':  t_lang("do.success", lang)}
 
 @router.get("/api/simcard_history")

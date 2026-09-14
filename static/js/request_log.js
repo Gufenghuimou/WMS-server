@@ -9,7 +9,7 @@
         }
         
         try {
-            const response = await fetch('/api/request_log');
+            const response = await window.apiFetch('/api/request_log');
             const result = await response.json();
             if (result.status === 'success') {
                 const logData = result.data;
@@ -106,8 +106,9 @@
                 } 
             }
         } catch (error) {
+            if (error.name === 'AbortError') return;
             console.error("Data Loaded Fail", error);
-            document.querySelector('.log-container').innerHTML = `<div style="text-align:center; color:red;">加载失败，请刷新重试</div>`;
+            document.querySelector('.log-container').innerHTML = `<div style="text-align:center; color:red;">${window.requestErrorHtml(error)}</div>`;
         }
     }
 

@@ -41,20 +41,19 @@ function loadPageCSS(cssFileName) {
 const pageScriptLoads = new Map();
 function loadPageJS(jsFileName) {
     if (pageScriptLoads.has(jsFileName)) return pageScriptLoads.get(jsFileName);
-    const loading = new Promise((resolve, reject) => {
-        if (!jsFileName) return resolve();
-        if (document.querySelector(`script[data-route-js="${jsFileName}"]`)) return resolve();
-
+    const loading = (async () => {
+        if (!jsFileName) return;
+        if (document.querySelector(`script[data-route-js="${jsFileName}"]`)) return;
+        const response = await window.apiFetch(`/static/js/${jsFileName}.js?t=${window.SYS_VER || Date.now()}`);
+        if (!response.ok) throw new Error('Unable to load page script');
+        const source = await response.text();
         const script = document.createElement('script');
-        script.src = `/static/js/${jsFileName}.js?t=${window.SYS_VER || new Date().getTime()}`;
         script.setAttribute('data-route-js', jsFileName);
-        script.onload = resolve;
-        script.onerror = (error) => {
-            script.remove();
-            pageScriptLoads.delete(jsFileName);
-            reject(error);
-        };
+        script.textContent = source;
         document.head.appendChild(script);
+    })().catch(error => {
+        pageScriptLoads.delete(jsFileName);
+        throw error;
     });
     pageScriptLoads.set(jsFileName, loading);
     return loading;
@@ -94,7 +93,7 @@ const router = async () => {
         loadPageCSS(route.css);
         window.onCurrentViewLanguageChange = null;
         const [htmlResponse] = await Promise.all([
-            fetch(route.view, { signal: controller.signal }),
+            window.apiFetch(route.view, { signal: controller.signal }),
             loadPageJS(route.js)
         ]);
         if (!htmlResponse.ok) throw new Error("View not found");
@@ -120,12 +119,15 @@ const router = async () => {
         updateSidebarActive(path);
 
     } catch (error) {
+        if (error.name === 'AbortError') return;
         if (requestId !== navigationId || error.name === 'AbortError') return;
-        viewContainer.innerHTML = '<div style="color:red; padding: 50px; text-align: center;">页面加载失败或模块开发中</div>';
+        viewContainer.innerHTML = `<div style="color:red; padding: 50px; text-align: center;">${window.requestErrorHtml(error)}</div>`;
         console.error("Router Load Error:", error);
     } finally {    
-        if (requestId === navigationId && typeof window.hideGlobalLoader === 'function') {
-            window.hideGlobalLoader();
+        if (requestId === navigationId) {
+            if (typeof window.hideGlobalLoader === 'function') window.hideGlobalLoader();
+            else if (loader) loader.style.display = 'none';
+            document.body.classList.remove('is-loading');
         }
     }
 };

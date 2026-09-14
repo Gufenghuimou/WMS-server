@@ -64,7 +64,7 @@
                 if (isCurrentPage) link.setAttribute('aria-current', 'page');
                 else link.removeAttribute('aria-current');
             });
-            const response = await fetch(route.view, { signal: pageSignal });
+            const response = await window.fetchWithTimeout(route.view, { signal: pageSignal });
             if (!response.ok) throw new Error(window.t('mspa.requestError', 'Unable to load page'));
             const html = await response.text();
             if (currentVersion !== navigationVersion) return;
@@ -77,7 +77,7 @@
             if (currentVersion !== navigationVersion || error.name === 'AbortError') return;
             const message = document.createElement('p');
             message.className = 'mobile-error';
-            message.textContent = error.message;
+            message.textContent = window.requestErrorMessage(error);
             const retryButton = document.createElement('button');
             retryButton.textContent = window.t('mspa.retry', 'Retry');
             retryButton.onclick = router;

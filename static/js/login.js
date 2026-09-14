@@ -20,9 +20,7 @@
         if (!['zh', 'en', 'ja', 'vi'].includes(language)) language = 'en';
         document.documentElement.lang = language;
 
-        const languageController = new AbortController();
-        const languageTimeout = setTimeout(() => languageController.abort(), 5000);
-        fetch(`/static/locales/${language}.json`, { signal: languageController.signal })
+        window.fetchWithTimeout(`/static/locales/${language}.json`)
             .then(response => {
                 if (!response.ok) throw new Error('Unable to load language');
                 return response.json();
@@ -30,8 +28,7 @@
             .then(data => {
                 document.title = `${data.title.login} - ${data.title.base}`;
             })
-            .catch(error => console.warn('Login language unavailable', error))
-            .finally(() => clearTimeout(languageTimeout));
+            .catch(error => console.warn('Login language unavailable', window.requestErrorMessage(error)));
 
         toggleIcon.onclick = function() {
             const showPassword = pwdInput.type === 'password';
@@ -49,16 +46,13 @@
             errorBox.style.display = 'none';
             card.classList.remove('shake-animation');
 
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000);
             try {
                 const formData = new FormData(loginForm);
                 formData.set('language', language);
-                const response = await fetch('/login', {
+                const response = await window.fetchWithTimeout('/login', {
                     method: 'POST',
                     body: formData,
-                    headers: { 'Accept': 'application/json' },
-                    signal: controller.signal
+                    headers: { 'Accept': 'application/json' }
                 });
                 if (!(response.headers.get('content-type') || '').includes('application/json')) {
                     throw new Error('Unexpected server response. Please try again.');
@@ -78,16 +72,11 @@
                     setTimeout(() => window.location.assign(destination.href), 1500);
                 }, 500);
             } catch (error) {
-                errorBox.textContent = error.name === 'AbortError'
-                    ? 'Request timeout. Check server connection.'
-                    : error instanceof TypeError
-                        ? 'Network error. Check server connection.'
-                        : error.message || 'Unable to sign in. Please try again.';
+                errorBox.textContent = window.requestErrorMessage(error);
                 errorBox.style.display = 'block';
                 void card.offsetWidth;
                 card.classList.add('shake-animation');
             } finally {
-                clearTimeout(timeoutId);
                 if (!loginSucceeded) {
                     isSubmitting = false;
                     btn.disabled = false;

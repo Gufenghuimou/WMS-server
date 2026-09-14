@@ -1,6 +1,6 @@
 # /routers/inventory.py
 from fastapi import Request, Form, UploadFile, File, Depends, BackgroundTasks, APIRouter
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from sqlmodel import Session, select, or_, desc, delete, func
 from typing import List, Optional
 from starlette.responses import RedirectResponse
@@ -229,6 +229,8 @@ async def upload_image(request: Request, item_id: int, file: UploadFile = File(.
 async def delete_item(request: Request, item_id: int, current_user: dict = Depends(require_admin)):
     with Session(engine) as session:
         item = session.get(InventoryItem, item_id)
+        if not item:
+            return JSONResponse(status_code=404, content={"status": "error", "message": "Item not found"})
         if item:
             log = HistoryLog(
                 pn_1=item.pn_1,
@@ -248,9 +250,7 @@ async def delete_item(request: Request, item_id: int, current_user: dict = Depen
                 print(f"Error deleting image file: {e}")
             session.delete(item)
             session.commit()
-            referer = request.headers.get('referer')
-            redirect_url = referer if referer else "/inventory_cards"
-    return RedirectResponse(url=redirect_url, status_code=303)
+    return {"status": "success", "data": {"id": item_id}}
 
 
 @router.post("/import")
@@ -294,11 +294,11 @@ async def import_excel(request: Request, file: UploadFile = File(...), current_u
                 session.commit()
             except Exception as inner_e:
                 session.rollback()
-                return {'status': t_lang("do.import_error", lang, error=str(inner_e))}
+                return JSONResponse(status_code=400, content={"status": "error", "message": t_lang("do.import_error", lang, error=str(inner_e))})
 
-        return RedirectResponse(url="/backend", status_code=303)
+        return {"status": "success", "data": {}}
     except Exception as e:
-        return {"error": t_lang("do.read_excel_error", lang, error=str(e))}
+        return JSONResponse(status_code=400, content={"status": "error", "message": t_lang("do.read_excel_error", lang, error=str(e))})
 
 # -----------------------------库存管理--------------------------#
 
@@ -558,10 +558,10 @@ async def import_history_excel(request: Request, file: UploadFile = File(...), c
                 update_all_usage_stats(session)
             except Exception as inner_e:
                 session.rollback()
-                return {"error": t_lang("do.import_error", lang, error=str(inner_e))}
-        return RedirectResponse(url= "/backend", status_code=303)
+                return JSONResponse(status_code=400, content={"status": "error", "message": t_lang("do.import_error", lang, error=str(inner_e))})
+        return {"status": "success", "data": {}}
     except Exception as e:
-        return {"error": t_lang("do.read_excel_error", lang ,error=str(e))}
+        return JSONResponse(status_code=400, content={"status": "error", "message": t_lang("do.read_excel_error", lang ,error=str(e))})
 
 @router.get("/history/export")
 def export_history(request: Request, current_user: dict = Depends(require_admin)):

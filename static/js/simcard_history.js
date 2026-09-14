@@ -11,7 +11,7 @@
         }
 
         try {
-            const response = await fetch('/api/simcard_history');
+            const response = await window.apiFetch('/api/simcard_history');
             const result = await response.json();
 
             if (result.status === 'success') {
@@ -58,8 +58,9 @@
                 } 
             }
         } catch (error) {
+            if (error.name === 'AbortError') return;
             console.error("Data Loaded Fail", error);
-            document.querySelector('tbody').innerHTML = `<div style="text-align:center; color:red;">加载失败，请刷新重试</div>`;
+            document.querySelector('tbody').innerHTML = `<div style="text-align:center; color:red;">${window.requestErrorHtml(error)}</div>`;
         }
     }
 

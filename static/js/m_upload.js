@@ -87,7 +87,7 @@
             if (!query) return;
             const url = type === 'ctrl' ? '/api/asset_info/' : '/api/item/';
             try {
-                const response = await fetch(url + encodeURIComponent(query), { signal: pageSignal });
+                const response = await window.fetchWithTimeout(url + encodeURIComponent(query), { signal: pageSignal });
                 if (!isPageActive() || currentVersion !== requestVersion) return;
                 if (response.status === 401 || (response.redirected && new URL(response.url).pathname.includes('login'))) {
                     window.location.assign('/mobile/login');
@@ -139,7 +139,7 @@
             } catch (error) {
                 if (!isPageActive() || currentVersion !== requestVersion || error.name === 'AbortError') return;
                 noticeBox.className = 'mobile-error';
-                noticeBox.textContent = error.message;
+                noticeBox.textContent = window.requestErrorMessage(error);
             } finally {
                 if (isPageActive() && currentVersion === requestVersion) {
                     isQuerying = false;
@@ -289,7 +289,7 @@
             } catch (error) {
                 if (!isPageActive() || currentVersion !== imageVersion) return;
                 noticeBox.className = 'mobile-error';
-                noticeBox.textContent = error.message || t('mspa.imageProcessError');
+                noticeBox.textContent = window.requestErrorMessage(error) || t('mspa.imageProcessError');
             } finally {
                 if (isPageActive() && currentVersion === imageVersion) {
                     isProcessingImage = false;
@@ -334,7 +334,7 @@
             } catch (error) {
                 if (!isPageActive()) return;
                 noticeBox.className = 'mobile-error';
-                noticeBox.textContent = t('mobile_upload.msg_upload_fail') + error.message;
+                noticeBox.textContent = t('mobile_upload.msg_upload_fail') + window.requestErrorMessage(error);
             } finally {
                 if (isPageActive()) {
                     isSubmitting = false;

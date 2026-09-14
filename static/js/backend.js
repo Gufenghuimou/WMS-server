@@ -13,6 +13,7 @@
     let pName, pW, pH, colorTrigger, btnUpd, btnDel, btnDup, paletteBox;
     
     window.initAdminPage = async function() {
+        bindAsyncForms();
         editorRacks = [];
         selectedRacks = [];
         isDragging = false;
@@ -31,7 +32,7 @@
 
         // 加载用户数据
         try {
-            const response = await fetch('/api/users_list');
+            const response = await window.apiFetch('/api/users_list');
             const result = await response.json();
             if (result.status === 'success') {
                 const usersData = result.data;
@@ -58,8 +59,9 @@
                 } 
             }
         } catch (error) {
+            if (error.name === 'AbortError') return;
             console.error("Data Loaded Fail", error);
-            document.querySelector('tbody').innerHTML = `<div style="text-align:center; color:red;">加载失败，请刷新重试</div>`;
+            document.querySelector('tbody').innerHTML = `<div style="text-align:center; color:red;">${window.requestErrorHtml(error)}</div>`;
         }
 
         if (editorCanvas) {
@@ -76,9 +78,11 @@
                 }
             }
 
-            fetch('/api/layout').then(res => res.json()).then(data => {
+            await window.apiFetch('/api/layout').then(res => res.json()).then(data => {
                 if(Array.isArray(data)) editorRacks = data;
                 drawEditor();
+            }).catch(error => {
+                if (error.name !== 'AbortError') window.showToast(window.requestErrorMessage(error), 'error');
             });
         }
     }
@@ -143,6 +147,7 @@
         document.querySelectorAll('.async-form').forEach(form => {
             form.onsubmit = async function(e) {
                 e.preventDefault();
+                if (this.dataset.submitting) return;
 
                 let confirmText = this.getAttribute('data-confirm');
                 if (confirmText && !(await openConfirmModal(confirmText))) return;
@@ -152,6 +157,7 @@
                 let btn = this.querySelector('button[type="submit"]');
                 let originalBtnHtml = btn.innerHTML;
 
+                this.dataset.submitting = "true";
                 btn.disabled = true;
                 btn.innerHTML = `<i class="material-icons" style="font-size: 1.2rem; animation: spin 1s linear infinite;">autorenew</i> ${t('admin.processing')}`;
                 msgBox.style.display = 'none';
@@ -159,29 +165,34 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' });
 
                 try {
-                    let response = await fetch(this.action, { method: this.method, body: formData });
+                    let response = await window.apiFetch(this.action, { method: this.method, body: formData });
                     let data = await response.json();
 
-                    msgBox.innerText = data.message;
+                    if (!response.ok || data.status !== "success") {
+                        throw new Error(data.message || data.detail || t("admin.net_error"));
+                    }
+                    msgBox.innerText = data.message || t("admin.success");
                     msgBox.style.display = 'block';
 
-                    if (data.status === 'error') {
-                        msgBox.classList.add('msg-error');
+                    msgBox.classList.add('msg-success');
+                    if (this.enctype === 'multipart/form-data') {
+                        this.reset();
                         btn.disabled = false;
                         btn.innerHTML = originalBtnHtml;
-                    } else if (data.status === 'success') {
-                        msgBox.classList.add('msg-success');
-                        btn.innerHTML = `<i class="material-icons" style="font-size: 1.2rem;">check</i> ${t('admin.success')}`;
-                        btn.style.background = '#1db954';
-                        setTimeout(() => window.location.reload(), 1500); // Admin页允许整页刷新确保权限干净
+                    } else {
+                        btn.innerHTML = `<i class="material-icons">check</i> ${t('admin.success')}`;
+                        setTimeout(() => window.location.reload(), 1500);
                     }
                 } catch (err) {
+                    if (err.name === 'AbortError') return;
                     console.error(err);
-                    msgBox.innerText = t('admin.net_error');
+                    msgBox.innerText = window.requestErrorMessage(err);
                     msgBox.classList.add('msg-error');
                     msgBox.style.display = 'block';
                     btn.disabled = false;
                     btn.innerHTML = originalBtnHtml;
+                } finally {
+                    delete this.dataset.submitting;
                 }
             }
         });
@@ -457,7 +468,7 @@
     window.saveMapToDb = async function() {
         if (await openConfirmModal(t('admin.confirm_deploy'))) {
             try {
-                let response = await fetch('/api/layout', {
+                let response = await window.apiFetch('/api/layout', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(editorRacks)
@@ -472,7 +483,8 @@
                     // alert(t('admin.deploy_fail') + result.message);
                 }
             } catch (error) {
-                await openAlertModal(t('admin.deploy_fail'));
+                if (error.name === 'AbortError') return;
+                await window.openAlertModal(window.requestErrorMessage(error));
             }
         }
     };

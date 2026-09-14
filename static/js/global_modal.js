@@ -32,7 +32,7 @@
                     status.innerHTML = `<span style="color:#888;">${t('reprint.msg_querying')}</span>`;
 
                     try {
-                        let res = await fetch(`/api/item/${val}`);
+                        let res = await window.apiFetch(`/api/item/${val}`);
                         let data = await res.json();
 
                         if (data.error) {
@@ -51,7 +51,8 @@
                             name.value = data.name || '-';
                         }
                     } catch (err) {
-                        status.innerHTML = `<span class="msg-error"> ${t('reprint.msg_net_fail')}</span>`;
+                        if (err.name === 'AbortError') return;
+                        status.innerHTML = `<span class="msg-error">${window.requestErrorHtml(err)}</span>`;
                     }
                 }
             };
@@ -73,7 +74,7 @@
                     status.innerHTML = `<span style="color:#888;">${t('reprint.msg_querying')}</span>`;
 
                     try {
-                        let res = await fetch(`/api/asset_info/${val}`);
+                        let res = await window.apiFetch(`/api/asset_info/${val}`);
                         let data = await res.json();
 
                         if (data.error) {
@@ -85,7 +86,8 @@
                             name.value = data.name || '-';
                         }
                     } catch (err) {
-                        status.innerHTML = `<span class="msg-error"> ${t('reprint.msg_net_fail')}</span>`;
+                        if (err.name === 'AbortError') return;
+                        status.innerHTML = `<span class="msg-error">${window.requestErrorHtml(err)}</span>`;
                     }
                 }
             };
@@ -103,7 +105,7 @@
         btn.disabled = true;
 
         try {
-            let res = await fetch('/api/generate_mobile_token', { method: 'POST' });
+            let res = await window.apiFetch('/api/generate_mobile_token', { method: 'POST' });
             let data = await res.json();
 
             if (data.status === 'success' && data.token) {
@@ -123,8 +125,9 @@
                 // alert(data.message || t('base.unknown_error'));
             }
         } catch(e) {
+            if (e.name === 'AbortError') return;
             console.error(e);
-            await openAlertModal(t('base.network_error_qr'));
+            await window.openAlertModal(window.requestErrorMessage(e));
             // alert(t('base.network_error_qr'));
         } finally {
             btn.innerHTML = originalHtml;
@@ -177,7 +180,7 @@
         }
 
         try {
-            let res = await fetch('/api/trigger_print', { method: 'POST', body: formData });
+            let res = await window.apiFetch('/api/trigger_print', { method: 'POST', body: formData });
             let data = await res.json();
 
             if (data.status === 'success') {
@@ -195,7 +198,8 @@
                 if(typeof window.showToast === 'function') window.showToast(data.message, 'error');
             }
         } catch (e) {
-            await openAlertModal(t('reprint.alert_print_fail'));
+            if (e.name === 'AbortError') return;
+            await window.openAlertModal(window.requestErrorMessage(e));
             // alert(t('reprint.alert_print_fail'));
         }
     };
@@ -205,7 +209,7 @@
         if (icon) icon.innerHTML = 'sync';
 
         try {
-            let res = await fetch('/api/printer_status');
+            let res = await window.apiFetch('/api/printer_status');
             let data = await res.json();
 
             const ipInput = document.getElementById('printerIp');
@@ -225,9 +229,11 @@
                 }
             }
         } catch (e) {
+            if (e.name === 'AbortError') return;
             if (icon) {
                 icon.innerHTML = 'error_outline';
                 icon.style.color = '#e74c3c';
+                icon.title = window.requestErrorMessage(e);
             }
         }
     };
@@ -245,7 +251,7 @@
         formData.append('port', port);
 
         try {
-            let res = await fetch('/api/update_printer_config', {
+            let res = await window.apiFetch('/api/update_printer_config', {
                 method: 'POST',
                 body: formData
             });
@@ -259,7 +265,8 @@
                 // alert(t('reprint.alert_save_fail') + (data.message || "Unknown error"));
             }
         } catch (err) {
-            await openAlertModal(t('reprint.alert_save_net_err'));
+            if (err.name === 'AbortError') return;
+            await window.openAlertModal(window.requestErrorMessage(err));
             // alert(t('reprint.alert_save_net_err'));
         }
     };
@@ -310,7 +317,7 @@
             formData.append('file', blob, 'image.jpg');
 
             try {
-                let res = await fetch(`/api/asset_upload_image/${encodeURIComponent(currentCropContext.pn1)}`, {
+                let res = await window.apiFetch(`/api/asset_upload_image/${encodeURIComponent(currentCropContext.pn1)}`, {
                     method: 'POST',
                     body: formData
                 });
@@ -346,7 +353,8 @@
                     if(typeof window.showToast === 'function') window.showToast(t('asset_view.upload_fail'), 'error');
                 }
             } catch(e) {
-                if(typeof window.showToast === 'function') window.showToast(t('asset_view.upload_net_err'), 'error');
+                if (e.name === 'AbortError') return;
+                if(typeof window.showToast === 'function') window.showToast(window.requestErrorMessage(e), 'error');
             }
         }, 'image/jpeg', 0.8);
     };
@@ -390,7 +398,7 @@
             formData.append('file', blob, 'image.jpg');
 
             try {
-                let response = await fetch(`/api/upload_image/${window.currentEditItemId}`, {
+                let response = await window.apiFetch(`/api/upload_image/${window.currentEditItemId}`, {
                     method: 'POST',
                     body: formData
                 });
@@ -419,7 +427,8 @@
                     }
                 }
             } catch (error) {
-                await openAlertModal(t('asset_view.upload_fail') + error);
+                if (error.name === 'AbortError') return;
+                await window.openAlertModal(window.requestErrorMessage(error));
             }
         }, 'image/jpeg', 0.8);
     };
@@ -582,7 +591,7 @@
     window.openActionModal = async function(groupId, itemId) {
         itemId = Number(itemId);
         try {
-            const response = await fetch(`/api/status_check/${itemId}`, {method: 'POST'});
+            const response = await window.apiFetch(`/api/status_check/${itemId}`, {method: 'POST'});
             const result = await response.json();
             if (result.status !== 'success') {
                 if(typeof window.showToast === 'function') window.showToast(result.message, 'error');
@@ -599,7 +608,8 @@
                 return;
             }
         } catch (err) {
-            if(typeof window.showToast === 'function') window.showToast('Network error during status check', 'error');
+            if (err.name === 'AbortError') return;
+            if(typeof window.showToast === 'function') window.showToast(window.requestErrorMessage(err), 'error');
             console.error("Status check failed:", err);
             return;
         }

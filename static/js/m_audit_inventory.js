@@ -201,7 +201,7 @@
                 return true;
             } catch (error) {
                 if (!isPageActive() || error.name === 'AbortError' || currentVersion !== requestVersion) return;
-                setCommitStatus(null, error.message || t('mspa.requestError'));
+                setCommitStatus(null, window.requestErrorMessage(error) || t('mspa.requestError'));
                 return false;
             } finally {
                 if (isPageActive() && currentVersion === requestVersion) {
@@ -319,7 +319,7 @@
                 setCommitStatus('do.success');
             } catch (error) {
                 if (!isPageActive()) return;
-                setCommitStatus(null, error.message || t('mspa.requestError'));
+                setCommitStatus(null, window.requestErrorMessage(error) || t('mspa.requestError'));
                 return false;
             } finally {
                 isSubmitting = false;
@@ -341,7 +341,7 @@
                 if (isPageActive() && didLoad) setCommitStatus('do.success');
             } catch (error) {
                 if (!isPageActive()) return;
-                setCommitStatus(null, error.message || t('mspa.requestError'));
+                setCommitStatus(null, window.requestErrorMessage(error) || t('mspa.requestError'));
                 return false;
             } finally {
                 isSubmitting = false;

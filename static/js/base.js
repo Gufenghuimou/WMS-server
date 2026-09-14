@@ -37,7 +37,7 @@ window.showToast = function(message, type = 'success') {
     // 异步加载布局数据
     window.initMapEngine = async function() {
         try {
-            const response = await fetch('/api/layout');
+            const response = await window.apiFetch('/api/layout');
             const data = await response.json();
             if (Array.isArray(data) && data.length > 0) {
                 racks = data; // 使用服务器保存的布局
@@ -45,6 +45,7 @@ window.showToast = function(message, type = 'success') {
                 console.log(t('base.map_not_found'));
             }
         } catch (error) {
+            if (error.name === 'AbortError') return;
             console.error(t('base.map_load_fail'), error);
         }
 
@@ -316,7 +317,7 @@ window.showToast = function(message, type = 'success') {
     async function fetchChatHistory() {
         if (!window.CURRENT_USER) return;
         try {
-            let res = await fetch('/api/chat/history');
+            let res = await window.apiFetch('/api/chat/history');
             let messages = await res.json();
             if (messages.length > 0) {
                 let maxId = messages[messages.length - 1].id;
@@ -337,6 +338,7 @@ window.showToast = function(message, type = 'success') {
                 }
             }
         } catch (e) {
+            if (e.name === 'AbortError') return;
             console.error("无法获取聊天记录", e);
         }
     }
@@ -376,14 +378,15 @@ window.showToast = function(message, type = 'success') {
         formData.append('message', text);
 
         try {
-            await fetch('/api/chat/send', {
+            await window.apiFetch('/api/chat/send', {
                 method: 'POST',
                 body: formData
             });
             // 发送完毕后立即强制刷新一次列表
             fetchChatHistory();
         } catch (e) {
-            await openAlertModal(t('base.send_fail'));
+            if (e.name === 'AbortError') return;
+            await window.openAlertModal(window.requestErrorMessage(e));
             // alert(t('base.send_fail'));
         }
     };
@@ -416,13 +419,14 @@ window.showToast = function(message, type = 'success') {
 
             setInterval(async () => {
                 try {
-                    let response = await fetch('/api/heartbeat');
+                    let response = await window.apiFetch('/api/heartbeat');
                     let data = await response.json();
 
                     if (data.status === 'alert') {
                         window.takeoverLockScreen(data.message)
                     }
                 } catch (err) {
+                    if (err.name === 'AbortError') return;
                     console.warn("Heartbeat request failed", err);
                 }
             }, 30000);
@@ -691,7 +695,7 @@ window.initBaseUIComponents = function() {
         if (!dot) return; // 安全退出
 
         try {
-            let res = await fetch('/api/printer_status');
+            let res = await window.apiFetch('/api/printer_status');
             let data = await res.json();
 
             if (data.status === 'online') {
@@ -704,9 +708,11 @@ window.initBaseUIComponents = function() {
                 dot.style.boxShadow = '0 0 0 3px rgba(231, 76, 60, 0.4)';
             }
         } catch (e) {
+            if (e.name === 'AbortError') return;
             // 网络错误：恢复灰色
             dot.style.background = '#ccc';
             dot.style.boxShadow = '0 0 0 2px rgba(255,255,255,0.3)';
+            dot.title = window.requestErrorMessage(e);
         }
     }
     // 页面加载完毕立刻检测一次

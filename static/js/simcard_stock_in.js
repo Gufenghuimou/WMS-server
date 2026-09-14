@@ -213,7 +213,7 @@
                 }
 
                 try {
-                    let response = await fetch('/api/simcard_batch_submit', {
+                    let response = await window.apiFetch('/api/simcard_batch_submit', {
                         method: 'POST',
                         body: new FormData(stockInForm)
                     });
@@ -227,9 +227,10 @@
                         await openAlertModal(result.message || 'Upload Error');
                     }
                 } catch (error) {
+                    if (error.name === 'AbortError') return;
                         // console.error('提交异常',error);
                         // alert('网络请求错误，请重试！');
-                        await openAlertModal('网络请求错误，请重试！');
+                        await window.openAlertModal(window.requestErrorMessage(error));
                 } finally {
                     if (submitBtn) {
                         submitBtn.disabled = false;
@@ -304,7 +305,7 @@
         inputElement.classList.remove('db-exist-warn');
 
         try {
-            let response = await fetch(`/api/simcard/${encodeURIComponent(inputVal)}`);
+            let response = await window.apiFetch(`/api/simcard/${encodeURIComponent(inputVal)}`);
             let data = await response.json();
             if (!inputElement.isConnected || inputElement.value !== originalValue || queryVersions.get(inputElement) !== version) return;
             if (!data.error) {
@@ -324,7 +325,9 @@
                 exist = true;
             }
         } catch (err) {
+            if (err.name === 'AbortError') return;
             console.error(t('stockin.query_fail'), err);
+            window.showToast(window.requestErrorMessage(err), 'error');
         }
         return exist;
     }

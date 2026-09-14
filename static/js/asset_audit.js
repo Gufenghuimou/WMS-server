@@ -12,7 +12,7 @@
         }
 
         try {
-            const response = await fetch('/api/get_asset_audit');
+            const response = await window.apiFetch('/api/get_asset_audit');
             const result = await response.json();
 
             if (result.status === 'success') {
@@ -40,8 +40,9 @@
                 } 
             }
         } catch (error) {
+            if (error.name === 'AbortError') return;
             console.error("Data Loaded Fail", error);
-            document.querySelector('tbody').innerHTML = `<div style="text-align:center; color:red;">加载失败，请刷新重试</div>`;
+            document.querySelector('tbody').innerHTML = `<div style="text-align:center; color:red;">${window.requestErrorHtml(error)}</div>`;
         }
     };
 
@@ -305,7 +306,7 @@
                 const isConfirmed = await openConfirmModal(t('asset_audit.confirm_reset'));
                 try {
                     if (!isConfirmed) return;
-                    let response = await fetch('/api/asset_audit/start', {
+                    let response = await window.apiFetch('/api/asset_audit/start', {
                         method: 'POST'
                     });
                     let result = await response.json();
@@ -317,8 +318,9 @@
                         await openAlertModal('同步失败');
                     }
                 } catch (error) {
-                    showToast("Sync Error:", error);
-                    await openAlertModal('网络请求异常', 'error');
+                    if (error.name === 'AbortError') return;
+                    window.showToast(window.requestErrorMessage(error), 'error');
+                    await window.openAlertModal(window.requestErrorMessage(error));
                 } finally {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalBtnHtml;
@@ -335,7 +337,7 @@
                 const isConfirmed = await openConfirmModal(t('asset_audit.confirm_commit'));
                 try {
                     if (!isConfirmed) return;
-                    let response = await fetch('/api/asset_audit/commit', {
+                    let response = await window.apiFetch('/api/asset_audit/commit', {
                         method: 'POST'
                     });
                     let result = await response.json();
@@ -347,8 +349,9 @@
                         await openAlertModal('提交失败');
                     }
                 } catch (error) {
-                    showToast("Commit Error:", error);
-                    await openAlertModal('网络请求异常', 'error');
+                    if (error.name === 'AbortError') return;
+                    window.showToast(window.requestErrorMessage(error), 'error');
+                    await window.openAlertModal(window.requestErrorMessage(error));
                 } finally {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalBtnHtml;
@@ -366,7 +369,7 @@
         formData.append("current_location", currentLoc);
             
         try {
-            let response = await fetch('/api/asset_audit/scan', { method: 'POST', body: formData });
+            let response = await window.apiFetch('/api/asset_audit/scan', { method: 'POST', body: formData });
             let data = await response.json();
 
             if (data.status === 'success') {
@@ -400,7 +403,8 @@
                 alertAudio.play().catch(() => console.log("Loading sound fail"));
             }
         } catch (err) {
-            resultBox.innerHTML = `<span style="color:#d93025;">${t('asset_audit.net_error')}</span>`;
+            if (err.name === 'AbortError') return;
+            resultBox.innerHTML = `<span style="color:#d93025;">${window.requestErrorHtml(err)}</span>`;
             alertAudio.currentTime = 0;
             alertAudio.play().catch(() => console.log("Loading sound fail"));
         }
@@ -417,7 +421,7 @@
         const barcodeInput = document.getElementById('scanBarcode');
 
         try {
-            let res = await fetch('/api/trigger_print', { method: 'POST', body: formData });
+            let res = await window.apiFetch('/api/trigger_print', { method: 'POST', body: formData });
             let data = await res.json();
             console.log(data);
             if (data.status === 'success') {
@@ -427,7 +431,8 @@
                 // alert(t('reprint.alert_print_fail'));
             }
         } catch (e) {
-            await window.openAlertModal(t('reprint.alert_print_fail'));
+            if (e.name === 'AbortError') return;
+            await window.openAlertModal(window.requestErrorMessage(e));
             // alert(t('reprint.alert_print_fail'));
         }
         if (barcodeInput) barcodeInput.focus();

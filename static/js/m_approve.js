@@ -126,7 +126,7 @@
             } catch(error) {
                 if (!isPageActive() || error.name === 'AbortError' || currentVersion !== requestVersion) return;
                 noticeBox.className = 'mobile-error';
-                noticeBox.textContent = error.message;
+                noticeBox.textContent = window.requestErrorMessage(error);
             }
         }
 
@@ -247,7 +247,7 @@
                 renderRequests();
                 noticeBox.textContent = result.message || t('mspa.success');
             } catch(error) {
-                if (isPageActive()) errorBox.textContent = error.message;
+                if (isPageActive()) errorBox.textContent = window.requestErrorMessage(error);
             } finally {
                 isSubmitting = false;
                 formButtons.forEach(button => {

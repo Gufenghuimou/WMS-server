@@ -37,7 +37,7 @@ app.mount("/static", CachingStaticFiles(directory=os.path.join(core.base_dir, "s
 # 异常处理
 @app.exception_handler(RequiresLoginException)
 async def requires_login_exception_handler(request: Request, exc: RequiresLoginException):
-    if request.url.path.startswith("/api/"):
+    if request.url.path.startswith("/api/") or request.method not in {"GET", "HEAD"}:
         return JSONResponse(status_code=401, content={'status': 'error', 'message': 'Unauthorized, please login.'})
     user_agent = request.headers.get("User-Agent", "").lower()
     is_mobile = any(keyword in user_agent for keyword in ["android", "iphone", "mobile"])

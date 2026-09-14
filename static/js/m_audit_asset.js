@@ -135,7 +135,7 @@
                 return true;
             } catch (error) {
                 if (!isPageActive() || currentVersion !== requestVersion || error.name === 'AbortError') return false;
-                setCommitStatus(null, error.message || t('mspa.requestError'));
+                setCommitStatus(null, window.requestErrorMessage(error) || t('mspa.requestError'));
                 return false;
             } finally {
                 if (isPageActive() && currentVersion === requestVersion) {
@@ -237,7 +237,7 @@
                 }
             } catch (error) {
                 if (!isPageActive()) return;
-                showScanResult(error.message, 'error', 'var(--danger-red)');
+                showScanResult(window.requestErrorMessage(error), 'error', 'var(--danger-red)');
                 flashScanCard('var(--danger-red)');
             } finally {
                 isSubmitting = false;
@@ -268,7 +268,7 @@
 
             } catch (error) {
                 if (!isPageActive()) return;
-                setCommitStatus(null, error.message || t('mspa.requestError'));
+                setCommitStatus(null, window.requestErrorMessage(error) || t('mspa.requestError'));
             } finally {
                 isSubmitting = false;
                 if (isPageActive()) setControlsDisabled();

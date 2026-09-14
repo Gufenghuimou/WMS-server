@@ -17,7 +17,7 @@
 
     // 所有 mobile JSON 请求共用：登录失效、非 JSON 响应和业务错误处理。
     window.requestMobileJson = async function(url, options = {}) {
-        const response = await fetch(url, options);
+        const response = await window.fetchWithTimeout(url, options);
         const redirectedToLogin = response.redirected && new URL(response.url).pathname.includes('login');
         if (response.status === 401 || redirectedToLogin) {
             window.location.assign('/mobile/login');
@@ -58,12 +58,14 @@
     async function switchMobileLanguage(lang) {
         const currentVersion = ++languageRequestVersion;
         if (!['zh', 'en', 'ja', 'vi'].includes(lang)) lang = 'en';
-        const response = await fetch(`/static/locales/${lang}.json`);
+        const response = await window.fetchWithTimeout(`/static/locales/${lang}.json`);
         if (!response.ok) throw new Error('Unable to load language');
         const languageData = await response.json();
         // 快速切换语言时，忽略较早发出的请求。
         if (currentVersion !== languageRequestVersion) return;
 
+        await window.requestMobileJson(`/api/switch_lang/${lang}`, { method: 'POST' });
+        if (currentVersion !== languageRequestVersion) return;
         window.I18N_DICT = languageData;
         document.documentElement.lang = lang;
         try {
@@ -107,7 +109,7 @@
                 try {
                     await switchMobileLanguage(button.dataset.lang);
                 } catch (error) {
-                    window.alert(error.message);
+                    window.alert(window.requestErrorMessage(error));
                 }
             };
         });
@@ -141,7 +143,7 @@
         } catch (error) {
             console.error('Mobile initialization failed', error);
             const container = document.getElementById('router-view');
-            container.textContent = error.message;
+            container.textContent = window.requestErrorMessage(error);
             const retryButton = document.createElement('button');
             retryButton.type = 'button';
             retryButton.textContent = window.t('mspa.retry', 'Retry');

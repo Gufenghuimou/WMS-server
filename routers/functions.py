@@ -21,12 +21,14 @@ router = APIRouter(tags=['Functions'])
 
 # -----------------------------全局功能--------------------------#
 
-@router.get("/api/switch_lang/{lang}")
+@router.get("/api/switch_lang/{lang}", include_in_schema=False)
+@router.post("/api/switch_lang/{lang}")
 async def switch_lang(lang: str, request: Request):
-    if lang in ['zh', 'en', 'jp', 'vn']:
-        request.session["lang"] = lang
-    referer = request.headers.get("Referer", '/')
-    return RedirectResponse(url=referer, status_code=303)
+    lang = {"jp": "ja", "vn": "vi"}.get(lang, lang)
+    if lang not in {"zh", "en", "ja", "vi"}:
+        return JSONResponse(status_code=422, content={"status": "error", "message": "Unsupported language"})
+    request.session["lang"] = lang
+    return {"status": "success", "data": {"lang": lang}}
 
 @router.get("/api/item/{pn_or_loc}", response_model=None)
 def get_item_api(request: Request, pn_or_loc: str, current_user: dict = Depends(get_current_user)):

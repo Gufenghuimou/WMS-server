@@ -12,7 +12,7 @@
         }
         
         try {
-            const response = await fetch('/api/inventory_table');
+            const response = await window.apiFetch('/api/inventory_table');
             const result = await response.json();
 
             if (result.status === 'success') {
@@ -62,8 +62,9 @@
                 } 
             }
         } catch (error) {
+            if (error.name === 'AbortError') return;
             console.error("Data Loaded Fail", error);
-            document.getElementById('invTable').innerHTML = `<div style="text-align:center; color:red;">加载失败，请刷新重试</div>`;
+            document.getElementById('invTable').innerHTML = `<div style="text-align:center; color:red;">${window.requestErrorHtml(error)}</div>`;
         }
     };
 
@@ -251,7 +252,7 @@
                     saveBtn.disabled = true;
 
                     try {
-                        let response = await fetch(`/edit/${itemId}`, {
+                        let response = await window.apiFetch(`/edit/${itemId}`, {
                             method: 'POST',
                             body: formData
                         });
@@ -287,7 +288,8 @@
                                 // alert('Save Failed: ' + result.message);
                             }
                     } catch (error) {
-                        await openAlertModal('Cannot attach the server' + error);
+                        if (error.name === 'AbortError') return;
+                        await window.openAlertModal(window.requestErrorMessage(error));
                     } finally {
                         saveBtn.disabled = false;
                     }
@@ -428,7 +430,7 @@
 
         try {
             // 发送数据到后台
-            let response = await fetch(`/api/update_advanced/${itemId}`, {
+            let response = await window.apiFetch(`/api/update_advanced/${itemId}`, {
                 method: 'POST',
                 body: formData
             });
@@ -480,7 +482,8 @@
                 tr.classList.add('row-saved');
             }
         } catch (err) {
-            await openAlertModal(t('table.net_err_save'));
+            if (err.name === 'AbortError') return;
+            await window.openAlertModal(window.requestErrorMessage(err));
             // alert(t('table.net_err_save'));
         }
     };

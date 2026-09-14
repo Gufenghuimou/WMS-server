@@ -10,7 +10,7 @@
         }
         
         try {
-            const response = await fetch('/api/asset');
+            const response = await window.apiFetch('/api/asset');
             const result = await response.json();
 
             if (result.status === 'success') {
@@ -74,8 +74,9 @@
                 } 
             }
         } catch (error) {
+            if (error.name === 'AbortError') return;
             console.error("Data Loaded Fail", error);
-            document.getElementById('assetCardList').innerHTML = `<div style="text-align:center; color:red;">加载失败，请刷新重试</div>`;
+            document.getElementById('assetCardList').innerHTML = `<div style="text-align:center; color:red;">${window.requestErrorHtml(error)}</div>`;
         }
     };
 
@@ -516,7 +517,7 @@
         }
 
         try {
-            let response = await fetch(form.action, {
+            let response = await window.apiFetch(form.action, {
                 method: 'POST',
                 body: new FormData(form)
             });
@@ -563,7 +564,8 @@
                 showToast(result.message || t('asset_view.backend_fail'), 'error');
             }
         } catch (err) {
-            showToast(t('asset_view.net_req_fail'), 'error');
+            if (err.name === 'AbortError') return;
+            window.showToast(window.requestErrorMessage(err), 'error');
             console.error("AJAX Submit Error:", err);
         } finally {
             if (submitBtn) {
